@@ -1,0 +1,66 @@
+.top-shell {
+  padding: 18px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.top-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns:
+    var(--rail-left-width)
+    minmax(0, 1fr)
+    var(--rail-right-width);
+  gap: var(--workspace-gap);
+  align-items: start;
+}
+
+.workspace-grid.compact {
+  grid-template-columns: 1fr;
+}
+
+.left-rail,
+.right-rail,
+.center-stage-panel {
+  padding: 14px;
+}
+
+.left-rail,
+.right-rail {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.center-stage-panel {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+}
+
+.subpanel {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.panel-section {
+  display: grid;
+  gap: 12px;
+}
+
+.inline-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}

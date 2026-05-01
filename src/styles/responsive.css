@@ -1,0 +1,124 @@
+@media (max-width: 1600px) {
+  :root {
+    --rail-left-width: 260px;
+    --rail-right-width: 320px;
+  }
+
+  .theater-camera-window {
+    width: min(80%, 920px);
+  }
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --rail-left-width: 240px;
+    --rail-right-width: 300px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 1024px) {
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chat-participants-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .theater-camera-window {
+    width: min(88%, 900px);
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-page {
+    padding: 14px;
+  }
+
+  .top-shell,
+  .left-rail,
+  .right-rail,
+  .center-stage-panel,
+  .subpanel,
+  .auth-card {
+    padding: 14px;
+  }
+
+  .auth-mode-row,
+  .invite-name-row,
+  .chat-compose-row {
+    grid-template-columns: 1fr;
+  }
+
+  .top-actions,
+  .stage-topbar-actions,
+  .control-dock {
+    width: 100%;
+  }
+
+  .theater-camera-window {
+    width: min(94%, 860px);
+  }
+
+  .brand-title {
+    font-size: 24px;
+  }
+
+  .stage-title {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-page {
+    padding: 10px;
+  }
+
+  .top-shell,
+  .left-rail,
+  .right-rail,
+  .center-stage-panel,
+  .subpanel,
+  .auth-card {
+    padding: 12px;
+  }
+
+  .ui-button {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .room-card-top,
+  .invite-top,
+  .stage-topbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .theater-camera-center {
+    padding: 18px;
+  }
+
+  .theater-camera-window {
+    width: 100%;
+    border-radius: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

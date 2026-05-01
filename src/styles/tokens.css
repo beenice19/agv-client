@@ -1,0 +1,133 @@
+:root {
+  /* Backgrounds */
+  --color-bg-1: #0b1020;
+  --color-bg-2: #12192f;
+  --color-bg-3: #1a223d;
+
+  /* Text */
+  --color-text: #ecf2ff;
+  --color-text-soft: #cad5ef;
+  --color-text-muted: #98a8ca;
+
+  /* Lines */
+  --color-line-soft: rgba(255, 255, 255, 0.08);
+  --color-line-mid: rgba(255, 255, 255, 0.12);
+  --color-line-strong: rgba(255, 255, 255, 0.18);
+
+  /* Surfaces */
+  --color-surface-1: rgba(17, 24, 43, 0.9);
+  --color-surface-2: rgba(13, 19, 37, 0.86);
+  --color-surface-3: rgba(18, 33, 66, 0.95);
+  --color-surface-4: rgba(16, 23, 44, 0.92);
+  --color-soft-fill: rgba(255, 255, 255, 0.06);
+  --color-soft-fill-2: rgba(255, 255, 255, 0.08);
+
+  /* Brand */
+  --color-primary-1: #3b82f6;
+  --color-primary-2: #2563eb;
+  --color-purple-1: #8b5cf6;
+  --color-purple-2: #7c3aed;
+  --color-cyan-1: #7dd3fc;
+  --color-gold-1: #fbbf24;
+
+  /* States */
+  --color-live-bg: rgba(22, 163, 74, 0.18);
+  --color-live-text: #a7f3d0;
+
+  --color-error-bg: rgba(127, 29, 29, 0.3);
+  --color-error-border: rgba(248, 113, 113, 0.4);
+  --color-error-text: #fecaca;
+
+  --color-warning-bg: rgba(146, 64, 14, 0.28);
+  --color-warning-border: rgba(251, 146, 60, 0.4);
+  --color-warning-text: #fed7aa;
+
+  --color-success-soft: rgba(22, 163, 74, 0.18);
+  --color-success-soft-text: #dcfce7;
+  --color-blue-soft: rgba(59, 130, 246, 0.18);
+  --color-blue-soft-text: #dbeafe;
+  --color-purple-soft: rgba(139, 92, 246, 0.18);
+  --color-purple-soft-text: #ede9fe;
+  --color-gold-soft: rgba(245, 158, 11, 0.18);
+  --color-gold-soft-text: #fde68a;
+
+  /* Radii */
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius-3xl: 30px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 6px;
+  --space-3: 8px;
+  --space-4: 10px;
+  --space-5: 12px;
+  --space-6: 14px;
+  --space-7: 16px;
+  --space-8: 18px;
+  --space-9: 20px;
+  --space-10: 24px;
+  --space-11: 30px;
+  --space-12: 34px;
+
+  /* Typography */
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-base: 15px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+
+  /* Weights */
+  --weight-bold: 800;
+  --weight-xbold: 900;
+  --weight-black: 950;
+
+  /* Layout */
+  --page-max: 1840px;
+  --page-pad: 18px;
+  --workspace-gap: 14px;
+  --rail-left-width: 280px;
+  --rail-right-width: 340px;
+  --chat-side-width: 320px;
+  --stage-min-height: clamp(430px, 60vh, 740px);
+  --rooms-scroll-max: min(70vh, 900px);
+
+  /* Effects */
+  --shadow-lg: 0 26px 70px rgba(0, 0, 0, 0.28);
+  --shadow-stage: 0 30px 90px rgba(0, 0, 0, 0.34);
+  --blur-surface: blur(12px);
+  --transition-fast: 180ms ease;
+  --transition-mid: 240ms ease;
+
+  /* Focus */
+  --focus-ring: 0 0 0 2px rgba(125, 211, 252, 0.8);
+
+  /* Shared gradients */
+  --gradient-app-bg:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.18), transparent 26%),
+    radial-gradient(circle at 85% 15%, rgba(168, 85, 247, 0.14), transparent 22%),
+    radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.12), transparent 22%),
+    linear-gradient(180deg, var(--color-bg-1) 0%, var(--color-bg-2) 45%, var(--color-bg-3) 100%);
+
+  --gradient-surface:
+    linear-gradient(180deg, var(--color-surface-1), var(--color-surface-2));
+
+  --gradient-invite:
+    linear-gradient(180deg, var(--color-surface-3), var(--color-surface-4));
+
+  --gradient-button-primary:
+    linear-gradient(180deg, var(--color-primary-1), var(--color-primary-2));
+
+  --gradient-button-dark:
+    linear-gradient(180deg, #111827, #030712);
+
+  --gradient-button-purple:
+    linear-gradient(180deg, var(--color-purple-1), var(--color-purple-2));
+}
