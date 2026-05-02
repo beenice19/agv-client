@@ -257,6 +257,24 @@ function App() {
           setStatusText("LiveKit disconnected");
         },
         onTrackSubscribed: (track, publication, participant) => {
+  if (cancelled || canControlStage) return;
+
+  const mediaTrack = track?.mediaStreamTrack;
+  if (!mediaTrack) return;
+
+  // Clear old tracks (IMPORTANT)
+  remoteLiveKitStreamRef.current.getTracks().forEach((t) => {
+    remoteLiveKitStreamRef.current.removeTrack(t);
+  });
+
+  // Add new track
+  remoteLiveKitStreamRef.current.addTrack(mediaTrack);
+
+  // SET SAME STREAM (no new object creation)
+  setRemoteStageStream(remoteLiveKitStreamRef.current);
+
+  setStatusText(`Receiving LiveKit stage from ${participant?.name || "host"}`);
+}
           if (cancelled || canControlStage) return;
 
           const mediaTrack = track?.mediaStreamTrack;
@@ -273,6 +291,19 @@ function App() {
           setStatusText(`Receiving LiveKit stage from ${participant?.name || "host"}`);
         },
         onTrackUnsubscribed: (track) => {
+  const mediaTrack = track?.mediaStreamTrack;
+  if (!mediaTrack) return;
+
+  remoteLiveKitStreamRef.current.removeTrack(mediaTrack);
+
+  const remaining = remoteLiveKitStreamRef.current.getTracks();
+
+  if (remaining.length === 0) {
+    setRemoteStageStream(null);
+  } else {
+    setRemoteStageStream(remoteLiveKitStreamRef.current);
+  }
+} (track) => {
           const mediaTrack = track?.mediaStreamTrack;
           if (!mediaTrack) return;
 
