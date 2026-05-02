@@ -262,48 +262,6 @@ function App() {
   const mediaTrack = track?.mediaStreamTrack;
   if (!mediaTrack) return;
 
-  const source = String(publication?.source || "").toLowerCase();
-  const trackName = String(publication?.trackName || publication?.name || "").toLowerCase();
-  const isScreenShare =
-    source.includes("screen") ||
-    trackName.includes("screen") ||
-    trackName.includes("share");
-
-  const currentTracks = remoteLiveKitStreamRef.current.getTracks();
-
-  if (isScreenShare) {
-    currentTracks.forEach((existingTrack) => {
-      remoteLiveKitStreamRef.current.removeTrack(existingTrack);
-    });
-
-    remoteLiveKitStreamRef.current.addTrack(mediaTrack);
-    setRemoteStageStream(new MediaStream(remoteLiveKitStreamRef.current.getTracks()));
-    setStatusText(`Receiving screen share from ${participant?.name || "host"}`);
-    return;
-  }
-
-  const hasScreenShareAlready = currentTracks.some((existingTrack) => {
-    const label = String(existingTrack.label || "").toLowerCase();
-    return label.includes("screen") || label.includes("share");
-  });
-
-  if (hasScreenShareAlready) {
-    return;
-  }
-
-  currentTracks.forEach((existingTrack) => {
-    remoteLiveKitStreamRef.current.removeTrack(existingTrack);
-  });
-
-  remoteLiveKitStreamRef.current.addTrack(mediaTrack);
-  setRemoteStageStream(new MediaStream(remoteLiveKitStreamRef.current.getTracks()));
-  setStatusText(`Receiving camera from ${participant?.name || "host"}`);
-},
-  if (cancelled || canControlStage) return;
-
-  const mediaTrack = track?.mediaStreamTrack;
-  if (!mediaTrack) return;
-
   // Clear old tracks (IMPORTANT)
   remoteLiveKitStreamRef.current.getTracks().forEach((t) => {
     remoteLiveKitStreamRef.current.removeTrack(t);
