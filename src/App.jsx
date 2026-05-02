@@ -1241,11 +1241,11 @@ function App() {
         await publishAgvHostCamera(livekitRoomRef.current);
         setStatusText("Camera live through LiveKit");
       } else {
-        setStatusText("Camera is on. LiveKit is still connecting.");
+        setStatusText("Camera is live.");
       }
 
       if (!screenShareOn) {
-        startBroadcast(null, "camera");
+        
       }
 
       await loadMediaDevices();
@@ -1348,15 +1348,7 @@ function App() {
     setStatusText("Screen share ended");
   }
 
-  function startBroadcast(stream, mode) {
-    if (!socketRef.current || !selectedRoomId) return;
-
-    setBroadcastMode(mode);
-
-    socketRef.current.emit("broadcast:start", {
-      roomId: selectedRoomId,
-      mode,
-    });
+  
 
     setBroadcastInfo({
       hostName: authUser?.displayName || "Host",
