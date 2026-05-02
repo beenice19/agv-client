@@ -1348,13 +1348,7 @@ function App() {
     setStatusText("Screen share ended");
   }
 
-  function   setBroadcastMode(mode || "camera");
-  setBroadcastInfo({
-    hostName: authUser?.displayName || "Host",
-    mode: mode || "camera",
-    startedAt: new Date().toISOString(),
-  });
-  return; {
+  function startBroadcast(stream, mode) {
     if (!socketRef.current || !selectedRoomId) return;
 
     setBroadcastMode(mode);
