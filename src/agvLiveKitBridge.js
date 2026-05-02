@@ -10,7 +10,7 @@ const TOKEN_KEY = "stro_cheivery_auth_token";
 const MAIN_API_BASE =
   import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8787";
 
-const TOKEN_URL =
+const TOKEN_URL = "https://agv-server.onrender.com/api/livekit/token";
   import.meta.env.VITE_AGV_LIVEKIT_TOKEN_URL ||
   `${MAIN_API_BASE}/api/livekit/token`;
 
