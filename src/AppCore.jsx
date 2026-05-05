@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+    import React, { useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import {
   createAgvLiveKitRoom,
@@ -22,6 +22,12 @@ const DEFAULT_ROOMS = [
   { id: "green-room", name: "Green Room", category: "Backstage", isPrivate: true, isLocked: false, assignedHost: "Admin", host: "Admin", moderators: [] },
 ];
 
+const RTC_CONFIG = {
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    { urls: "stun:stun1.l.google.com:19302" },
+  ],
+};
 
 function getClientSessionId() {
   const existing = window.sessionStorage.getItem(SESSION_KEY);
@@ -92,8 +98,8 @@ function App() {
   const [cameraOn, setCameraOn] = useState(false);
   const [micOn, setMicOn] = useState(false);
   const [screenShareOn, setScreenShareOn] = useState(false);
-  const [livekitRoom, setLivekitRoom] = useState(null);
-  const [livekitConnected, setLivekitConnected] = useState(false);
+const [livekitRoom, setLivekitRoom] = useState(null);
+const [livekitConnected, setLivekitConnected] = useState(false);
   const [localCameraStream, setLocalCameraStream] = useState(null);
   const [screenStream, setScreenStream] = useState(null);
   const [remoteStageStream, setRemoteStageStream] = useState(null);
@@ -109,13 +115,16 @@ function App() {
   const [selectedMicDeviceId, setSelectedMicDeviceId] = useState(() => window.localStorage.getItem(DEVICE_MIC_KEY) || "");
 
   const stageVideoRef = useRef(null);
+  const stageContentFileRef = useRef(null);
   const bulletinFileRef = useRef(null);
   const socketRef = useRef(null);
   const heartbeatRef = useRef(null);
   const previousRoomIdRef = useRef(null);
 
-  const livekitRoomRef = useRef(null);
-  const remoteLiveKitStreamRef = useRef(new MediaStream());
+  const localBroadcastStreamRef = useRef(null);
+  const hostPeerConnectionsRef = useRef({});
+  const viewerPeerConnectionRef = useRef(null);
+  const remoteStageStreamRef = useRef(null);
 
   const selectedRoom = useMemo(() => {
     return rooms.find((room) => room.id === selectedRoomId) || rooms[0];
@@ -160,8 +169,8 @@ function App() {
 
   const liveStatusText = broadcastInfo
     ? `${String(broadcastInfo.mode || "stage").toUpperCase()} LIVE`
-    : livekitConnected
-    ? "LiveKit Ready"
+    : stageContent
+    ? "File on Stage"
     : "Standby";
 
   const filteredRooms = useMemo(() => {
@@ -211,6 +220,12 @@ function App() {
         roomId: selectedRoomId,
         sessionId: clientSessionId,
       });
+
+      if (isViewerOnly) {
+        socketRef.current.emit("viewer:request-stage", {
+          roomId: selectedRoomId,
+        });
+      }
     }
 
     return () => {
@@ -220,122 +235,9 @@ function App() {
         });
       }
 
-      clearRemoteStageStream();
+      closeViewerPeer();
     };
-  }, [authUser, selectedRoomId]);
-
-  useEffect(() => {
-    if (!authUser || !selectedRoomId || !userRole) return;
-
-    let cancelled = false;
-
-    async function connectRoom() {
-      if (livekitRoomRef.current) {
-        disconnectAgvLiveKitRoom(livekitRoomRef.current);
-        livekitRoomRef.current = null;
-        setLivekitRoom(null);
-        setLivekitConnected(false);
-      }
-
-      clearRemoteStageStream();
-
-      const result = await createAgvLiveKitRoom({
-        roomName: selectedRoomId,
-        identity: `${authUser.username || authUser.displayName}-${clientSessionId}`,
-        name: authUser.displayName || authUser.username || "Guest",
-        role: userRole,
-        onConnected: (room) => {
-          if (cancelled) return;
-          livekitRoomRef.current = room;
-          setLivekitRoom(room);
-          setLivekitConnected(true);
-          setStatusText("LiveKit connected");
-        },
-        onDisconnected: () => {
-          if (cancelled) return;
-          setLivekitConnected(false);
-          setStatusText("LiveKit disconnected");
-        },
-        onTrackSubscribed: (track, publication, participant) => {
-  if (cancelled || canControlStage) return;
-
-  const mediaTrack = track?.mediaStreamTrack;
-  if (!mediaTrack) return;
-
-  // Clear old tracks (IMPORTANT)
-  remoteLiveKitStreamRef.current.getTracks().forEach((t) => {
-    remoteLiveKitStreamRef.current.removeTrack(t);
-  });
-
-  // Add new track
-  remoteLiveKitStreamRef.current.addTrack(mediaTrack);
-
-  // SET SAME STREAM (no new object creation)
-  setRemoteStageStream(remoteLiveKitStreamRef.current);
-
-  setStatusText(`Receiving LiveKit stage from ${participant?.name || "host"}`);
-}
-          if (cancelled || canControlStage) return;
-
-          const mediaTrack = track?.mediaStreamTrack;
-          if (!mediaTrack) return;
-
-          const existingTracks = remoteLiveKitStreamRef.current.getTracks();
-          const alreadyAdded = existingTracks.some((item) => item.id === mediaTrack.id);
-
-          if (!alreadyAdded) {
-            remoteLiveKitStreamRef.current.addTrack(mediaTrack);
-          }
-
-          setRemoteStageStream(new MediaStream(remoteLiveKitStreamRef.current.getTracks()));
-          setStatusText(`Receiving LiveKit stage from ${participant?.name || "host"}`);
-        },
-        onTrackUnsubscribed: (track) => {
-  const mediaTrack = track?.mediaStreamTrack;
-  if (!mediaTrack) return;
-
-  remoteLiveKitStreamRef.current.removeTrack(mediaTrack);
-
-  const remaining = remoteLiveKitStreamRef.current.getTracks();
-
-  if (remaining.length === 0) {
-    setRemoteStageStream(null);
-  } else {
-    setRemoteStageStream(remoteLiveKitStreamRef.current);
-  }
-} (track) => {
-          const mediaTrack = track?.mediaStreamTrack;
-          if (!mediaTrack) return;
-
-          remoteLiveKitStreamRef.current.removeTrack(mediaTrack);
-          const remainingTracks = remoteLiveKitStreamRef.current.getTracks();
-          setRemoteStageStream(remainingTracks.length ? new MediaStream(remainingTracks) : null);
-        },
-        onError: (error) => {
-          if (cancelled) return;
-          setStatusText(error?.message || "LiveKit connection failed");
-        },
-      });
-
-      if (!cancelled && !result.ok) {
-        setLivekitConnected(false);
-        setStatusText(result.error || "LiveKit connection failed");
-      }
-    }
-
-    connectRoom();
-
-    return () => {
-      cancelled = true;
-      if (livekitRoomRef.current) {
-        disconnectAgvLiveKitRoom(livekitRoomRef.current);
-        livekitRoomRef.current = null;
-        setLivekitRoom(null);
-        setLivekitConnected(false);
-      }
-      clearRemoteStageStream();
-    };
-  }, [authUser, selectedRoomId, userRole, clientSessionId, canControlStage]);
+  }, [authUser, selectedRoomId, isViewerOnly]);
 
   useEffect(() => {
     if (heartbeatRef.current) {
@@ -394,9 +296,9 @@ function App() {
       stopScreenTracks();
       closeAllPeerConnections();
       disconnectSocket();
-      if (livekitRoomRef.current) {
-        disconnectAgvLiveKitRoom(livekitRoomRef.current);
-        livekitRoomRef.current = null;
+
+      if (stageContent?.localObjectUrl) {
+        URL.revokeObjectURL(stageContent.localObjectUrl);
       }
     };
   }, []);
@@ -548,18 +450,33 @@ function App() {
   }
 
   function applyRoomFromUrl(roomList) {
-    const params = new URLSearchParams(window.location.search);
-    const roomFromUrl = params.get("room");
+  const params = new URLSearchParams(window.location.search);
+  const roomFromUrl = params.get("room");
+  const ticketRoom = window.localStorage.getItem("agv_ticket_room");
 
-    if (roomFromUrl && roomList.some((room) => room.id === roomFromUrl)) {
-      setSelectedRoomId(roomFromUrl);
-      return;
-    }
+  // 🟢 PRIORITY 1: Ticket room
+  if (ticketRoom && roomList.some((room) => room.id === ticketRoom)) {
+    setSelectedRoomId(ticketRoom);
 
-    if (!roomList.some((room) => room.id === selectedRoomId) && roomList[0]) {
-      setSelectedRoomId(roomList[0].id);
-    }
+    const url = new URL(window.location.href);
+    url.searchParams.set("room", ticketRoom);
+    window.history.replaceState({}, "", url.toString());
+
+    setStatusText(`Ticket room loaded: ${ticketRoom}`);
+    return;
   }
+
+  // 🟢 PRIORITY 2: URL room
+  if (roomFromUrl && roomList.some((room) => room.id === roomFromUrl)) {
+    setSelectedRoomId(roomFromUrl);
+    return;
+  }
+
+  // 🟢 FALLBACK
+  if (!roomList.some((room) => room.id === selectedRoomId) && roomList[0]) {
+    setSelectedRoomId(roomList[0].id);
+  }
+}
 
   async function loadRoomState(roomId) {
     try {
@@ -574,6 +491,11 @@ function App() {
       applyRoomState(roomId, data.state);
       setBroadcastInfo(data.broadcast || null);
 
+      if (data.broadcast && isViewerOnly && socketRef.current) {
+        socketRef.current.emit("viewer:request-stage", {
+          roomId,
+        });
+      }
     } catch (error) {
       // Safe no-op.
     }
@@ -692,6 +614,12 @@ function App() {
         roomId: selectedRoomId,
         sessionId: clientSessionId,
       });
+
+      if (isViewerOnly) {
+        socket.emit("viewer:request-stage", {
+          roomId: selectedRoomId,
+        });
+      }
     });
 
     socket.on("disconnect", () => {
@@ -700,6 +628,7 @@ function App() {
 
     socket.on("rooms:update", (payload) => {
       if (!Array.isArray(payload?.rooms)) return;
+
       setRooms(payload.rooms.map(normalizeRoom));
     });
 
@@ -714,6 +643,7 @@ function App() {
 
     socket.on("roomstate:update", (payload) => {
       if (!payload?.roomId || !payload?.state) return;
+
       applyRoomState(payload.roomId, payload.state);
     });
 
@@ -723,7 +653,11 @@ function App() {
 
         setRooms((prev) => {
           const exists = prev.some((room) => room.id === normalized.id);
-          if (!exists) return [...prev, normalized];
+
+          if (!exists) {
+            return [...prev, normalized];
+          }
+
           return prev.map((room) => (room.id === normalized.id ? normalized : room));
         });
       }
@@ -741,6 +675,12 @@ function App() {
 
       if (payload?.broadcast !== undefined) {
         setBroadcastInfo(payload.broadcast || null);
+
+        if (payload.broadcast && isViewerOnly && socketRef.current) {
+          socketRef.current.emit("viewer:request-stage", {
+            roomId: payload.room?.id || selectedRoomId,
+          });
+        }
       }
     });
 
@@ -749,8 +689,14 @@ function App() {
 
       setBroadcastInfo(payload.broadcast || null);
 
+      if (payload.broadcast && isViewerOnly) {
+        socket.emit("viewer:request-stage", {
+          roomId: selectedRoomId,
+        });
+      }
+
       if (!payload.broadcast) {
-        clearRemoteStageStream();
+        closeViewerPeer();
       }
     });
 
@@ -758,6 +704,43 @@ function App() {
       if (payload?.error) {
         setStatusText(payload.error);
       }
+    });
+
+    socket.on("viewer:request-stage", async (payload) => {
+      if (!canControlStage) return;
+      if (payload?.roomId !== selectedRoomId) return;
+      if (!payload?.viewerSocketId) return;
+
+      await createOfferForViewer(payload.viewerSocketId);
+    });
+
+    socket.on("webrtc:offer", async (payload) => {
+      if (!isViewerOnly) return;
+      if (payload?.roomId !== selectedRoomId) return;
+
+      await handleViewerOffer(payload);
+    });
+
+    socket.on("webrtc:answer", async (payload) => {
+      if (!canControlStage) return;
+      if (payload?.roomId !== selectedRoomId) return;
+
+      await handleHostAnswer(payload);
+    });
+
+    socket.on("webrtc:ice-candidate", async (payload) => {
+      if (payload?.roomId !== selectedRoomId) return;
+
+      await handleIceCandidate(payload);
+    });
+
+    socket.on("webrtc:stage-ended", (payload) => {
+      if (payload?.roomId !== selectedRoomId) return;
+
+      closeViewerPeer();
+      setRemoteStageStream(null);
+      setBroadcastInfo(null);
+      setStatusText("Stage broadcast ended");
     });
   }
 
@@ -1267,16 +1250,10 @@ function App() {
 
       setLocalCameraStream(stream);
       setCameraOn(true);
-
-      if (livekitRoomRef.current) {
-        await publishAgvHostCamera(livekitRoomRef.current);
-        setStatusText("Camera live through LiveKit");
-      } else {
-        setStatusText("Camera is on. LiveKit is still connecting.");
-      }
+      setStatusText("Camera live for room viewers");
 
       if (!screenShareOn) {
-        startBroadcast(null, "camera");
+        startBroadcast(stream, "camera");
       }
 
       await loadMediaDevices();
@@ -1347,31 +1324,21 @@ function App() {
 
       setScreenStream(stream);
       setScreenShareOn(true);
+      setStatusText("Screen sharing live for room viewers");
 
-      if (livekitRoomRef.current) {
-        await publishAgvScreenShare(livekitRoomRef.current);
-        setStatusText("Screen sharing live through LiveKit");
-      } else {
-        setStatusText("Screen share is on. LiveKit is still connecting.");
-      }
-
-      startBroadcast(null, "screen");
+      startBroadcast(stream, "screen");
     } catch (error) {
       setStatusText("Screen share canceled");
     }
   }
 
-  async function returnToCameraAfterScreenShare() {
-    if (livekitRoomRef.current) {
-      await stopAgvScreenShare(livekitRoomRef.current);
-    }
-
+  function returnToCameraAfterScreenShare() {
     stopScreenTracks();
     setScreenShareOn(false);
 
     if (cameraOn && localCameraStream) {
-      setStatusText("Screen share ended. Camera remains live through LiveKit.");
-      startBroadcast(null, "camera");
+      setStatusText("Screen share ended. Returning viewers to host camera.");
+      startBroadcast(localCameraStream, "camera");
       return;
     }
 
@@ -1380,8 +1347,11 @@ function App() {
   }
 
   function startBroadcast(stream, mode) {
-    if (!socketRef.current || !selectedRoomId) return;
+    if (!socketRef.current || !selectedRoomId || !stream) return;
 
+    closeHostPeerConnections();
+
+    localBroadcastStreamRef.current = stream;
     setBroadcastMode(mode);
 
     socketRef.current.emit("broadcast:start", {
@@ -1403,26 +1373,170 @@ function App() {
       });
     }
 
+    closeHostPeerConnections();
+    localBroadcastStreamRef.current = null;
     setBroadcastMode("");
     setBroadcastInfo(null);
-    clearRemoteStageStream();
   }
 
-  function clearRemoteStageStream() {
-    remoteLiveKitStreamRef.current = new MediaStream();
-    setRemoteStageStream(null);
+  async function createOfferForViewer(viewerSocketId) {
+    const stream = localBroadcastStreamRef.current || activeStageStream;
+    const socket = socketRef.current;
+
+    if (!socket || !stream || !viewerSocketId) return;
+
+    const existing = hostPeerConnectionsRef.current[viewerSocketId];
+
+    if (existing) {
+      existing.close();
+      delete hostPeerConnectionsRef.current[viewerSocketId];
+    }
+
+    const pc = new RTCPeerConnection(RTC_CONFIG);
+    hostPeerConnectionsRef.current[viewerSocketId] = pc;
+
+    stream.getTracks().forEach((track) => {
+      pc.addTrack(track, stream);
+    });
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("webrtc:ice-candidate", {
+          roomId: selectedRoomId,
+          targetSocketId: viewerSocketId,
+          candidate: event.candidate,
+        });
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (["failed", "disconnected", "closed"].includes(pc.connectionState)) {
+        pc.close();
+        delete hostPeerConnectionsRef.current[viewerSocketId];
+      }
+    };
+
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+
+    socket.emit("webrtc:offer", {
+      roomId: selectedRoomId,
+      viewerSocketId,
+      description: pc.localDescription,
+    });
+  }
+
+  async function handleViewerOffer(payload) {
+    const socket = socketRef.current;
+
+    if (!socket || !payload?.description || !payload?.hostSocketId) return;
+
+    closeViewerPeer();
+
+    const pc = new RTCPeerConnection(RTC_CONFIG);
+    viewerPeerConnectionRef.current = pc;
+
+    const inboundStream = new MediaStream();
+    remoteStageStreamRef.current = inboundStream;
+    setRemoteStageStream(inboundStream);
+
+    pc.ontrack = (event) => {
+      const sourceStream = event.streams?.[0];
+
+      if (sourceStream) {
+        sourceStream.getTracks().forEach((track) => {
+          inboundStream.addTrack(track);
+        });
+      } else if (event.track) {
+        inboundStream.addTrack(event.track);
+      }
+
+      const nextStream = new MediaStream(inboundStream.getTracks());
+      remoteStageStreamRef.current = nextStream;
+      setRemoteStageStream(nextStream);
+      setStatusText(`Receiving live stage from ${payload.hostName || "host"}`);
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        socket.emit("webrtc:ice-candidate", {
+          roomId: selectedRoomId,
+          targetSocketId: payload.hostSocketId,
+          candidate: event.candidate,
+        });
+      }
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (["failed", "disconnected", "closed"].includes(pc.connectionState)) {
+        setStatusText("Viewer stage connection ended");
+      }
+    };
+
+    await pc.setRemoteDescription(payload.description);
+
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+
+    socket.emit("webrtc:answer", {
+      roomId: selectedRoomId,
+      hostSocketId: payload.hostSocketId,
+      description: pc.localDescription,
+    });
+  }
+
+  async function handleHostAnswer(payload) {
+    const pc = hostPeerConnectionsRef.current[payload?.viewerSocketId];
+
+    if (!pc || !payload?.description) return;
+
+    try {
+      await pc.setRemoteDescription(payload.description);
+      setStatusText(`Viewer connected: ${payload.viewerName || "viewer"}`);
+    } catch (error) {
+      setStatusText("Could not finish viewer connection");
+    }
+  }
+
+  async function handleIceCandidate(payload) {
+    if (!payload?.candidate) return;
+
+    const fromSocketId = payload.fromSocketId;
+    const hostPc = hostPeerConnectionsRef.current[fromSocketId];
+    const viewerPc = viewerPeerConnectionRef.current;
+
+    try {
+      if (hostPc) {
+        await hostPc.addIceCandidate(payload.candidate);
+      } else if (viewerPc) {
+        await viewerPc.addIceCandidate(payload.candidate);
+      }
+    } catch (error) {
+      // ICE candidates can arrive during close/reconnect. Safe no-op.
+    }
   }
 
   function closeViewerPeer() {
-    clearRemoteStageStream();
+    if (viewerPeerConnectionRef.current) {
+      viewerPeerConnectionRef.current.close();
+      viewerPeerConnectionRef.current = null;
+    }
+
+    remoteStageStreamRef.current = null;
+    setRemoteStageStream(null);
   }
 
   function closeHostPeerConnections() {
-    // LiveKit-only build: no browser-to-browser host peer connections.
+    Object.values(hostPeerConnectionsRef.current).forEach((pc) => {
+      pc.close();
+    });
+
+    hostPeerConnectionsRef.current = {};
   }
 
   function closeAllPeerConnections() {
-    clearRemoteStageStream();
+    closeViewerPeer();
+    closeHostPeerConnections();
   }
 
   function stopCameraTracks() {
@@ -1447,6 +1561,96 @@ function App() {
 
     setStatusText("Google Drive opened");
     window.open("https://drive.google.com", "_blank", "noopener,noreferrer");
+  }
+
+  function handleChooseStageContent(event) {
+    if (!canControlStage) {
+      setStatusText("Viewer mode: stage file upload is locked.");
+      event.target.value = "";
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const kind = normalizeStageKind(file);
+
+    if (kind === "unsupported") {
+      setStatusText("Choose a JPG, PNG, MP4, WEBP, or PDF stage file.");
+      event.target.value = "";
+      return;
+    }
+
+    if (stageContent?.localObjectUrl) {
+      URL.revokeObjectURL(stageContent.localObjectUrl);
+    }
+
+    const url = URL.createObjectURL(file);
+
+    setStageContent({
+      kind,
+      name: file.name,
+      type: file.type || kind,
+      url,
+      localObjectUrl: url,
+      updatedBy: authUser?.displayName || "Host",
+      updatedAt: new Date().toISOString(),
+    });
+
+    setStatusText(`Stage content loaded: ${file.name}`);
+    event.target.value = "";
+  }
+
+  function handleClearStageContent() {
+    if (!canControlStage) {
+      setStatusText("Viewer mode: stage content control is locked.");
+      return;
+    }
+
+    if (stageContent?.localObjectUrl) {
+      URL.revokeObjectURL(stageContent.localObjectUrl);
+    }
+
+    setStageContent(null);
+    setStatusText("Stage content cleared");
+  }
+
+  function renderStageContent() {
+    if (!stageContent?.url) return null;
+
+    if (stageContent.kind === "image") {
+      return (
+        <img
+          src={stageContent.url}
+          alt={stageContent.name || "Stage content"}
+          style={styles.stageImage}
+        />
+      );
+    }
+
+    if (stageContent.kind === "video") {
+      return (
+        <video
+          src={stageContent.url}
+          controls
+          autoPlay
+          playsInline
+          style={styles.stageVideo}
+        />
+      );
+    }
+
+    if (stageContent.kind === "pdf") {
+      return (
+        <iframe
+          title={stageContent.name || "Stage PDF"}
+          src={stageContent.url}
+          style={styles.stageFrame}
+        />
+      );
+    }
+
+    return null;
   }
 
   if (authLoading) {
@@ -1505,6 +1709,56 @@ function App() {
 
   return (
     <div style={styles.appShell}>
+      <style>{`
+        /* AGV_MOBILE_RESPONSIVE_SAFE_PASS */
+        @media (max-width: 980px) {
+          header {
+            position: relative !important;
+          }
+
+          main {
+            display: flex !important;
+            flex-direction: column !important;
+            padding: 10px !important;
+            gap: 12px !important;
+          }
+
+          aside,
+          section {
+            width: 100% !important;
+            max-width: 100% !important;
+            position: relative !important;
+            top: auto !important;
+          }
+
+          button,
+          select,
+          input,
+          textarea {
+            min-height: 44px !important;
+            font-size: 15px !important;
+          }
+
+          video,
+          iframe,
+          img {
+            max-width: 100% !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          main {
+            padding: 8px !important;
+          }
+
+          button,
+          select,
+          input,
+          textarea {
+            width: 100% !important;
+          }
+        }
+      `}</style>
       <header style={styles.header}>
         <div style={styles.brandRow}>
           <div style={styles.logoSmall}>AGV</div>
@@ -1525,8 +1779,9 @@ function App() {
         </div>
       </header>
 
-      <main style={styles.mainGrid}>
-        <aside style={styles.leftPanel}>
+      <main style={styles.mainGrid(isViewerOnly)}>
+        {!isViewerOnly ? (
+          <aside style={styles.leftPanel}>
           <div style={styles.panelTitle}>Rooms</div>
 
           <input
@@ -1572,7 +1827,8 @@ function App() {
               Viewer mode: room creation and control tools are locked.
             </div>
           )}
-        </aside>
+          </aside>
+        ) : null}
 
         <section style={styles.centerPanel}>
           <div style={styles.identityCard}>
@@ -1606,6 +1862,8 @@ function App() {
                   controls={!canControlStage}
                   style={styles.stageVideo}
                 />
+              ) : stageContent?.url ? (
+                renderStageContent()
               ) : (
                 <div style={styles.stagePlaceholder}>
                   <div style={styles.stageBadge}>AGV</div>
@@ -1615,7 +1873,7 @@ function App() {
                   <div style={styles.stagePlaceholderText}>
                     {isViewerOnly
                       ? "You are in viewer mode. When the host starts camera or screen share, the stage will receive it here."
-                      : "Start camera or screen share for viewers. The live stage is delivered through LiveKit."}
+                      : "Start camera/screen share for viewers, or bring a  onto the stage."}
                   </div>
                 </div>
               )}
@@ -1628,7 +1886,7 @@ function App() {
                     style={cameraOn ? styles.activeButton : styles.primaryButton}
                     onClick={handleToggleCamera}
                   >
-                    {cameraOn ? "Stop Camera" : "Start Camera"}
+                    {cameraOn ? "Stop Camera" : "START BROADCAST"}
                   </button>
 
                   <button
@@ -1643,6 +1901,13 @@ function App() {
                     onClick={handleToggleScreenShare}
                   >
                     {screenShareOn ? "Stop Share" : "Share Screen"}
+                  </button>
+
+                  <button
+                    style={styles.secondaryButton}
+                    onClick={handleClearStageContent}
+                  >
+                    Clear Stage File
                   </button>
 
                   <select
@@ -1671,7 +1936,15 @@ function App() {
                     ))}
                   </select>
                 </div>
-</>
+
+                <input
+                  ref={stageContentFileRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,.mp4,.pdf,image/*,video/mp4,application/pdf"
+                  style={{ display: "none" }}
+                  onChange={handleChooseStageContent}
+                />
+              </>
             ) : (
               <div style={styles.viewerStageNotice}>
                 Viewer access confirmed: stage controls are hidden and locked.
@@ -2063,13 +2336,15 @@ const styles = {
     border: "1px solid rgba(255,255,255,0.09)",
     fontSize: 12,
   },
-  mainGrid: {
+  mainGrid: (isViewerOnly) => ({
     display: "grid",
-    gridTemplateColumns: "280px minmax(520px, 1fr) 360px",
+    gridTemplateColumns: isViewerOnly
+      ? "minmax(520px, 1fr) 360px"
+      : "280px minmax(520px, 1fr) 360px",
     gap: 18,
     padding: 18,
     alignItems: "start",
-  },
+  }),
   leftPanel: {
     background: "rgba(15,23,42,0.72)",
     border: "1px solid rgba(255,255,255,0.08)",
@@ -2549,3 +2824,4 @@ const styles = {
 };
 
 export default App;
+    

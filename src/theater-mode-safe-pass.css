@@ -1,0 +1,89 @@
+/* AGV THEATER MODE SAFE PASS */
+/* CLIENT ONLY — visual polish, no media logic touched */
+
+body {
+  background:
+    radial-gradient(circle at top center, rgba(255, 210, 120, 0.08), transparent 35%),
+    linear-gradient(180deg, #07070b 0%, #111018 45%, #07070b 100%);
+}
+
+.stage,
+.stage-shell,
+.main-stage,
+.broadcast-stage,
+.video-stage,
+.stage-area {
+  background:
+    radial-gradient(circle at center, rgba(255,255,255,0.06), transparent 45%),
+    linear-gradient(180deg, #15151d 0%, #050507 100%) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.65),
+    inset 0 0 0 1px rgba(255,255,255,0.08),
+    inset 0 0 70px rgba(255,215,130,0.04) !important;
+}
+
+video {
+  border-radius: 18px !important;
+  background: #000 !important;
+}
+
+.viewer-layout,
+.user-layout,
+.audience-layout {
+  background:
+    radial-gradient(circle at center top, rgba(255, 214, 140, 0.09), transparent 32%),
+    #07070b !important;
+}
+
+.viewer-layout .stage,
+.user-layout .stage,
+.audience-layout .stage,
+.viewer-layout .stage-shell,
+.user-layout .stage-shell,
+.audience-layout .stage-shell {
+  transform: translateZ(0);
+}
+
+button {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.viewer-layout button,
+.user-layout button,
+.audience-layout button {
+  opacity: 0.92;
+}
+
+.viewer-layout button:hover,
+.user-layout button:hover,
+.audience-layout button:hover {
+  opacity: 1;
+}
+
+.viewer-layout .panel,
+.user-layout .panel,
+.audience-layout .panel,
+.viewer-layout aside,
+.user-layout aside,
+.audience-layout aside {
+  background: rgba(14, 14, 22, 0.88) !important;
+  backdrop-filter: blur(10px);
+  border-color: rgba(255,255,255,0.08) !important;
+}
+
+.viewer-layout .stage::after,
+.user-layout .stage::after,
+.audience-layout .stage::after,
+.stage-shell::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 90px rgba(0,0,0,0.38);
+}
