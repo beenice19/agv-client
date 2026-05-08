@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import AppCore from "./AppCore.jsx";
 
 const TICKET_API_BASE = "https://agv-ticket-server-clean.onrender.com";
-
+const TEMP_LOCAL_HOST_PIN = "AGV-HOST-2026";
 export default function App() {
-  const [entered, setEntered] = useState(false);
+  const [entryMode, setEntryMode] = useState("");
   const [ticketApproved, setTicketApproved] = useState(false);
   const [showTicketAdmin, setShowTicketAdmin] = useState(false);
 
@@ -12,28 +12,156 @@ export default function App() {
     return <TicketAdminPanel onBack={() => setShowTicketAdmin(false)} />;
   }
 
-  if (entered && !ticketApproved) {
-    return <TicketGate onApproved={() => setTicketApproved(true)} />;
-  }
-
-  if (entered && ticketApproved) {
-    return <AppCore />;
-  }
-
+  if (entryMode === "host") {
   return (
-    <AgvLandingPage
-      onEnter={() => setEntered(true)}
-      onAdmin={() => setShowTicketAdmin(true)}
+    <HostPinGate
+      onApproved={() => setEntryMode("host-approved")}
+      onBack={() => setEntryMode("")}
     />
   );
 }
 
-function TicketGate({ onApproved }) {
+if (entryMode === "host-approved") {
+  return <AppCore entryRole="host" />;
+}
+
+  if (entryMode === "viewer" && !ticketApproved) {
+    return (
+      <TicketGate
+        onBack={() => setEntryMode("")}
+        onApproved={() => setTicketApproved(true)}
+      />
+    );
+  }
+
+  if (entryMode === "viewer" && ticketApproved) {
+  return <AppCore entryRole="viewer" />;
+}
+
+  return (
+    <AgvLandingPage
+      onHostEnter={() => setEntryMode("host")}
+      onViewerEnter={() => setEntryMode("viewer")}
+      onAdmin={() => setShowTicketAdmin(true)}
+    />
+  );
+}
+function HostPinGate({ onApproved, onBack }) {
+  const [pin, setPin] = useState("");
+  const [message, setMessage] = useState("");
+  const [working, setWorking] = useState(false);
+
+  async function verifyHostPin() {
+    const cleanPin = pin.trim();
+
+    if (!cleanPin) {
+      setMessage("Enter host PIN.");
+      return;
+    }
+if (cleanPin === TEMP_LOCAL_HOST_PIN) {
+  localStorage.setItem("agv_host_pin_verified", "true");
+  onApproved();
+  return;
+}
+    setWorking(true);
+    setMessage("");
+
+    try {
+  const response = await fetch(
+    `${TICKET_API_BASE}/api/tickets/list`,
+    {
+      method: "GET",
+      headers: {
+        "x-agv-admin-pin": cleanPin,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok || !data.ok) {
+    setMessage(data.message || "Invalid host PIN.");
+    setWorking(false);
+    return;
+  }
+
+  localStorage.setItem("agv_host_pin_verified", "true");
+
+  onApproved();
+} catch (error) {
+  setMessage("Unable to verify host PIN.");
+}
+
+    setWorking(false);
+  }
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.goldGlow}></div>
+      <div style={styles.blueGlow}></div>
+
+      <main style={styles.finalCta}>
+        <div style={styles.badge}>AGV HOST SECURITY</div>
+
+        <h1 style={styles.ctaTitle}>
+          Host / Admin Access
+        </h1>
+
+        <p style={styles.ctaText}>
+          Enter your AGV host PIN to access the admin broadcast platform.
+        </p>
+
+        <input
+          value={pin}
+          onChange={(e) => setPin(e.target.value)}
+          placeholder="Enter Host PIN"
+          type="password"
+          style={styles.ticketInput}
+        />
+
+        {message ? (
+          <p
+            style={{
+              color: "#fca5a5",
+              fontWeight: 800,
+            }}
+          >
+            {message}
+          </p>
+        ) : null}
+
+        <div style={styles.buttonRow}>
+          <button
+            style={styles.primaryButton}
+            onClick={verifyHostPin}
+          >
+            {working ? "Checking..." : "Enter Host Platform"}
+          </button>
+
+          <button
+            style={styles.secondaryButton}
+            onClick={onBack}
+          >
+            Back
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+}
+function TicketGate({ onApproved, onBack }) {
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [working, setWorking] = useState(false);
 
   async function verifyTicket() {
+    const cleanCode = code.trim().toUpperCase();
+
+    if (!cleanCode) {
+      setMessage("Enter your ticket code.");
+      return;
+    }
+
     setWorking(true);
     setMessage("");
 
@@ -41,7 +169,7 @@ function TicketGate({ onApproved }) {
       const response = await fetch(`${TICKET_API_BASE}/api/tickets/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: cleanCode }),
       });
 
       const data = await response.json();
@@ -52,7 +180,7 @@ function TicketGate({ onApproved }) {
         return;
       }
 
-      localStorage.setItem("agv_ticket_code", code.trim().toUpperCase());
+      localStorage.setItem("agv_ticket_code", cleanCode);
       onApproved();
     } catch (error) {
       setMessage("Unable to verify ticket. Please try again.");
@@ -64,14 +192,15 @@ function TicketGate({ onApproved }) {
   return (
     <div style={styles.page}>
       <div style={styles.goldGlow}></div>
+      <div style={styles.blueGlow}></div>
 
       <main style={styles.finalCta}>
-        <div style={styles.badge}>AGV TICKET ACCESS</div>
+        <div style={styles.badge}>AGV VIEWER TICKET ACCESS</div>
 
         <h1 style={styles.ctaTitle}>Enter your event ticket code</h1>
 
         <p style={styles.ctaText}>
-          Paid guests receive an AGV ticket code before entering the live platform.
+          Viewer access requires a valid AGV ticket code before entering the live platform.
         </p>
 
         <input
@@ -88,6 +217,10 @@ function TicketGate({ onApproved }) {
         <div style={styles.buttonRow}>
           <button style={styles.primaryButton} onClick={verifyTicket}>
             {working ? "Checking..." : "Verify Ticket"}
+          </button>
+
+          <button style={styles.secondaryButton} onClick={onBack}>
+            Back
           </button>
         </div>
       </main>
@@ -304,7 +437,7 @@ function TicketAdminPanel({ onBack }) {
   );
 }
 
-function AgvLandingPage({ onEnter, onAdmin }) {
+function AgvLandingPage({ onHostEnter, onViewerEnter, onAdmin }) {
   return (
     <div style={styles.page}>
       <div style={styles.goldGlow}></div>
@@ -324,8 +457,12 @@ function AgvLandingPage({ onEnter, onAdmin }) {
             Ticket Admin
           </button>
 
-          <button style={styles.navButton} onClick={onEnter}>
-            Client Login
+          <button style={styles.navButton} onClick={onViewerEnter}>
+            Viewer Ticket Entry
+          </button>
+
+          <button style={styles.navButtonGold} onClick={onHostEnter}>
+            Admin / Host Entry
           </button>
         </div>
       </header>
@@ -345,8 +482,12 @@ function AgvLandingPage({ onEnter, onAdmin }) {
           </p>
 
           <div style={styles.buttonRow}>
-            <button style={styles.primaryButton} onClick={onEnter}>
-              Enter Live Platform
+            <button style={styles.primaryButton} onClick={onHostEnter}>
+              Admin / Host Entry
+            </button>
+
+            <button style={styles.secondaryButton} onClick={onViewerEnter}>
+              Viewer Ticket Entry
             </button>
 
             <a style={styles.secondaryButton} href="mailto:info@agvision.show?subject=AGV%20Demo%20Request">
@@ -364,13 +505,13 @@ function AgvLandingPage({ onEnter, onAdmin }) {
         <section style={styles.previewCard}>
           <div style={styles.previewTop}>
             <span style={styles.liveDot}></span>
-            AGV LIVE EVENT STAGE
+            AGV LIVEKIT EVENT STAGE
           </div>
 
           <div style={styles.stageMock}>
             <div style={styles.hostBox}>HOST CAMERA</div>
             <div style={styles.mainScreen}>
-              PRESENTATION / SCREEN SHARE / LIVE TEACHING
+              LIVEKIT BROADCAST / SCREEN SHARE / LIVE TEACHING
             </div>
           </div>
 
@@ -418,13 +559,16 @@ function AgvLandingPage({ onEnter, onAdmin }) {
         <section style={styles.finalCta}>
           <h2 style={styles.ctaTitle}>Ready to host your next digital event?</h2>
           <p style={styles.ctaText}>
-            Enter the live platform or request a demo to see how AGV can support
-            your event, audience, and revenue plan.
+            Admins and hosts can enter directly. Viewers enter through ticket access.
           </p>
 
           <div style={styles.buttonRow}>
-            <button style={styles.primaryButton} onClick={onEnter}>
-              Enter Platform
+            <button style={styles.primaryButton} onClick={onHostEnter}>
+              Admin / Host Entry
+            </button>
+
+            <button style={styles.secondaryButton} onClick={onViewerEnter}>
+              Viewer Ticket Entry
             </button>
 
             <a style={styles.secondaryButton} href="mailto:info@agvision.show?subject=AGV%20Buyer%20Inquiry">
@@ -540,6 +684,16 @@ const styles = {
     background: "rgba(255,255,255,0.07)",
     color: "#f8fafc",
     fontWeight: 850,
+    cursor: "pointer",
+  },
+
+  navButtonGold: {
+    border: "none",
+    borderRadius: 14,
+    padding: "12px 18px",
+    background: "linear-gradient(135deg, #facc15, #c99a3b)",
+    color: "#06111f",
+    fontWeight: 950,
     cursor: "pointer",
   },
 
@@ -802,6 +956,8 @@ const styles = {
     borderRadius: 28,
     padding: "38px 24px",
     marginBottom: 30,
+    position: "relative",
+    zIndex: 2,
   },
 
   ctaTitle: {
