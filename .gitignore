@@ -24,3 +24,11 @@ dist-ssr
 *.sw?
 
 .vercel
+# AGV local client backup files - do not commit
+src/*BEFORE*.jsx
+src/*BACKUP*.jsx
+src/*BROKEN*.jsx
+src/*CORRUPTED*.jsx
+src/*GOLD-STABLE*.jsx
+src/*RESTORE*.jsx
+src/*WORKING*.jsx
