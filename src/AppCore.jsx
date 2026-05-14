@@ -12,11 +12,16 @@ const CHAT_API_BASE =
 
 const BULLETIN_API_BASE =
   import.meta.env.VITE_AGV_BULLETIN_API_URL || "http://127.0.0.1:8785";
+
 const MODERATOR_API_BASE =
   import.meta.env.VITE_AGV_MODERATOR_API_URL || "http://127.0.0.1:8789";
 
 const EVENT_API_BASE =
   import.meta.env.VITE_AGV_EVENT_API_URL || "http://127.0.0.1:8786";
+
+const SUBSCRIPTION_API_BASE =
+  import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
+
 const TICKET_API_BASE =
   import.meta.env.VITE_AGV_TICKET_API_URL ||
   "https://agv-ticket-server-clean.onrender.com";
@@ -32,6 +37,65 @@ const DEFAULT_ROOMS = [
   { id: "green-room", name: "Green Room", category: "Backstage", isPrivate: true, isLocked: true },
 ];
 
+const PLAN_LIMITS = {
+  FREE: {
+    label: "Free",
+    hostLabel: "FREE HOST",
+    maxRooms: 1,
+    maxViewers: 25,
+    allowPrivate: false,
+    allowTicketOnly: false,
+  },
+  CREATOR: {
+    label: "Creator",
+    hostLabel: "CREATOR HOST",
+    maxRooms: 3,
+    maxViewers: 100,
+    allowPrivate: true,
+    allowTicketOnly: true,
+  },
+  MINISTRY: {
+    label: "Ministry / Pro",
+    hostLabel: "MINISTRY HOST",
+    maxRooms: 10,
+    maxViewers: 500,
+    allowPrivate: true,
+    allowTicketOnly: true,
+  },
+  CONVENTION: {
+    label: "Convention",
+    hostLabel: "CONVENTION HOST",
+    maxRooms: 50,
+    maxViewers: 2000,
+    allowPrivate: true,
+    allowTicketOnly: true,
+  },
+  INTERNAL_TEST: {
+    label: "Internal Test",
+    hostLabel: "CREATOR HOST",
+    maxRooms: 3,
+    maxViewers: 100,
+    allowPrivate: true,
+    allowTicketOnly: true,
+  },
+};
+
+function normalizePlan(plan) {
+  const cleanPlan = String(plan || "FREE").trim().toUpperCase();
+
+  if (cleanPlan === "INTERNAL_TEST") return "CREATOR";
+
+  return PLAN_LIMITS[cleanPlan] ? cleanPlan : "FREE";
+}
+
+function getLocalCurrentPlan() {
+  return normalizePlan(
+    localStorage.getItem("agv_current_plan") ||
+      localStorage.getItem("agv_viewer_plan") ||
+      "FREE"
+  );
+}
+
 function getRoomFromUrl() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -41,29 +105,146 @@ function getRoomFromUrl() {
   }
 }
 
+function getFreeAccount() {
+  try {
+    return JSON.parse(localStorage.getItem("agv_free_account") || "null");
+  } catch {
+    return null;
+  }
+}
+
+function getCurrentOwnerId() {
+  const freeAccount = getFreeAccount();
+
+  if (freeAccount?.email) {
+    return freeAccount.email.trim().toLowerCase();
+  }
+
+  if (localStorage.getItem("agv_host_pin_verified") === "true") {
+    return "agv-super-admin";
+  }
+
+  return "unknown-user";
+}
+
+function buildRoomPlanCategory(plan) {
+  const normalized = normalizePlan(plan);
+  const limits = PLAN_LIMITS[normalized] || PLAN_LIMITS.FREE;
+
+  if (normalized === "FREE") return "Free Starter";
+
+  return `${limits.label} Workspace`;
+}
+
+function syncRoomsForCurrentPlan(existingRooms, currentPlan, ownerId, freeAccount) {
+  const normalizedPlan = normalizePlan(currentPlan);
+  const limits = PLAN_LIMITS[normalizedPlan] || PLAN_LIMITS.FREE;
+
+  if (!Array.isArray(existingRooms) || existingRooms.length === 0) {
+    return DEFAULT_ROOMS;
+  }
+
+  if (!freeAccount?.email) {
+    return existingRooms;
+  }
+
+  let changed = false;
+
+  const syncedRooms = existingRooms.map((room) => {
+    const roomOwnerId = String(room.ownerId || room.ownerEmail || "").trim().toLowerCase();
+
+    const isOwnedByCurrentAccount =
+      roomOwnerId === ownerId ||
+      room.host === freeAccount.name ||
+      room.ownerEmail === freeAccount.email;
+
+    if (!isOwnedByCurrentAccount) return room;
+
+    const updatedRoom = {
+      ...room,
+      ownerId,
+      ownerName: room.ownerName || freeAccount.name,
+      ownerEmail: room.ownerEmail || freeAccount.email,
+      createdByPlan: normalizedPlan,
+      planMode: normalizedPlan,
+      planLabel: limits.label,
+      planHostLabel: limits.hostLabel,
+      maxViewers: limits.maxViewers,
+      maxRooms: limits.maxRooms,
+      allowPrivate: limits.allowPrivate,
+      allowTicketOnly: limits.allowTicketOnly,
+      category: buildRoomPlanCategory(normalizedPlan),
+    };
+
+    if (
+      updatedRoom.createdByPlan !== room.createdByPlan ||
+      updatedRoom.planMode !== room.planMode ||
+      updatedRoom.planHostLabel !== room.planHostLabel ||
+      updatedRoom.category !== room.category
+    ) {
+      changed = true;
+    }
+
+    return updatedRoom;
+  });
+
+  if (changed) {
+    try {
+      localStorage.setItem("agv_super_admin_rooms", JSON.stringify(syncedRooms));
+    } catch {}
+  }
+
+  return syncedRooms;
+}
+
 export default function AppCore({ entryRole = "viewer" }) {
-  const [rooms] = useState(DEFAULT_ROOMS);
+  const freeAccount = getFreeAccount();
+  const currentOwnerId = getCurrentOwnerId();
+
+  const [currentPlan, setCurrentPlan] = useState(getLocalCurrentPlan);
+
+  const [rooms, setRooms] = useState(() => {
+    try {
+      const saved = localStorage.getItem("agv_super_admin_rooms");
+
+      if (saved) {
+        const parsedRooms = JSON.parse(saved);
+        return syncRoomsForCurrentPlan(
+          parsedRooms,
+          getLocalCurrentPlan(),
+          getCurrentOwnerId(),
+          getFreeAccount()
+        );
+      }
+    } catch {}
+
+    return DEFAULT_ROOMS;
+  });
+
   const [selectedRoomId, setSelectedRoomId] = useState(getRoomFromUrl);
-  const [roleMode] = useState(
-  entryRole === "host" ? "host" : "viewer"
-);
+  const [roleMode] = useState(entryRole === "host" ? "host" : "viewer");
   const [selectedPanel, setSelectedPanel] = useState("chat");
-const [moderators, setModerators] = useState([]);
-const [moderatorInput, setModeratorInput] = useState("");
-const [events, setEvents] = useState([]);
-const [eventTitle, setEventTitle] = useState("");
-const [eventDescription, setEventDescription] = useState("");
-const [eventDate, setEventDate] = useState("");
-const [eventTime, setEventTime] = useState("");
-const [eventPrice, setEventPrice] = useState("");
+
+  const [moderators, setModerators] = useState([]);
+  const [moderatorInput, setModeratorInput] = useState("");
+
+  const [events, setEvents] = useState([]);
+  const [eventTitle, setEventTitle] = useState("");
+  const [eventDescription, setEventDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [eventTime, setEventTime] = useState("");
+  const [eventPrice, setEventPrice] = useState("");
+
   const [status, setStatus] = useState("AGV LiveKit platform ready");
 
   const [ticketCode, setTicketCode] = useState(
     () => window.localStorage.getItem(TICKET_STORAGE_KEY) || ""
   );
+
   const [ticketApproved, setTicketApproved] = useState(
     () => Boolean(window.localStorage.getItem(TICKET_STORAGE_KEY))
   );
+
   const [ticketMessage, setTicketMessage] = useState("");
   const [ticketWorking, setTicketWorking] = useState(false);
 
@@ -81,6 +262,7 @@ const [eventPrice, setEventPrice] = useState("");
       "Viewer controls are locked for a clean audience experience.",
     ],
   });
+
   const [newBulletin, setNewBulletin] = useState("");
 
   const stageRef = useRef(null);
@@ -92,13 +274,30 @@ const [eventPrice, setEventPrice] = useState("");
     return rooms.find((room) => room.id === selectedRoomId) || rooms[0];
   }, [rooms, selectedRoomId]);
 
+  const currentPlanLimits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.FREE;
+
   const isViewerOnly = roleMode === "viewer";
-const isHost = roleMode === "host";
+  const isHost = roleMode === "host";
+  const isAccountHost = Boolean(freeAccount?.email) && isHost;
+  const isSuperAdmin =
+    isHost &&
+    localStorage.getItem("agv_host_pin_verified") === "true" &&
+    !isAccountHost;
 
-const isModerator = moderators.length > 0;
+  const hostModeLabel = isViewerOnly
+    ? "USER / VIEWER"
+    : isSuperAdmin
+    ? "ADMIN / HOST"
+    : currentPlanLimits.hostLabel;
 
-const canModerate =
-  isHost || isModerator;
+  const participantRoleLabel = isHost
+    ? isSuperAdmin
+      ? "HOST"
+      : currentPlanLimits.hostLabel
+    : "VIEWER";
+
+  const isModerator = moderators.length > 0;
+  const canModerate = isHost || isModerator;
   const canControlStage = isHost;
   const viewerNeedsTicket = isViewerOnly && !ticketApproved;
 
@@ -106,14 +305,30 @@ const canModerate =
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
 
   useEffect(() => {
+    syncPlanFromSubscriptionServer();
+  }, []);
+
+  useEffect(() => {
+    const syncedRooms = syncRoomsForCurrentPlan(
+      rooms,
+      currentPlan,
+      currentOwnerId,
+      freeAccount
+    );
+
+    setRooms(syncedRooms);
+  }, [currentPlan]);
+
+  useEffect(() => {
     loadChat(selectedRoomId);
-loadModerators(selectedRoomId);
-loadEvents();
+    loadModerators(selectedRoomId);
+    loadEvents();
+
     if (chatPollRef.current) window.clearInterval(chatPollRef.current);
 
     chatPollRef.current = window.setInterval(() => {
       loadChat(selectedRoomId, true);
-loadBulletins(selectedRoomId, true);
+      loadBulletins(selectedRoomId, true);
     }, 2000);
 
     return () => {
@@ -126,6 +341,52 @@ loadBulletins(selectedRoomId, true);
       disconnectFromLiveKit();
     };
   }, []);
+
+  async function syncPlanFromSubscriptionServer() {
+    const localPlan = getLocalCurrentPlan();
+
+    setCurrentPlan(localPlan);
+
+    try {
+      const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription`);
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(`Plan sync local fallback: ${PLAN_LIMITS[localPlan]?.label || localPlan}`);
+        return;
+      }
+
+      const serverPlan = normalizePlan(data.plan || localPlan);
+
+      localStorage.setItem("agv_current_plan", serverPlan);
+      setCurrentPlan(serverPlan);
+
+      const syncedRooms = syncRoomsForCurrentPlan(
+        rooms,
+        serverPlan,
+        currentOwnerId,
+        freeAccount
+      );
+
+      setRooms(syncedRooms);
+
+      setStatus(`Plan synced from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}`);
+    } catch {
+      setStatus(`SERVER 8792 offline. Using local plan: ${PLAN_LIMITS[localPlan]?.label || localPlan}`);
+    }
+  }
+
+  function canDeleteEvent(item) {
+    if (isSuperAdmin) return true;
+
+    if (!item) return false;
+
+    const eventOwnerId = String(item.ownerId || item.createdBy || "").trim().toLowerCase();
+
+    if (!eventOwnerId) return false;
+
+    return eventOwnerId === currentOwnerId;
+  }
 
   async function verifyTicket() {
     const code = ticketCode.trim().toUpperCase();
@@ -173,211 +434,253 @@ loadBulletins(selectedRoomId, true);
     setTicketMessage("Ticket cleared.");
     disconnectFromLiveKit();
   }
-async function loadEvents(quiet = false) {
-  try {
-    const response = await fetch(`${EVENT_API_BASE}/api/events`);
-    const data = await response.json();
 
-    if (!response.ok || !data?.ok) {
-      if (!quiet) setStatus("Event server not connected.");
+  async function loadEvents(quiet = false) {
+    try {
+      const response = await fetch(`${EVENT_API_BASE}/api/events`);
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        if (!quiet) setStatus("Event server not connected.");
+        return;
+      }
+
+      setEvents(Array.isArray(data.events) ? data.events : []);
+
+      if (!quiet) setStatus("Event system loaded.");
+    } catch {
+      if (!quiet) setStatus("Event server offline. Start SERVER 8786.");
+    }
+  }
+
+  async function createEvent() {
+    if (!isHost) {
+      setStatus("Host access required to create events.");
       return;
     }
 
-    setEvents(Array.isArray(data.events) ? data.events : []);
+    const title = eventTitle.trim();
 
-    if (!quiet) setStatus("Event system loaded.");
-  } catch {
-    if (!quiet) setStatus("Event server offline. Start SERVER 8786.");
-  }
-}
-
-async function createEvent() {
-  if (!isHost) {
-    setStatus("Host access required to create events.");
-    return;
-  }
-
-  const title = eventTitle.trim();
-
-  if (!title) {
-    setStatus("Enter an event title.");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${EVENT_API_BASE}/api/events/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        description: eventDescription.trim(),
-        roomId: selectedRoomId,
-        eventDate: eventDate.trim(),
-        startTime: eventTime.trim(),
-        ticketPrice: eventPrice.trim(),
-        status: "draft",
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok) {
-      setStatus(data?.error || "Could not create event.");
+    if (!title) {
+      setStatus("Enter an event title.");
       return;
     }
 
-    setEvents(Array.isArray(data.events) ? data.events : []);
-    setEventTitle("");
-    setEventDescription("");
-    setEventDate("");
-    setEventTime("");
-    setEventPrice("");
-    setStatus("Event created.");
-  } catch {
-    setStatus("Could not reach event server on 8786.");
-  }
-}
+    const ownerName = freeAccount?.name || "AGV Super Admin";
+    const ownerEmail = freeAccount?.email || "admin@agv.local";
 
-async function deleteEvent(eventId) {
-  if (!isHost) {
-    setStatus("Host access required to delete events.");
-    return;
-  }
-
-  try {
-    const response = await fetch(`${EVENT_API_BASE}/api/events/${encodeURIComponent(eventId)}/delete`, {
-      method: "POST",
-    });
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok) {
-      setStatus(data?.error || "Could not delete event.");
-      return;
-    }
-
-    setEvents(Array.isArray(data.events) ? data.events : []);
-    setStatus("Event deleted.");
-  } catch {
-    setStatus("Could not reach event server on 8786.");
-  }
-}
-async function loadModerators(roomId, quiet = false) {
-  try {
-    const response = await fetch(
-      `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(roomId)}`
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok) {
-      if (!quiet) setStatus("Moderator server not connected.");
-      return;
-    }
-
-    setModerators(Array.isArray(data.moderators) ? data.moderators : []);
-
-    if (!quiet) setStatus("Moderator authority loaded.");
-  } catch {
-    if (!quiet) setStatus("Moderator server offline. Start SERVER 8789.");
-  }
-}
-
-async function addModerator() {
-  if (!isHost) {
-    setStatus("Host access required to add moderators.");
-    return;
-  }
-
-  const value = moderatorInput.trim();
-
-  if (!value) {
-    setStatus("Enter moderator name or email.");
-    return;
-  }
-
-  try {
-    const response = await fetch(
-      `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(selectedRoomId)}/add`,
-      {
+    try {
+      const response = await fetch(`${EVENT_API_BASE}/api/events/create`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
-          name: value,
-          email: value.includes("@") ? value : "",
+          title,
+          description: eventDescription.trim(),
+          roomId: selectedRoomId,
+          eventDate: eventDate.trim(),
+          startTime: eventTime.trim(),
+          ticketPrice: eventPrice.trim(),
+          status: "draft",
+          ownerId: currentOwnerId,
+          ownerName,
+          ownerEmail,
+          createdByPlan: currentPlan,
+          planLabel: currentPlanLimits.label,
+          maxViewers: currentPlanLimits.maxViewers,
+          allowPrivate: currentPlanLimits.allowPrivate,
+          allowTicketOnly: currentPlanLimits.allowTicketOnly,
         }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(data?.error || "Could not create event.");
+        return;
       }
-    );
 
-    const data = await response.json();
+      const returnedEvents = Array.isArray(data.events) ? data.events : [];
 
-    if (!response.ok || !data?.ok) {
-      setStatus(data?.error || "Could not add moderator.");
+      const normalizedEvents = returnedEvents.map((item) => {
+        if (item.id === data.event?.id || item.title === title) {
+          return {
+            ...item,
+            ownerId: item.ownerId || currentOwnerId,
+            ownerName: item.ownerName || ownerName,
+            ownerEmail: item.ownerEmail || ownerEmail,
+            createdByPlan: item.createdByPlan || currentPlan,
+            planLabel: item.planLabel || currentPlanLimits.label,
+          };
+        }
+
+        return item;
+      });
+
+      setEvents(normalizedEvents);
+      setEventTitle("");
+      setEventDescription("");
+      setEventDate("");
+      setEventTime("");
+      setEventPrice("");
+      setStatus(`Event created under ${currentPlanLimits.label} plan with owner protection.`);
+    } catch {
+      setStatus("Could not reach event server on 8786.");
+    }
+  }
+
+  async function deleteEvent(eventId) {
+    const targetEvent = events.find((item) => item.id === eventId);
+
+    if (!targetEvent) {
+      setStatus("Event not found.");
       return;
     }
 
-    setModerators(Array.isArray(data.moderators) ? data.moderators : []);
-    setModeratorInput("");
-    setStatus("Moderator added to room.");
-  } catch {
-    setStatus("Could not reach moderator server on 8789.");
-  }
-}
+    if (!canDeleteEvent(targetEvent)) {
+      setStatus("Only the event owner or Super Admin can delete this show.");
+      return;
+    }
 
-async function removeModerator(moderatorId) {
-  if (!isHost) {
-    setStatus("Host access required to remove moderators.");
-    return;
-  }
+    try {
+      const response = await fetch(
+        `${EVENT_API_BASE}/api/events/${encodeURIComponent(eventId)}/delete`,
+        {
+          method: "POST",
+        }
+      );
 
-  try {
-    const response = await fetch(
-      `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(selectedRoomId)}/remove`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ moderatorId }),
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(data?.error || "Could not delete event.");
+        return;
       }
-    );
 
-    const data = await response.json();
+      setEvents(Array.isArray(data.events) ? data.events : []);
+      setStatus("Event deleted.");
+    } catch {
+      setStatus("Could not reach event server on 8786.");
+    }
+  }
 
-    if (!response.ok || !data?.ok) {
-      setStatus(data?.error || "Could not remove moderator.");
+  async function loadModerators(roomId, quiet = false) {
+    try {
+      const response = await fetch(
+        `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(roomId)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        if (!quiet) setStatus("Moderator server not connected.");
+        return;
+      }
+
+      setModerators(Array.isArray(data.moderators) ? data.moderators : []);
+
+      if (!quiet) setStatus("Moderator authority loaded.");
+    } catch {
+      if (!quiet) setStatus("Moderator server offline. Start SERVER 8789.");
+    }
+  }
+
+  async function addModerator() {
+    if (!isHost) {
+      setStatus("Host access required to add moderators.");
       return;
     }
 
-    setModerators(Array.isArray(data.moderators) ? data.moderators : []);
-    setStatus("Moderator removed.");
-  } catch {
-    setStatus("Could not reach moderator server on 8789.");
-  }
-}
-async function loadBulletins(roomId, quiet = false) {
-  try {
-    const response = await fetch(
-      `${BULLETIN_API_BASE}/api/bulletins/${encodeURIComponent(roomId)}`
-    );
+    const value = moderatorInput.trim();
 
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok || !Array.isArray(data.bulletins)) {
-      if (!quiet) setStatus("Bulletin server not connected.");
+    if (!value) {
+      setStatus("Enter moderator name or email.");
       return;
     }
 
-    setBulletinsByRoom((prev) => ({
-      ...prev,
-      [roomId]: data.bulletins,
-    }));
+    try {
+      const response = await fetch(
+        `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(selectedRoomId)}/add`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: value,
+            email: value.includes("@") ? value : "",
+          }),
+        }
+      );
 
-    if (!quiet) setStatus("Bulletin system connected.");
-  } catch {
-    if (!quiet) setStatus("Bulletin server offline. Start SERVER 8785.");
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(data?.error || "Could not add moderator.");
+        return;
+      }
+
+      setModerators(Array.isArray(data.moderators) ? data.moderators : []);
+      setModeratorInput("");
+      setStatus("Moderator added to room.");
+    } catch {
+      setStatus("Could not reach moderator server on 8789.");
+    }
   }
-}
+
+  async function removeModerator(moderatorId) {
+    if (!isHost) {
+      setStatus("Host access required to remove moderators.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${MODERATOR_API_BASE}/api/moderators/${encodeURIComponent(selectedRoomId)}/remove`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ moderatorId }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(data?.error || "Could not remove moderator.");
+        return;
+      }
+
+      setModerators(Array.isArray(data.moderators) ? data.moderators : []);
+      setStatus("Moderator removed.");
+    } catch {
+      setStatus("Could not reach moderator server on 8789.");
+    }
+  }
+
+  async function loadBulletins(roomId, quiet = false) {
+    try {
+      const response = await fetch(
+        `${BULLETIN_API_BASE}/api/bulletins/${encodeURIComponent(roomId)}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !Array.isArray(data.bulletins)) {
+        if (!quiet) setStatus("Bulletin server not connected.");
+        return;
+      }
+
+      setBulletinsByRoom((prev) => ({
+        ...prev,
+        [roomId]: data.bulletins,
+      }));
+
+      if (!quiet) setStatus("Bulletin system connected.");
+    } catch {
+      if (!quiet) setStatus("Bulletin server offline. Start SERVER 8785.");
+    }
+  }
+
   async function loadChat(roomId, quiet = false) {
     try {
       const response = await fetch(`${CHAT_API_BASE}/api/chat/${encodeURIComponent(roomId)}`);
@@ -432,9 +735,9 @@ async function loadBulletins(roomId, quiet = false) {
 
   async function clearChat() {
     if (!canModerate) {
-  setStatus("Moderator or Host access required.");
-  return;
-}
+      setStatus("Moderator or Host access required.");
+      return;
+    }
 
     try {
       const response = await fetch(`${CHAT_API_BASE}/api/chat/${encodeURIComponent(selectedRoomId)}/clear`, {
@@ -539,7 +842,6 @@ async function loadBulletins(roomId, quiet = false) {
       }
 
       setLivekitRoom(result.room);
-      
       setStatus(`Connected to ${roomId} as ${nextRole.toUpperCase()}`);
       return result.room;
     } catch {
@@ -628,45 +930,43 @@ async function loadBulletins(roomId, quiet = false) {
   }
 
   async function addBulletin() {
-  if (!canModerate) {
-    setStatus("Moderator or Host access required.");
-    return;
-  }
-
-  const text = newBulletin.trim();
-  if (!text) return;
-
-  try {
-    const response = await fetch(
-      `${BULLETIN_API_BASE}/api/bulletins/${encodeURIComponent(selectedRoomId)}/add`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok || !data?.ok || !Array.isArray(data.bulletins)) {
-      setStatus(data?.error || "Could not add bulletin.");
+    if (!canModerate) {
+      setStatus("Moderator or Host access required.");
       return;
     }
 
-    setBulletinsByRoom((prev) => ({
-      ...prev,
-      [selectedRoomId]: data.bulletins,
-    }));
+    const text = newBulletin.trim();
+    if (!text) return;
 
-    setNewBulletin("");
-    setStatus("Bulletin added and synced.");
-  } catch {
-    setStatus("Could not reach bulletin server on 8785.");
+    try {
+      const response = await fetch(
+        `${BULLETIN_API_BASE}/api/bulletins/${encodeURIComponent(selectedRoomId)}/add`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !Array.isArray(data.bulletins)) {
+        setStatus(data?.error || "Could not add bulletin.");
+        return;
+      }
+
+      setBulletinsByRoom((prev) => ({
+        ...prev,
+        [selectedRoomId]: data.bulletins,
+      }));
+
+      setNewBulletin("");
+      setStatus("Bulletin added and synced.");
+    } catch {
+      setStatus("Could not reach bulletin server on 8785.");
+    }
   }
-}
 
-
-  
   function copyInviteLink() {
     const base = window.location.origin || "http://127.0.0.1:5175";
     const invite = `${base}/?room=${encodeURIComponent(selectedRoomId)}`;
@@ -692,10 +992,8 @@ async function loadBulletins(roomId, quiet = false) {
           <div style={styles.statusPill}>{status}</div>
 
           <div style={styles.roleSelect}>
-  {entryRole === "host"
-    ? "Admin / Host"
-    : "User / Viewer"}
-</div>
+            {entryRole === "host" ? hostModeLabel : "User / Viewer"}
+          </div>
 
           <button style={styles.dangerButton} onClick={disconnectFromLiveKit}>
             Disconnect
@@ -707,6 +1005,16 @@ async function loadBulletins(roomId, quiet = false) {
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
             <div style={styles.panelTitle}>Rooms</div>
+
+            <div style={styles.planCardMini}>
+              <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
+              <div style={styles.planMiniText}>
+                {currentPlanLimits.maxRooms} rooms • {currentPlanLimits.maxViewers} viewers
+              </div>
+              <button style={styles.secondaryButtonFull} onClick={syncPlanFromSubscriptionServer}>
+                Refresh Plan Sync
+              </button>
+            </div>
 
             <div style={styles.roomList}>
               {rooms.map((room) => (
@@ -720,6 +1028,11 @@ async function loadBulletins(roomId, quiet = false) {
                     {room.category} • {room.isPrivate ? "Private" : "Public"} •{" "}
                     {room.isLocked ? "Locked" : "Open"}
                   </div>
+                  {room.ownerId === currentOwnerId ? (
+                    <div style={styles.roomPlanMeta}>
+                      {room.planHostLabel || currentPlanLimits.hostLabel}
+                    </div>
+                  ) : null}
                 </button>
               ))}
             </div>
@@ -731,12 +1044,22 @@ async function loadBulletins(roomId, quiet = false) {
             <div>
               <div style={styles.roomHeadline}>{selectedRoom?.name || "Room"}</div>
               <div style={styles.identityLine}>
-                Mode: {isViewerOnly ? "USER / VIEWER" : "ADMIN / HOST"} • LiveKit Room:{" "}
-                {selectedRoomId}
+                Mode: {hostModeLabel} • LiveKit Room: {selectedRoomId}
               </div>
+
+              {!isViewerOnly ? (
+                <>
+                  <div style={styles.identityLine}>Owner ID: {currentOwnerId}</div>
+                  <div style={styles.identityLine}>
+                    Active Plan: {currentPlanLimits.label} • Rooms: {currentPlanLimits.maxRooms} • Viewers:{" "}
+                    {currentPlanLimits.maxViewers}
+                  </div>
+                </>
+              ) : null}
             </div>
 
             <div style={styles.identityChips}>
+              <span style={styles.chip}>{currentPlanLimits.label}</span>
               <span style={styles.chip}>{selectedRoom?.isPrivate ? "Private" : "Public"}</span>
               <span style={styles.chip}>{selectedRoom?.isLocked ? "Locked" : "Open"}</span>
               <span style={styles.chip}>{livekitRoom ? "Connected" : "Standby"}</span>
@@ -779,7 +1102,7 @@ async function loadBulletins(roomId, quiet = false) {
                 <div style={styles.stagePlaceholderText}>
                   {isViewerOnly
                     ? "Click Join Viewer to receive the host LiveKit stream."
-                    : "Start Host Camera to broadcast through LiveKit."}
+                    : `Start Host Camera to broadcast through LiveKit as ${hostModeLabel}.`}
                 </div>
               </div>
             </div>
@@ -818,23 +1141,23 @@ async function loadBulletins(roomId, quiet = false) {
               <div style={styles.panelTitle}>Participants</div>
               <div style={styles.participantRow}>
                 <span>
-  {isHost
-    ? "Host Console"
-    : isModerator
-    ? "Moderator Console"
-    : "Viewer Console"}
-</span>
-                <strong>
-  {isHost
-    ? "HOST"
-    : isModerator
-    ? "MODERATOR"
-    : "VIEWER"}
-</strong>
+                  {isHost
+                    ? isSuperAdmin
+                      ? "Host Console"
+                      : `${currentPlanLimits.label} Host Console`
+                    : isModerator
+                    ? "Moderator Console"
+                    : "Viewer Console"}
+                </span>
+                <strong>{participantRoleLabel}</strong>
               </div>
               <div style={styles.participantRow}>
                 <span>LiveKit room</span>
                 <strong>{selectedRoomId}</strong>
+              </div>
+              <div style={styles.participantRow}>
+                <span>Plan viewers</span>
+                <strong>{currentPlanLimits.maxViewers}</strong>
               </div>
             </div>
 
@@ -964,84 +1287,121 @@ async function loadBulletins(roomId, quiet = false) {
           {selectedPanel === "controls" && !isViewerOnly ? (
             <div style={styles.card}>
               <div style={styles.panelTitle}>Control Center</div>
-<div style={styles.controlBox}>
-  <div style={styles.controlTitle}>Event Creation System</div>
 
-  <div style={styles.helperText}>
-    Create AGV events tied to the current room. Events are stored on SERVER 8786.
-  </div>
+              <div style={styles.controlBox}>
+                <div style={styles.controlTitle}>Plan Authority</div>
+                <div style={styles.helperText}>
+                  Current Plan: {currentPlanLimits.label} • Host Mode: {hostModeLabel}
+                </div>
+                <div style={styles.helperText}>
+                  Room Limit: {currentPlanLimits.maxRooms} • Viewer Limit: {currentPlanLimits.maxViewers}
+                </div>
+                <div style={styles.helperText}>
+                  Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} • Ticket-Only Rooms:{" "}
+                  {currentPlanLimits.allowTicketOnly ? "Allowed" : "Upgrade required"}
+                </div>
+                <button style={styles.secondaryButton} onClick={syncPlanFromSubscriptionServer}>
+                  Refresh Plan From SERVER 8792
+                </button>
+              </div>
 
-  <input
-    style={styles.chatInput}
-    value={eventTitle}
-    onChange={(event) => setEventTitle(event.target.value)}
-    placeholder="Event title"
-  />
+              <div style={styles.controlBox}>
+                <div style={styles.controlTitle}>Event Creation System</div>
 
-  <textarea
-    style={styles.textarea}
-    value={eventDescription}
-    onChange={(event) => setEventDescription(event.target.value)}
-    placeholder="Event description"
-  />
+                <div style={styles.helperText}>
+                  Create AGV events tied to the current room. Events are stored on SERVER 8786.
+                </div>
 
-  <input
-    style={styles.chatInput}
-    value={eventDate}
-    onChange={(event) => setEventDate(event.target.value)}
-    placeholder="Event date, example: 2026-05-06"
-  />
+                <input
+                  style={styles.chatInput}
+                  value={eventTitle}
+                  onChange={(event) => setEventTitle(event.target.value)}
+                  placeholder="Event title"
+                />
 
-  <input
-    style={styles.chatInput}
-    value={eventTime}
-    onChange={(event) => setEventTime(event.target.value)}
-    placeholder="Start time, example: 6:00 PM"
-  />
+                <textarea
+                  style={styles.textarea}
+                  value={eventDescription}
+                  onChange={(event) => setEventDescription(event.target.value)}
+                  placeholder="Event description"
+                />
 
-  <input
-    style={styles.chatInput}
-    value={eventPrice}
-    onChange={(event) => setEventPrice(event.target.value)}
-    placeholder="Ticket price, example: 15.00"
-  />
+                <input
+                  style={styles.chatInput}
+                  value={eventDate}
+                  onChange={(event) => setEventDate(event.target.value)}
+                  placeholder="Event date, example: 2026-05-06"
+                />
 
-  <button style={styles.primaryButton} onClick={createEvent}>
-    Create Event
-  </button>
+                <input
+                  style={styles.chatInput}
+                  value={eventTime}
+                  onChange={(event) => setEventTime(event.target.value)}
+                  placeholder="Start time, example: 6:00 PM"
+                />
 
-  <button style={styles.secondaryButton} onClick={() => loadEvents()}>
-    Refresh Events
-  </button>
+                <input
+                  style={styles.chatInput}
+                  value={eventPrice}
+                  onChange={(event) => setEventPrice(event.target.value)}
+                  placeholder="Ticket price, example: 15.00"
+                />
 
-  <div style={styles.helperText}>Current Events:</div>
+                <button style={styles.primaryButton} onClick={createEvent}>
+                  Create Event
+                </button>
 
-  {events.length ? (
-    events.map((item) => (
-      <div key={item.id} style={styles.controlBox}>
-        <div style={styles.controlTitle}>{item.title}</div>
+                <button style={styles.secondaryButton} onClick={() => loadEvents()}>
+                  Refresh Events
+                </button>
 
-        <div style={styles.helperText}>
-          Room: {item.roomId || "main-hall"} • Date: {item.eventDate || "Not set"} • Time:{" "}
-          {item.startTime || "Not set"} • Price: {item.ticketPrice || "Not set"}
-        </div>
+                <div style={styles.helperText}>Current Events:</div>
 
-        {item.description ? (
-          <div style={styles.helperText}>{item.description}</div>
-        ) : null}
+                {events.length ? (
+                  events.map((item) => {
+                    const allowedToDelete = canDeleteEvent(item);
 
-        <button
-          style={styles.dangerButton}
-          onClick={() => deleteEvent(item.id)}
-        >
-          Delete Event
-        </button>
-      </div>
-    ))
-  ) : (
-    <div style={styles.emptyText}>No events created yet.</div>
-  )}
-</div>
+                    return (
+                      <div key={item.id} style={styles.controlBox}>
+                        <div style={styles.controlTitle}>{item.title}</div>
+
+                        <div style={styles.helperText}>
+                          Room: {item.roomId || "main-hall"} • Date: {item.eventDate || "Not set"} • Time:{" "}
+                          {item.startTime || "Not set"} • Price: {item.ticketPrice || "Not set"}
+                        </div>
+
+                        <div style={styles.helperText}>
+                          Owner: {item.ownerName || item.ownerEmail || item.ownerId || "Legacy event without owner"}
+                        </div>
+
+                        <div style={styles.helperText}>
+                          Plan: {item.planLabel || item.createdByPlan || "Legacy"}
+                        </div>
+
+                        {item.description ? (
+                          <div style={styles.helperText}>{item.description}</div>
+                        ) : null}
+
+                        {allowedToDelete ? (
+                          <button
+                            style={styles.dangerButton}
+                            onClick={() => deleteEvent(item.id)}
+                          >
+                            Delete Event
+                          </button>
+                        ) : (
+                          <div style={styles.viewerLockBox}>
+                            Delete locked: only the event owner or Super Admin can delete this show.
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div style={styles.emptyText}>No events created yet.</div>
+                )}
+              </div>
+
               <button style={styles.primaryButton} onClick={copyInviteLink}>
                 Copy Room Invite
               </button>
@@ -1056,58 +1416,44 @@ async function loadBulletins(roomId, quiet = false) {
                   Host/Admin bypasses ticket lock. Viewer must verify a ticket before joining the room.
                 </div>
               </div>
-<div style={styles.controlBox}>
-  <div style={styles.controlTitle}>
-    Moderator Authority
-  </div>
 
-  <div style={styles.helperText}>
-    Moderators can clear chat and manage bulletins
-    but cannot control the broadcast stage.
-  </div>
+              <div style={styles.controlBox}>
+                <div style={styles.controlTitle}>Moderator Authority</div>
 
-  <input
-    style={styles.chatInput}
-    value={moderatorInput}
-    onChange={(event) =>
-      setModeratorInput(event.target.value)
-    }
-    placeholder="Moderator name or email"
-  />
+                <div style={styles.helperText}>
+                  Moderators can clear chat and manage bulletins but cannot control the broadcast stage.
+                </div>
 
-  <button
-    style={styles.secondaryButton}
-    onClick={addModerator}
-  >
-    Add Moderator
-  </button>
+                <input
+                  style={styles.chatInput}
+                  value={moderatorInput}
+                  onChange={(event) => setModeratorInput(event.target.value)}
+                  placeholder="Moderator name or email"
+                />
 
-  <div style={styles.helperText}>
-    Current Moderators:
-  </div>
+                <button style={styles.secondaryButton} onClick={addModerator}>
+                  Add Moderator
+                </button>
 
-  {moderators.length ? (
-    moderators.map((mod) => (
-      <div key={mod.id} style={styles.participantRow}>
-        <span>
-          {mod.name || mod.email || "Moderator"}
-        </span>
+                <div style={styles.helperText}>Current Moderators:</div>
 
-        <button
-          style={styles.dangerButton}
-          onClick={() => removeModerator(mod.id)}
-        >
-          Remove
-        </button>
-      </div>
-    ))
-  ) : (
-    <div style={styles.emptyText}>
-      No moderators assigned.
-    </div>
-  )}
-  
-</div>
+                {moderators.length ? (
+                  moderators.map((mod) => (
+                    <div key={mod.id} style={styles.participantRow}>
+                      <span>{mod.name || mod.email || "Moderator"}</span>
+
+                      <button
+                        style={styles.dangerButton}
+                        onClick={() => removeModerator(mod.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div style={styles.emptyText}>No moderators assigned.</div>
+                )}
+              </div>
             </div>
           ) : null}
         </aside>
@@ -1132,14 +1478,18 @@ const styles = {
   centerPanel: { display: "grid", gap: 16 },
   rightPanel: { background: "rgba(15,23,42,0.72)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, padding: 16, position: "sticky", top: 96 },
   panelTitle: { fontSize: 16, fontWeight: 950, marginBottom: 12 },
+  planCardMini: { border: "1px solid rgba(212,175,55,0.25)", background: "rgba(212,175,55,0.10)", borderRadius: 18, padding: 14, marginBottom: 14 },
+  planMiniTitle: { color: "#facc15", fontWeight: 950, marginBottom: 5 },
+  planMiniText: { color: "#cbd5e1", fontSize: 12, lineHeight: 1.4, marginBottom: 10 },
   roomList: { display: "grid", gap: 10 },
   roomButton: { width: "100%", textAlign: "left", padding: 14, borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.05)", color: "#f8fafc", cursor: "pointer" },
   roomButtonActive: { width: "100%", textAlign: "left", padding: 14, borderRadius: 16, border: "1px solid rgba(212,175,55,0.55)", background: "rgba(212,175,55,0.14)", color: "#f8fafc", cursor: "pointer" },
   roomName: { fontSize: 15, fontWeight: 950, marginBottom: 5 },
   roomMeta: { color: "rgba(248,250,252,0.58)", fontSize: 12 },
+  roomPlanMeta: { color: "#facc15", fontSize: 11, fontWeight: 950, marginTop: 7, letterSpacing: 0.5 },
   identityCard: { padding: 18, borderRadius: 22, background: "linear-gradient(180deg, rgba(19,27,45,0.92), rgba(10,14,24,0.86))", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" },
   roomHeadline: { fontSize: 24, fontWeight: 900, marginBottom: 5 },
-  identityLine: { color: "rgba(248,250,252,0.62)", fontSize: 13 },
+  identityLine: { color: "rgba(248,250,252,0.62)", fontSize: 13, marginTop: 4 },
   identityChips: { display: "flex", gap: 8, flexWrap: "wrap" },
   chip: { padding: "8px 11px", borderRadius: 999, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.09)", fontSize: 12, fontWeight: 800 },
   ticketGate: { borderRadius: 24, padding: 22, background: "rgba(212,175,55,0.12)", border: "1px solid rgba(212,175,55,0.28)", display: "grid", gap: 12 },
@@ -1174,8 +1524,7 @@ const styles = {
   participantRow: { display: "flex", justifyContent: "space-between", gap: 10, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "#cbd5e1" },
   bulletinList: { display: "grid", gap: 8, maxHeight: 150, overflow: "auto", marginBottom: 12 },
   bulletinListTall: { display: "grid", gap: 8, maxHeight: 460, overflow: "auto" },
-  bulletinItem: { padding: 10, borderRadius: 14,
-  borderRadius: 14, background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.18)", color: "#fde68a", fontSize: 13, lineHeight: 1.4 },
+  bulletinItem: { padding: 10, borderRadius: 14, background: "rgba(212,175,55,0.1)", border: "1px solid rgba(212,175,55,0.18)", color: "#fde68a", fontSize: 13, lineHeight: 1.4 },
   textarea: { width: "100%", minHeight: 80, resize: "vertical", boxSizing: "border-box", borderRadius: 14, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.07)", color: "#f8fafc", padding: 12, marginBottom: 10 },
   chatList: { display: "grid", gap: 10, minHeight: 340, maxHeight: 420, overflow: "auto", marginBottom: 12 },
   chatMessage: { padding: 11, borderRadius: 14, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", color: "#e5e7eb", fontSize: 14, lineHeight: 1.4 },
