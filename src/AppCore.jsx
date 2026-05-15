@@ -113,6 +113,39 @@ function getFreeAccount() {
   }
 }
 
+function getStoredAccount() {
+  try {
+    const account = JSON.parse(localStorage.getItem("agv_account") || "null");
+
+    if (account?.email) {
+      return {
+        name: account.name || "",
+        email: String(account.email || "").trim().toLowerCase(),
+        organization: account.organization || "",
+        plan: normalizePlan(account.plan || getLocalCurrentPlan()),
+      };
+    }
+  } catch {}
+
+  const freeAccount = getFreeAccount();
+
+  if (freeAccount?.email) {
+    return {
+      name: freeAccount.name || "",
+      email: String(freeAccount.email || "").trim().toLowerCase(),
+      organization: freeAccount.organization || "",
+      plan: normalizePlan(freeAccount.plan || getLocalCurrentPlan()),
+    };
+  }
+
+  return {
+    name: "",
+    email: "",
+    organization: "",
+    plan: getLocalCurrentPlan(),
+  };
+}
+
 function getCurrentOwnerId() {
   const freeAccount = getFreeAccount();
 
@@ -199,6 +232,7 @@ function syncRoomsForCurrentPlan(existingRooms, currentPlan, ownerId, freeAccoun
 
 export default function AppCore({ entryRole = "viewer" }) {
   const freeAccount = getFreeAccount();
+  const storedAccount = getStoredAccount();
   const currentOwnerId = getCurrentOwnerId();
 
   const [currentPlan, setCurrentPlan] = useState(getLocalCurrentPlan);
@@ -382,10 +416,13 @@ export default function AppCore({ entryRole = "viewer" }) {
     if (!item) return false;
 
     const eventOwnerId = String(item.ownerId || item.createdBy || "").trim().toLowerCase();
+    const eventOwnerEmail = String(item.ownerEmail || "").trim().toLowerCase();
+    const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
 
-    if (!eventOwnerId) return false;
+    if (eventOwnerEmail && currentEmail && eventOwnerEmail === currentEmail) return true;
+    if (eventOwnerId && eventOwnerId === currentOwnerId) return true;
 
-    return eventOwnerId === currentOwnerId;
+    return false;
   }
 
   async function verifyTicket() {
@@ -466,8 +503,26 @@ export default function AppCore({ entryRole = "viewer" }) {
       return;
     }
 
-    const ownerName = freeAccount?.name || "AGV Super Admin";
-    const ownerEmail = freeAccount?.email || "admin@agv.local";
+    const ownerName =
+      storedAccount?.name ||
+      freeAccount?.name ||
+      "AGV Super Admin";
+
+    const ownerEmail =
+      String(storedAccount?.email || freeAccount?.email || "admin@agv.local")
+        .trim()
+        .toLowerCase();
+
+    const ownerOrganization =
+      storedAccount?.organization ||
+      freeAccount?.organization ||
+      "";
+
+    const ownerPlan = normalizePlan(
+      storedAccount?.plan ||
+        freeAccount?.plan ||
+        currentPlan
+    );
 
     try {
       const response = await fetch(`${EVENT_API_BASE}/api/events/create`, {
@@ -483,14 +538,25 @@ export default function AppCore({ entryRole = "viewer" }) {
           startTime: eventTime.trim(),
           ticketPrice: eventPrice.trim(),
           status: "draft",
+
           ownerId: currentOwnerId,
           ownerName,
           ownerEmail,
-          createdByPlan: currentPlan,
-          planLabel: currentPlanLimits.label,
+          organization: ownerOrganization,
+          ownerOrganization,
+
+          createdByAccount: Boolean(ownerEmail),
+          createdByPlan: ownerPlan,
+          plan: ownerPlan,
+          planLabel: PLAN_LIMITS[ownerPlan]?.label || currentPlanLimits.label,
+
           maxViewers: currentPlanLimits.maxViewers,
           allowPrivate: currentPlanLimits.allowPrivate,
           allowTicketOnly: currentPlanLimits.allowTicketOnly,
+
+          requesterId: currentOwnerId,
+          requesterEmail: ownerEmail,
+          requesterRole: isSuperAdmin ? "super-admin" : "owner",
         }),
       });
 
@@ -510,8 +576,11 @@ export default function AppCore({ entryRole = "viewer" }) {
             ownerId: item.ownerId || currentOwnerId,
             ownerName: item.ownerName || ownerName,
             ownerEmail: item.ownerEmail || ownerEmail,
-            createdByPlan: item.createdByPlan || currentPlan,
-            planLabel: item.planLabel || currentPlanLimits.label,
+            organization: item.organization || item.ownerOrganization || ownerOrganization,
+            createdByAccount: Boolean(item.createdByAccount || ownerEmail),
+            createdByPlan: item.createdByPlan || ownerPlan,
+            plan: item.plan || ownerPlan,
+            planLabel: item.planLabel || PLAN_LIMITS[ownerPlan]?.label || currentPlanLimits.label,
           };
         }
 
@@ -524,7 +593,9 @@ export default function AppCore({ entryRole = "viewer" }) {
       setEventDate("");
       setEventTime("");
       setEventPrice("");
-      setStatus(`Event created under ${currentPlanLimits.label} plan with owner protection.`);
+      setStatus(
+        `Event created for ${ownerName} / ${ownerOrganization || "AGV Account"} under ${PLAN_LIMITS[ownerPlan]?.label || ownerPlan} plan.`
+      );
     } catch {
       setStatus("Could not reach event server on 8786.");
     }
@@ -548,6 +619,12 @@ export default function AppCore({ entryRole = "viewer" }) {
         `${EVENT_API_BASE}/api/events/${encodeURIComponent(eventId)}/delete`,
         {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            requesterId: currentOwnerId,
+            requesterEmail: storedAccount?.email || freeAccount?.email || "",
+            requesterRole: isSuperAdmin ? "super-admin" : "owner",
+          }),
         }
       );
 
@@ -1054,6 +1131,10 @@ export default function AppCore({ entryRole = "viewer" }) {
                     Active Plan: {currentPlanLimits.label} • Rooms: {currentPlanLimits.maxRooms} • Viewers:{" "}
                     {currentPlanLimits.maxViewers}
                   </div>
+                  <div style={styles.identityLine}>
+                    Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} •{" "}
+                    {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
+                  </div>
                 </>
               ) : null}
             </div>
@@ -1312,6 +1393,14 @@ export default function AppCore({ entryRole = "viewer" }) {
                   Create AGV events tied to the current room. Events are stored on SERVER 8786.
                 </div>
 
+                <div style={styles.ownerSyncBox}>
+                  <div style={styles.ownerSyncTitle}>Event Owner Sync</div>
+                  <div style={styles.helperText}>Owner: {storedAccount?.name || freeAccount?.name || "AGV Host"}</div>
+                  <div style={styles.helperText}>Email: {storedAccount?.email || freeAccount?.email || "admin@agv.local"}</div>
+                  <div style={styles.helperText}>Organization: {storedAccount?.organization || freeAccount?.organization || "Not set"}</div>
+                  <div style={styles.helperText}>Plan: {currentPlanLimits.label}</div>
+                </div>
+
                 <input
                   style={styles.chatInput}
                   value={eventTitle}
@@ -1370,12 +1459,23 @@ export default function AppCore({ entryRole = "viewer" }) {
                           {item.startTime || "Not set"} • Price: {item.ticketPrice || "Not set"}
                         </div>
 
-                        <div style={styles.helperText}>
-                          Owner: {item.ownerName || item.ownerEmail || item.ownerId || "Legacy event without owner"}
-                        </div>
-
-                        <div style={styles.helperText}>
-                          Plan: {item.planLabel || item.createdByPlan || "Legacy"}
+                        <div style={styles.eventOwnerCard}>
+                          <div style={styles.eventOwnerTitle}>Ownership</div>
+                          <div style={styles.helperText}>
+                            Owner: {item.ownerName || item.ownerEmail || item.ownerId || "Legacy event without owner"}
+                          </div>
+                          <div style={styles.helperText}>
+                            Email: {item.ownerEmail || "Not saved"}
+                          </div>
+                          <div style={styles.helperText}>
+                            Organization: {item.organization || item.ownerOrganization || "Not saved"}
+                          </div>
+                          <div style={styles.helperText}>
+                            Plan: {item.plan || item.planLabel || item.createdByPlan || "Legacy"}
+                          </div>
+                          <div style={styles.helperText}>
+                            Account-Owned: {item.createdByAccount ? "Yes" : "Legacy / Not marked"}
+                          </div>
                         </div>
 
                         {item.description ? (
@@ -1520,6 +1620,10 @@ const styles = {
   controlBox: { marginTop: 14, display: "grid", gap: 10, padding: 14, borderRadius: 18, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" },
   controlTitle: { fontWeight: 950, color: "#facc15" },
   helperText: { color: "rgba(248,250,252,0.62)", fontSize: 13, lineHeight: 1.5 },
+  ownerSyncBox: { marginTop: 10, padding: 12, borderRadius: 16, background: "rgba(212,175,55,0.10)", border: "1px solid rgba(212,175,55,0.20)" },
+  ownerSyncTitle: { color: "#facc15", fontWeight: 950, marginBottom: 4 },
+  eventOwnerCard: { marginTop: 8, padding: 12, borderRadius: 16, background: "rgba(59,130,246,0.10)", border: "1px solid rgba(59,130,246,0.18)" },
+  eventOwnerTitle: { color: "#bfdbfe", fontWeight: 950, marginBottom: 4 },
   viewerLockBox: { marginTop: 12, padding: 14, borderRadius: 18, background: "rgba(59,130,246,0.12)", border: "1px solid rgba(59,130,246,0.22)", color: "#dbeafe", fontSize: 13, lineHeight: 1.5 },
   participantRow: { display: "flex", justifyContent: "space-between", gap: 10, padding: "10px 0", borderBottom: "1px solid rgba(255,255,255,0.06)", color: "#cbd5e1" },
   bulletinList: { display: "grid", gap: 8, maxHeight: 150, overflow: "auto", marginBottom: 12 },
