@@ -69,6 +69,51 @@ function getPrivacyFlags(visibility) {
   return { isPrivate: false, isLocked: false };
 }
 
+function getStoredAccount() {
+  try {
+    const account = JSON.parse(localStorage.getItem("agv_account") || "null");
+
+    if (account?.email) {
+      return {
+        name: account.name || "",
+        email: String(account.email || "").trim().toLowerCase(),
+        organization: account.organization || "",
+        plan: String(account.plan || "FREE").trim().toUpperCase(),
+      };
+    }
+  } catch {}
+
+  try {
+    const freeAccount = JSON.parse(localStorage.getItem("agv_free_account") || "null");
+
+    if (freeAccount?.email) {
+      return {
+        name: freeAccount.name || "",
+        email: String(freeAccount.email || "").trim().toLowerCase(),
+        organization: freeAccount.organization || "",
+        plan: String(freeAccount.plan || "FREE").trim().toUpperCase(),
+      };
+    }
+  } catch {}
+
+  return {
+    name: "",
+    email: "",
+    organization: "",
+    plan: "FREE",
+  };
+}
+
+function normalizePlan(plan) {
+  const value = String(plan || "FREE").trim().toUpperCase();
+
+  if (value === "INTERNAL_TEST") return "CREATOR";
+
+  if (FALLBACK_PLAN_LIMITS[value]) return value;
+
+  return "FREE";
+}
+
 export default function SuperAdminPanel({ onBack }) {
   const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
@@ -95,7 +140,12 @@ export default function SuperAdminPanel({ onBack }) {
   );
   const [upgradeMessage, setUpgradeMessage] = useState("");
   const [billingMessage, setBillingMessage] = useState("");
+  const [enforcementMessage, setEnforcementMessage] = useState(
+    "SERVER 8792 plan enforcement not checked yet."
+  );
+  const [lastEnforcement, setLastEnforcement] = useState(null);
 
+  const account = getStoredAccount();
   const limits = planRules[subscriptionPlan] || FALLBACK_PLAN_LIMITS.FREE;
   const roomsUsed = rooms.length;
   const roomsRemaining = Math.max(limits.maxRooms - roomsUsed, 0);
@@ -118,27 +168,39 @@ export default function SuperAdminPanel({ onBack }) {
         return;
       }
 
-      setSubscriptionPlan(data.plan || "FREE");
+      const serverPlan = normalizePlan(data.plan || account.plan || "FREE");
+
+      setSubscriptionPlan(serverPlan);
 
       if (data.limits) {
         setPlanRules((current) => ({
           ...current,
-          [data.plan]: {
-            ...(current[data.plan] || {}),
+          [serverPlan]: {
+            ...(current[serverPlan] || {}),
             ...data.limits,
           },
         }));
       }
 
       setSubscriptionMessage("Subscription loaded from SERVER 8792.");
+
+      if (data.enforcement?.enabled) {
+        setEnforcementMessage("SERVER 8792 enforcement is active.");
+      } else {
+        setEnforcementMessage("SERVER 8792 loaded, enforcement status not reported.");
+      }
     } catch {
       setSubscriptionMessage("Subscription server offline. Using local fallback rules.");
+      setEnforcementMessage("SERVER 8792 enforcement offline. Local fallback checks will run.");
     }
   }
 
   async function saveSubscriptionPlan(nextPlan) {
-    setSubscriptionPlan(nextPlan);
+    const cleanPlan = normalizePlan(nextPlan);
+
+    setSubscriptionPlan(cleanPlan);
     setUpgradeMessage("");
+    setLastEnforcement(null);
 
     try {
       const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/plan`, {
@@ -146,7 +208,7 @@ export default function SuperAdminPanel({ onBack }) {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ plan: nextPlan }),
+        body: JSON.stringify({ plan: cleanPlan }),
       });
 
       const data = await response.json();
@@ -156,19 +218,21 @@ export default function SuperAdminPanel({ onBack }) {
         return;
       }
 
-      setSubscriptionPlan(data.plan || nextPlan);
+      const savedPlan = normalizePlan(data.plan || cleanPlan);
+
+      setSubscriptionPlan(savedPlan);
 
       if (data.limits) {
         setPlanRules((current) => ({
           ...current,
-          [data.plan]: {
-            ...(current[data.plan] || {}),
+          [savedPlan]: {
+            ...(current[savedPlan] || {}),
             ...data.limits,
           },
         }));
       }
 
-      setSubscriptionMessage(`Saved ${data.plan} plan to SERVER 8792.`);
+      setSubscriptionMessage(`Saved ${savedPlan} plan to SERVER 8792.`);
     } catch {
       setSubscriptionMessage("Could not reach subscription server. Local plan changed only.");
     }
@@ -217,7 +281,146 @@ export default function SuperAdminPanel({ onBack }) {
     setPinMessage("Invalid Super Admin PIN.");
   }
 
-  function createRoom() {
+  async function checkServerRoomCreate() {
+    const requestedRooms = rooms.length + 1;
+
+    try {
+      const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/check-room-create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: account.email,
+          plan: subscriptionPlan,
+          currentRooms: rooms.length,
+          requestedRooms,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        return {
+          allowed: rooms.length < limits.maxRooms,
+          reason: "SERVER 8792 check failed. Local fallback check was used.",
+          data,
+        };
+      }
+
+      return {
+        allowed: Boolean(data.allowed),
+        reason: data.reason || "SERVER 8792 room-create check completed.",
+        data,
+      };
+    } catch {
+      return {
+        allowed: rooms.length < limits.maxRooms,
+        reason: "SERVER 8792 offline. Local fallback room limit check was used.",
+        data: null,
+      };
+    }
+  }
+
+  async function checkServerPrivateRoom() {
+    const wantsPrivate = visibility === "Private";
+
+    if (!wantsPrivate) {
+      return {
+        allowed: true,
+        reason: "Private-room check not needed.",
+        data: null,
+      };
+    }
+
+    try {
+      const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/check-private-room`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: account.email,
+          plan: subscriptionPlan,
+          requestPrivate: true,
+          isPrivate: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        return {
+          allowed: Boolean(limits.allowPrivate),
+          reason: "SERVER 8792 private-room check failed. Local fallback check was used.",
+          data,
+        };
+      }
+
+      return {
+        allowed: Boolean(data.allowed),
+        reason: data.reason || "SERVER 8792 private-room check completed.",
+        data,
+      };
+    } catch {
+      return {
+        allowed: Boolean(limits.allowPrivate),
+        reason: "SERVER 8792 offline. Local fallback private-room check was used.",
+        data: null,
+      };
+    }
+  }
+
+  async function checkServerTicketOnly() {
+    const wantsTicketOnly = visibility === "Ticket Only";
+
+    if (!wantsTicketOnly) {
+      return {
+        allowed: true,
+        reason: "Ticket-only check not needed.",
+        data: null,
+      };
+    }
+
+    try {
+      const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/check-ticket-only`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: account.email,
+          plan: subscriptionPlan,
+          requestTicketOnly: true,
+          isTicketOnly: true,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        return {
+          allowed: Boolean(limits.allowTicketOnly),
+          reason: "SERVER 8792 ticket-only check failed. Local fallback check was used.",
+          data,
+        };
+      }
+
+      return {
+        allowed: Boolean(data.allowed),
+        reason: data.reason || "SERVER 8792 ticket-only check completed.",
+        data,
+      };
+    } catch {
+      return {
+        allowed: Boolean(limits.allowTicketOnly),
+        reason: "SERVER 8792 offline. Local fallback ticket-only check was used.",
+        data: null,
+      };
+    }
+  }
+
+  async function createRoom() {
     const cleanName = roomName.trim();
 
     if (!cleanName) {
@@ -225,20 +428,34 @@ export default function SuperAdminPanel({ onBack }) {
       return;
     }
 
-    if (rooms.length >= limits.maxRooms) {
-      setUpgradeMessage(
-        `${limits.label || subscriptionPlan} allows ${limits.maxRooms} room(s). Upgrade to create more rooms.`
-      );
+    setUpgradeMessage("Checking SERVER 8792 plan enforcement...");
+    setLastEnforcement(null);
+
+    const roomCheck = await checkServerRoomCreate();
+
+    setLastEnforcement(roomCheck.data);
+
+    if (!roomCheck.allowed) {
+      setUpgradeMessage(roomCheck.reason);
+      setEnforcementMessage("Room creation blocked by SERVER 8792 enforcement.");
       return;
     }
 
-    if (visibility === "Private" && !limits.allowPrivate) {
-      setUpgradeMessage("Private rooms require Creator plan or higher.");
+    const privateCheck = await checkServerPrivateRoom();
+
+    if (!privateCheck.allowed) {
+      setUpgradeMessage(privateCheck.reason);
+      setEnforcementMessage("Private-room creation blocked by SERVER 8792 enforcement.");
+      setLastEnforcement(privateCheck.data);
       return;
     }
 
-    if (visibility === "Ticket Only" && !limits.allowTicketOnly) {
-      setUpgradeMessage("Ticket-only rooms require Creator plan or higher.");
+    const ticketCheck = await checkServerTicketOnly();
+
+    if (!ticketCheck.allowed) {
+      setUpgradeMessage(ticketCheck.reason);
+      setEnforcementMessage("Ticket-only room creation blocked by SERVER 8792 enforcement.");
+      setLastEnforcement(ticketCheck.data);
       return;
     }
 
@@ -252,6 +469,11 @@ export default function SuperAdminPanel({ onBack }) {
       visibility,
       host,
       status: "Standby",
+      ownerName: account.name || "AGV Account",
+      ownerEmail: account.email || "",
+      organization: account.organization || "",
+      createdByPlan: subscriptionPlan,
+      planLabel: limits.label || subscriptionPlan,
       ...privacy,
     };
 
@@ -260,14 +482,84 @@ export default function SuperAdminPanel({ onBack }) {
     setCategory("Convention");
     setVisibility("Public");
     setHost("Unassigned");
-    setUpgradeMessage("");
+    setUpgradeMessage(roomCheck.reason || "Room created under active plan enforcement.");
+    setEnforcementMessage("SERVER 8792 enforcement approved this room creation.");
   }
 
   function deleteRoom(id) {
     setRooms(rooms.filter((room) => room.id !== id));
   }
 
-  function updateRoomVisibility(id, nextVisibility) {
+  async function updateRoomVisibility(id, nextVisibility) {
+    const targetRoom = rooms.find((room) => room.id === id);
+
+    if (!targetRoom) {
+      setUpgradeMessage("Room not found.");
+      return;
+    }
+
+    if (nextVisibility === "Private") {
+      try {
+        const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/check-private-room`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: account.email,
+            plan: subscriptionPlan,
+            requestPrivate: true,
+            isPrivate: true,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.ok && !data.allowed) {
+          setUpgradeMessage(data.reason || "Private rooms require an upgraded plan.");
+          setEnforcementMessage("Visibility change blocked by SERVER 8792 enforcement.");
+          setLastEnforcement(data);
+          return;
+        }
+      } catch {
+        if (!limits.allowPrivate) {
+          setUpgradeMessage("Private rooms require Creator plan or higher.");
+          return;
+        }
+      }
+    }
+
+    if (nextVisibility === "Ticket Only") {
+      try {
+        const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription/check-ticket-only`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: account.email,
+            plan: subscriptionPlan,
+            requestTicketOnly: true,
+            isTicketOnly: true,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data?.ok && !data.allowed) {
+          setUpgradeMessage(data.reason || "Ticket-only rooms require an upgraded plan.");
+          setEnforcementMessage("Visibility change blocked by SERVER 8792 enforcement.");
+          setLastEnforcement(data);
+          return;
+        }
+      } catch {
+        if (!limits.allowTicketOnly) {
+          setUpgradeMessage("Ticket-only rooms require Creator plan or higher.");
+          return;
+        }
+      }
+    }
+
     const privacy = getPrivacyFlags(nextVisibility);
 
     setRooms(
@@ -281,6 +573,9 @@ export default function SuperAdminPanel({ onBack }) {
           : room
       )
     );
+
+    setUpgradeMessage(`Room visibility changed to ${nextVisibility}.`);
+    setEnforcementMessage("SERVER 8792 visibility enforcement passed or local fallback allowed it.");
   }
 
   function updateRoomStatus(id, nextStatus) {
@@ -338,12 +633,13 @@ export default function SuperAdminPanel({ onBack }) {
     <div style={styles.page}>
       <header style={styles.header}>
         <div>
-          <div style={styles.badge}>AGV BILLING FOUNDATION</div>
+          <div style={styles.badge}>AGV SERVER-SIDE PLAN ENFORCEMENT</div>
           <h1 style={styles.title}>Super Admin Control Center</h1>
           <p style={styles.subtitle}>
-            Manage rooms, subscription limits, and Stripe-ready upgrade paths.
+            Manage rooms, subscription limits, Stripe upgrade paths, and SERVER 8792 plan enforcement.
           </p>
           <p style={styles.serverMessage}>{subscriptionMessage}</p>
+          <p style={styles.enforcementMessage}>{enforcementMessage}</p>
           {billingMessage ? <p style={styles.billingMessage}>{billingMessage}</p> : null}
         </div>
 
@@ -357,6 +653,10 @@ export default function SuperAdminPanel({ onBack }) {
           <div style={styles.planBadge}>{limits.label || subscriptionPlan} Plan</div>
           <h2 style={styles.planTitle}>AGV SaaS Usage</h2>
           <p style={styles.planText}>{limits.note || "Subscription authority active."}</p>
+          <p style={styles.planText}>
+            Account: {account.name || "Not synced"} • {account.email || "No email"} •{" "}
+            {account.organization || "No organization"}
+          </p>
         </div>
 
         <div style={styles.planStats}>
@@ -404,6 +704,20 @@ export default function SuperAdminPanel({ onBack }) {
             <div>Viewer Limit: {limits.maxViewers}</div>
             <div>Private Rooms: {limits.allowPrivate ? "Included" : "Upgrade Required"}</div>
             <div>Ticket-Only Rooms: {limits.allowTicketOnly ? "Included" : "Upgrade Required"}</div>
+          </div>
+
+          <div style={styles.enforcementBox}>
+            <strong>SERVER 8792 Enforcement Check</strong>
+            <div>{enforcementMessage}</div>
+            {lastEnforcement ? (
+              <>
+                <div>Last Check: {lastEnforcement.check}</div>
+                <div>Allowed: {lastEnforcement.allowed ? "Yes" : "No"}</div>
+                <div>Reason: {lastEnforcement.reason}</div>
+              </>
+            ) : (
+              <div>No room creation check has run yet.</div>
+            )}
           </div>
 
           <label style={styles.label}>Room Name</label>
@@ -509,6 +823,11 @@ export default function SuperAdminPanel({ onBack }) {
                 {room.isLocked ? "Locked" : "Open"}
               </div>
               <div style={styles.meta}>Host: {room.host || "Unassigned"}</div>
+              <div style={styles.meta}>Owner: {room.ownerName || "Not saved"}</div>
+              <div style={styles.meta}>Organization: {room.organization || "Not saved"}</div>
+              <div style={styles.meta}>
+                Plan: {room.planLabel || room.createdByPlan || subscriptionPlan}
+              </div>
             </div>
 
             <div style={styles.roomActions}>
@@ -599,6 +918,11 @@ const styles = {
     color: "#facc15",
     fontWeight: 800,
     marginTop: 10,
+  },
+  enforcementMessage: {
+    color: "#bbf7d0",
+    fontWeight: 800,
+    marginTop: 8,
   },
   billingMessage: {
     color: "#93c5fd",
@@ -704,6 +1028,15 @@ const styles = {
     background: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.12)",
     color: "#cbd5e1",
+    lineHeight: 1.7,
+  },
+  enforcementBox: {
+    marginTop: 12,
+    padding: 14,
+    borderRadius: 14,
+    background: "rgba(34,197,94,0.08)",
+    border: "1px solid rgba(34,197,94,0.22)",
+    color: "#bbf7d0",
     lineHeight: 1.7,
   },
   primaryButton: {
