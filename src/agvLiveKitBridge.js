@@ -7,12 +7,9 @@ import {
 
 const TOKEN_KEY = "stro_cheivery_auth_token";
 
-const MAIN_API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8787";
+const MAIN_API_BASE = "http://127.0.0.1:8787";
 
-const TOKEN_URL =
-  import.meta.env.VITE_AGV_LIVEKIT_TOKEN_URL ||
-  `${MAIN_API_BASE}/api/livekit/token`;
+const TOKEN_URL = "http://127.0.0.1:8791/api/livekit/token";
 
 function getAuthToken() {
   return window.localStorage.getItem(TOKEN_KEY) || "";
