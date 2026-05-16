@@ -1208,6 +1208,50 @@ function AgvLandingPage({
     }
   }
 
+
+  async function openBillingPortal() {
+    setBillingMessage("Opening Stripe Billing Portal...");
+
+    const customerEmail = String(account?.email || "").trim().toLowerCase();
+
+    if (!customerEmail) {
+      setBillingMessage(
+        "Sync your AGV account email first, then open Manage Billing."
+      );
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${BILLING_API_BASE}/api/billing/create-portal-session`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customerEmail }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setBillingMessage(
+          data?.error ||
+            "Stripe Billing Portal is not ready for this account yet."
+        );
+        return;
+      }
+
+      if (data.portalUrl) {
+        window.location.href = data.portalUrl;
+        return;
+      }
+
+      setBillingMessage("Billing Portal opened, but no portal URL was returned.");
+    } catch {
+      setBillingMessage("Could not reach billing server on 8793.");
+    }
+  }
+
   const billingStatusCard = useMemo(() => {
     if (billingReturn.status === "success") {
       return {
@@ -1339,6 +1383,9 @@ function AgvLandingPage({
 
               <button style={styles.secondaryButton} onClick={onFreeStart}>
                 {accountReady ? "Update Account" : "Sync Account"}
+              </button>
+              <button style={styles.secondaryButton} onClick={openBillingPortal}>
+                Manage Billing / Cancel Subscription
               </button>
             </div>
           </div>
