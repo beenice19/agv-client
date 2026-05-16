@@ -11,6 +11,9 @@ const SUBSCRIPTION_API_BASE =
 const BILLING_API_BASE =
   import.meta.env.VITE_AGV_BILLING_API_URL || "http://127.0.0.1:8793";
 
+const EVENT_API_BASE =
+  import.meta.env.VITE_AGV_EVENT_API_URL || "http://127.0.0.1:8786";
+
 const PLAN_LIMITS = {
   FREE: {
     label: "Free",
@@ -59,6 +62,14 @@ const PLAN_LIMITS = {
   },
 };
 
+const DEFAULT_TICKET_ROOMS = [
+  {
+    id: "main-hall",
+    name: "Main Hall",
+    source: "Default Room",
+  },
+];
+
 function readBillingFromUrl() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -74,6 +85,38 @@ function readBillingFromUrl() {
 function cleanPublicPlan(plan) {
   if (plan === "INTERNAL_TEST") return "CREATOR";
   return PLAN_LIMITS[plan] ? plan : "FREE";
+}
+
+function normalizeRoomId(value) {
+  const clean = String(value || "").trim();
+
+  if (!clean) return "main-hall";
+
+  return clean.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "main-hall";
+}
+
+function cleanRoomName(value, fallback = "Main Hall") {
+  const clean = String(value || "").trim();
+  return clean || fallback;
+}
+
+function uniqueRooms(roomList) {
+  const map = new Map();
+
+  roomList.forEach((room) => {
+    const id = normalizeRoomId(room.id || room.roomId || room.livekitRoom || room.name);
+    const name = cleanRoomName(room.name || room.title || room.roomName || id, id);
+
+    if (!map.has(id)) {
+      map.set(id, {
+        id,
+        name,
+        source: room.source || "Room",
+      });
+    }
+  });
+
+  return Array.from(map.values());
 }
 
 function getStoredAccount() {
@@ -458,7 +501,7 @@ function FreeSignupGate({ currentPlan, onApproved, onBack }) {
       return;
     }
 
-    const freeRoomId = cleanRoom.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const freeRoomId = normalizeRoomId(cleanRoom);
 
     const account = {
       name: cleanName,
@@ -714,14 +757,30 @@ function TicketGate({ onApproved, onBack }) {
 
       const data = await response.json();
 
-      if (!data.ok) {
+      if (!response.ok || !data.ok) {
         setMessage(data.message || "Ticket failed.");
         setWorking(false);
         return;
       }
 
+      const ticketRoomId = normalizeRoomId(
+        data.ticket?.roomId ||
+          data.ticket?.room ||
+          data.roomId ||
+          "main-hall"
+      );
+
       localStorage.setItem("agv_ticket_code", cleanCode);
       localStorage.setItem("agv_viewer_plan", subscriptionPlan);
+      localStorage.setItem("agv_ticket_room_id", ticketRoomId);
+      localStorage.setItem("agv_ticket_event_name", data.ticket?.eventName || "");
+
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set("room", ticketRoomId);
+        window.history.replaceState({}, "", url.toString());
+      } catch {}
+
       onApproved();
     } catch {
       setMessage("Unable to verify ticket. Please try again.");
@@ -769,7 +828,7 @@ function TicketGate({ onApproved, onBack }) {
 function TicketAdminPanel({ onBack }) {
   const [adminPin, setAdminPin] = useState(() => localStorage.getItem("agv_ticket_admin_pin") || "");
   const [adminUnlocked, setAdminUnlocked] = useState(false);
-  const [message, setMessage] = useState("Enter the ticket admin PIN used by the remote Render ticket server.");
+  const [message, setMessage] = useState("Enter the ticket admin PIN used by the local ticket server.");
   const [working, setWorking] = useState(false);
   const [tickets, setTickets] = useState([]);
 
@@ -777,12 +836,51 @@ function TicketAdminPanel({ onBack }) {
   const [buyerEmail, setBuyerEmail] = useState("");
   const [eventName, setEventName] = useState("AGV Live Event");
   const [roomId, setRoomId] = useState("main-hall");
+  const [roomOptions, setRoomOptions] = useState(DEFAULT_TICKET_ROOMS);
+  const [roomMessage, setRoomMessage] = useState("Room list not synced yet.");
+
+  useEffect(() => {
+    loadTicketRooms();
+  }, []);
+
+    async function loadTicketRooms() {
+    const collectedRooms = [...DEFAULT_TICKET_ROOMS];
+
+    try {
+      const savedRooms = JSON.parse(localStorage.getItem("agv_super_admin_rooms") || "[]");
+
+      if (Array.isArray(savedRooms)) {
+        savedRooms.forEach((room) => {
+          const exactRoomId = normalizeRoomId(room.id || room.roomId || room.livekitRoom || room.name);
+          const exactRoomName = cleanRoomName(room.name || room.roomName || room.title || exactRoomId, exactRoomId);
+
+          collectedRooms.push({
+            id: exactRoomId,
+            name: exactRoomName,
+            source: "Super Admin Room",
+          });
+        });
+      }
+    } catch {}
+
+    const mergedRooms = uniqueRooms(collectedRooms);
+
+    setRoomOptions(mergedRooms);
+
+    if (!mergedRooms.some((room) => room.id === roomId)) {
+      setRoomId(mergedRooms[0]?.id || "main-hall");
+    }
+
+    setRoomMessage(
+      `Room source locked: ${mergedRooms.length} real platform room option(s) loaded from Main Hall and Super Admin rooms only.`
+    );
+  }
 
   async function loadTickets(pinOverride) {
     const cleanPin = String(pinOverride || adminPin || "").trim();
 
     if (!cleanPin) {
-      setMessage("Enter the remote ticket admin PIN.");
+      setMessage("Enter the local ticket admin PIN.");
       return;
     }
 
@@ -802,7 +900,7 @@ function TicketAdminPanel({ onBack }) {
       if (!response.ok || !data?.ok) {
         setAdminUnlocked(false);
         setTickets([]);
-        setMessage(data?.message || data?.error || "Ticket admin access denied. Check the Render ticket admin PIN.");
+        setMessage(data?.message || data?.error || "Ticket admin access denied. Check the local ticket admin PIN.");
         setWorking(false);
         return;
       }
@@ -810,10 +908,11 @@ function TicketAdminPanel({ onBack }) {
       localStorage.setItem("agv_ticket_admin_pin", cleanPin);
       setAdminUnlocked(true);
       setTickets(normalizeTicketResponse(data));
-      setMessage("Ticket Admin restored and connected to the remote ticket server.");
+      setMessage("Ticket Admin connected to the local ticket server.");
+      await loadTicketRooms();
     } catch {
       setAdminUnlocked(false);
-      setMessage("Failed to fetch ticket list. Remote ticket server could not be reached from the browser.");
+      setMessage("Failed to fetch ticket list. Local ticket server could not be reached from the browser.");
     }
 
     setWorking(false);
@@ -824,10 +923,10 @@ function TicketAdminPanel({ onBack }) {
     const cleanBuyerName = buyerName.trim();
     const cleanBuyerEmail = buyerEmail.trim().toLowerCase();
     const cleanEventName = eventName.trim() || "AGV Live Event";
-    const cleanRoomId = roomId.trim() || "main-hall";
+    const cleanRoomId = normalizeRoomId(roomId || "main-hall");
 
     if (!cleanPin) {
-      setMessage("Enter the remote ticket admin PIN first.");
+      setMessage("Enter the local ticket admin PIN first.");
       return;
     }
 
@@ -864,11 +963,11 @@ function TicketAdminPanel({ onBack }) {
 
       setBuyerName("");
       setBuyerEmail("");
-      setMessage(`Ticket created${data.ticket?.code ? `: ${data.ticket.code}` : "."}`);
+      setMessage(`Ticket created for ${cleanRoomId}${data.ticket?.code ? `: ${data.ticket.code}` : "."}`);
 
       await loadTickets(cleanPin);
     } catch {
-      setMessage("Failed to fetch while creating ticket. Check the remote ticket server and browser connection.");
+      setMessage("Failed to fetch while creating ticket. Check the local ticket server and browser connection.");
     }
 
     setWorking(false);
@@ -889,7 +988,7 @@ function TicketAdminPanel({ onBack }) {
           <div style={styles.logoMark}>AGV</div>
           <div>
             <div style={styles.brandName}>Ticket Admin</div>
-            <div style={styles.brandSub}>Remote ticket server control panel</div>
+            <div style={styles.brandSub}>Local ticket server control panel</div>
           </div>
         </div>
 
@@ -903,10 +1002,10 @@ function TicketAdminPanel({ onBack }) {
       <main style={styles.shell}>
         <section style={styles.dashboardSection}>
           <div>
-            <div style={styles.badgeSmall}>AGV TICKET ADMIN RESTORED</div>
+            <div style={styles.badgeSmall}>AGV TICKET ROOM SYNC</div>
             <h1 style={styles.sectionTitle}>Ticket Control Center</h1>
             <p style={styles.sectionText}>
-              This panel connects to the remote Render ticket server and restores ticket list and ticket creation.
+              This panel now uses only Main Hall and real Super Admin rooms for ticket room assignment.
             </p>
             <p style={message.includes("denied") || message.includes("Failed") ? styles.errorText : styles.adminMessage}>
               {message}
@@ -915,10 +1014,13 @@ function TicketAdminPanel({ onBack }) {
 
           <div style={styles.accountCard}>
             <div>
-              <div style={styles.accountTitle}>Remote Ticket Server</div>
+              <div style={styles.accountTitle}>Local Ticket Server</div>
               <div style={styles.accountLine}>{TICKET_API_BASE}</div>
               <div style={styles.accountLine}>
                 Status: {adminUnlocked ? "Connected" : "Locked / Not verified"}
+              </div>
+              <div style={styles.accountLine}>
+                Rooms Available: {roomOptions.length}
               </div>
             </div>
 
@@ -931,13 +1033,13 @@ function TicketAdminPanel({ onBack }) {
         <section style={styles.planSection}>
           <h2 style={styles.sectionTitle}>Admin PIN</h2>
           <p style={styles.sectionText}>
-            Use the real admin PIN configured on Render for the deployed ticket server. Do not paste it into chat.
+            Use your local ticket admin PIN. Current local PIN: AGV-TICKET-2026.
           </p>
 
           <input
             value={adminPin}
             onChange={(e) => setAdminPin(e.target.value)}
-            placeholder="Remote ticket admin PIN"
+            placeholder="Local ticket admin PIN"
             type="password"
             style={styles.ticketInput}
           />
@@ -945,6 +1047,10 @@ function TicketAdminPanel({ onBack }) {
           <div style={styles.buttonRow}>
             <button style={styles.primaryButton} onClick={() => loadTickets()}>
               {working ? "Working..." : "Connect / Refresh Tickets"}
+            </button>
+
+            <button style={styles.secondaryButton} onClick={loadTicketRooms}>
+              Refresh Room List
             </button>
 
             <button style={styles.secondaryButton} onClick={clearStoredPin}>
@@ -957,8 +1063,13 @@ function TicketAdminPanel({ onBack }) {
           <section style={styles.planSection}>
             <h2 style={styles.sectionTitle}>Create Ticket</h2>
             <p style={styles.sectionText}>
-              Create a ticket for a buyer and assign it to an AGV event room.
+              Create a ticket for a buyer and assign it to any synced AGV room.
             </p>
+
+            <div style={styles.subscriptionCard}>
+              <div style={styles.planBadge}>Room Sync Active</div>
+              <p style={styles.adminMessage}>{roomMessage}</p>
+            </div>
 
             <input
               value={buyerName}
@@ -981,12 +1092,17 @@ function TicketAdminPanel({ onBack }) {
               style={styles.ticketInput}
             />
 
-            <input
+            <select
               value={roomId}
               onChange={(e) => setRoomId(e.target.value)}
-              placeholder="Room ID, example: main-hall"
-              style={styles.ticketInput}
-            />
+              style={styles.ticketSelect}
+            >
+              {roomOptions.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name} — {room.id} — {room.source}
+                </option>
+              ))}
+            </select>
 
             <div style={styles.buttonRow}>
               <button style={styles.primaryButton} onClick={createTicket}>
@@ -1038,7 +1154,7 @@ function TicketAdminPanel({ onBack }) {
             ) : (
               <div style={styles.subscriptionCard}>
                 <p style={styles.sectionText}>
-                  Enter the remote ticket admin PIN and click Connect / Refresh Tickets.
+                  Enter the local ticket admin PIN and click Connect / Refresh Tickets.
                 </p>
               </div>
             )}
@@ -1623,6 +1739,18 @@ const styles = {
     background: "rgba(255,255,255,0.08)",
     color: "#fff",
     fontSize: 18,
+    fontWeight: 800,
+    textAlign: "center",
+  },
+  ticketSelect: {
+    width: "min(720px, 100%)",
+    marginTop: 16,
+    padding: "16px 18px",
+    borderRadius: 14,
+    border: "1px solid rgba(255,255,255,0.18)",
+    background: "rgba(15,23,42,0.98)",
+    color: "#fff",
+    fontSize: 16,
     fontWeight: 800,
     textAlign: "center",
   },
