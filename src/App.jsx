@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppCore from "./AppCore.jsx";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
 
-const TICKET_API_BASE = "https://agv-ticket-server-clean.onrender.com";
+const TICKET_API_BASE = "http://127.0.0.1:8790";
 const TEMP_LOCAL_HOST_PIN = "AGV-HOST-2026";
 
 const SUBSCRIPTION_API_BASE =
@@ -147,6 +147,17 @@ function saveStoredAccount(account) {
       })
     );
   }
+}
+
+function normalizeTicketResponse(data) {
+  if (!data) return [];
+
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data.tickets)) return data.tickets;
+  if (Array.isArray(data.items)) return data.items;
+  if (Array.isArray(data.data)) return data.data;
+
+  return [];
 }
 
 export default function App() {
@@ -756,18 +767,283 @@ function TicketGate({ onApproved, onBack }) {
 }
 
 function TicketAdminPanel({ onBack }) {
+  const [adminPin, setAdminPin] = useState(() => localStorage.getItem("agv_ticket_admin_pin") || "");
+  const [adminUnlocked, setAdminUnlocked] = useState(false);
+  const [message, setMessage] = useState("Enter the ticket admin PIN used by the remote Render ticket server.");
+  const [working, setWorking] = useState(false);
+  const [tickets, setTickets] = useState([]);
+
+  const [buyerName, setBuyerName] = useState("");
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [eventName, setEventName] = useState("AGV Live Event");
+  const [roomId, setRoomId] = useState("main-hall");
+
+  async function loadTickets(pinOverride) {
+    const cleanPin = String(pinOverride || adminPin || "").trim();
+
+    if (!cleanPin) {
+      setMessage("Enter the remote ticket admin PIN.");
+      return;
+    }
+
+    setWorking(true);
+    setMessage("Checking ticket admin access...");
+
+    try {
+      const response = await fetch(`${TICKET_API_BASE}/api/tickets/list`, {
+        method: "GET",
+        headers: {
+          "x-agv-admin-pin": cleanPin,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setAdminUnlocked(false);
+        setTickets([]);
+        setMessage(data?.message || data?.error || "Ticket admin access denied. Check the Render ticket admin PIN.");
+        setWorking(false);
+        return;
+      }
+
+      localStorage.setItem("agv_ticket_admin_pin", cleanPin);
+      setAdminUnlocked(true);
+      setTickets(normalizeTicketResponse(data));
+      setMessage("Ticket Admin restored and connected to the remote ticket server.");
+    } catch {
+      setAdminUnlocked(false);
+      setMessage("Failed to fetch ticket list. Remote ticket server could not be reached from the browser.");
+    }
+
+    setWorking(false);
+  }
+
+  async function createTicket() {
+    const cleanPin = String(adminPin || "").trim();
+    const cleanBuyerName = buyerName.trim();
+    const cleanBuyerEmail = buyerEmail.trim().toLowerCase();
+    const cleanEventName = eventName.trim() || "AGV Live Event";
+    const cleanRoomId = roomId.trim() || "main-hall";
+
+    if (!cleanPin) {
+      setMessage("Enter the remote ticket admin PIN first.");
+      return;
+    }
+
+    if (!cleanBuyerName || !cleanBuyerEmail) {
+      setMessage("Enter buyer name and buyer email before creating a ticket.");
+      return;
+    }
+
+    setWorking(true);
+    setMessage("Creating ticket...");
+
+    try {
+      const response = await fetch(`${TICKET_API_BASE}/api/tickets/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-agv-admin-pin": cleanPin,
+        },
+        body: JSON.stringify({
+          buyerName: cleanBuyerName,
+          buyerEmail: cleanBuyerEmail,
+          eventName: cleanEventName,
+          roomId: cleanRoomId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setMessage(data?.message || data?.error || "Ticket could not be created.");
+        setWorking(false);
+        return;
+      }
+
+      setBuyerName("");
+      setBuyerEmail("");
+      setMessage(`Ticket created${data.ticket?.code ? `: ${data.ticket.code}` : "."}`);
+
+      await loadTickets(cleanPin);
+    } catch {
+      setMessage("Failed to fetch while creating ticket. Check the remote ticket server and browser connection.");
+    }
+
+    setWorking(false);
+  }
+
+  function clearStoredPin() {
+    localStorage.removeItem("agv_ticket_admin_pin");
+    setAdminPin("");
+    setAdminUnlocked(false);
+    setTickets([]);
+    setMessage("Stored ticket admin PIN cleared.");
+  }
+
   return (
     <div style={styles.page}>
-      <main style={styles.finalCta}>
-        <div style={styles.badge}>AGV TICKET ADMIN</div>
-        <h1 style={styles.ctaTitle}>Ticket Admin Restored</h1>
-        <p style={styles.ctaText}>
-          Ticket Admin is still connected in your prior build. This pass focuses on
-          account sync and SERVER 8792 account foundation.
-        </p>
-        <button style={styles.secondaryButton} onClick={onBack}>
-          Back to Landing
-        </button>
+      <header style={styles.nav}>
+        <div style={styles.brand}>
+          <div style={styles.logoMark}>AGV</div>
+          <div>
+            <div style={styles.brandName}>Ticket Admin</div>
+            <div style={styles.brandSub}>Remote ticket server control panel</div>
+          </div>
+        </div>
+
+        <div style={styles.navActions}>
+          <button style={styles.navButton} onClick={onBack}>
+            Back to Landing
+          </button>
+        </div>
+      </header>
+
+      <main style={styles.shell}>
+        <section style={styles.dashboardSection}>
+          <div>
+            <div style={styles.badgeSmall}>AGV TICKET ADMIN RESTORED</div>
+            <h1 style={styles.sectionTitle}>Ticket Control Center</h1>
+            <p style={styles.sectionText}>
+              This panel connects to the remote Render ticket server and restores ticket list and ticket creation.
+            </p>
+            <p style={message.includes("denied") || message.includes("Failed") ? styles.errorText : styles.adminMessage}>
+              {message}
+            </p>
+          </div>
+
+          <div style={styles.accountCard}>
+            <div>
+              <div style={styles.accountTitle}>Remote Ticket Server</div>
+              <div style={styles.accountLine}>{TICKET_API_BASE}</div>
+              <div style={styles.accountLine}>
+                Status: {adminUnlocked ? "Connected" : "Locked / Not verified"}
+              </div>
+            </div>
+
+            <div style={adminUnlocked ? styles.accountBadgeGood : styles.accountBadgeWarn}>
+              {adminUnlocked ? "Ticket Admin Connected" : "PIN Required"}
+            </div>
+          </div>
+        </section>
+
+        <section style={styles.planSection}>
+          <h2 style={styles.sectionTitle}>Admin PIN</h2>
+          <p style={styles.sectionText}>
+            Use the real admin PIN configured on Render for the deployed ticket server. Do not paste it into chat.
+          </p>
+
+          <input
+            value={adminPin}
+            onChange={(e) => setAdminPin(e.target.value)}
+            placeholder="Remote ticket admin PIN"
+            type="password"
+            style={styles.ticketInput}
+          />
+
+          <div style={styles.buttonRow}>
+            <button style={styles.primaryButton} onClick={() => loadTickets()}>
+              {working ? "Working..." : "Connect / Refresh Tickets"}
+            </button>
+
+            <button style={styles.secondaryButton} onClick={clearStoredPin}>
+              Clear Stored PIN
+            </button>
+          </div>
+        </section>
+
+        {adminUnlocked ? (
+          <section style={styles.planSection}>
+            <h2 style={styles.sectionTitle}>Create Ticket</h2>
+            <p style={styles.sectionText}>
+              Create a ticket for a buyer and assign it to an AGV event room.
+            </p>
+
+            <input
+              value={buyerName}
+              onChange={(e) => setBuyerName(e.target.value)}
+              placeholder="Buyer name"
+              style={styles.ticketInput}
+            />
+
+            <input
+              value={buyerEmail}
+              onChange={(e) => setBuyerEmail(e.target.value)}
+              placeholder="Buyer email"
+              style={styles.ticketInput}
+            />
+
+            <input
+              value={eventName}
+              onChange={(e) => setEventName(e.target.value)}
+              placeholder="Event name"
+              style={styles.ticketInput}
+            />
+
+            <input
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              placeholder="Room ID, example: main-hall"
+              style={styles.ticketInput}
+            />
+
+            <div style={styles.buttonRow}>
+              <button style={styles.primaryButton} onClick={createTicket}>
+                {working ? "Working..." : "Create Ticket"}
+              </button>
+
+              <button style={styles.secondaryButton} onClick={() => loadTickets()}>
+                Refresh Ticket List
+              </button>
+            </div>
+          </section>
+        ) : null}
+
+        <section style={styles.dashboardSection}>
+          <div>
+            <div style={styles.badgeSmall}>TICKET LIST</div>
+            <h2 style={styles.sectionTitle}>Current Tickets</h2>
+            <p style={styles.sectionText}>
+              {tickets.length ? `${tickets.length} ticket(s) loaded.` : "No tickets loaded yet."}
+            </p>
+          </div>
+
+          <div style={styles.ticketList}>
+            {tickets.length ? (
+              tickets.map((ticket, index) => {
+                const code = ticket.code || ticket.ticketCode || ticket.id || `ticket-${index}`;
+                const buyer = ticket.buyerName || ticket.name || "Unnamed buyer";
+                const email = ticket.buyerEmail || ticket.email || "No email";
+                const event = ticket.eventName || ticket.event || "AGV Event";
+                const room = ticket.roomId || ticket.room || "main-hall";
+                const used = Boolean(ticket.used || ticket.redeemed || ticket.checkedIn);
+
+                return (
+                  <div key={`${code}-${index}`} style={styles.ticketCard}>
+                    <div>
+                      <div style={styles.ticketCode}>{code}</div>
+                      <div style={styles.accountLine}>Buyer: {buyer}</div>
+                      <div style={styles.accountLine}>Email: {email}</div>
+                      <div style={styles.accountLine}>Event: {event}</div>
+                      <div style={styles.accountLine}>Room: {room}</div>
+                    </div>
+
+                    <div style={used ? styles.accountBadgeWarn : styles.accountBadgeGood}>
+                      {used ? "Used" : "Active"}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div style={styles.subscriptionCard}>
+                <p style={styles.sectionText}>
+                  Enter the remote ticket admin PIN and click Connect / Refresh Tickets.
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
       </main>
     </div>
   );
@@ -1395,6 +1671,28 @@ const styles = {
     display: "grid",
     gap: 16,
     marginTop: 24,
+  },
+  ticketList: {
+    display: "grid",
+    gap: 12,
+  },
+  ticketCard: {
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(7,17,31,0.72)",
+    borderRadius: 20,
+    padding: 18,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 18,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  ticketCode: {
+    color: "#facc15",
+    fontSize: 22,
+    fontWeight: 950,
+    letterSpacing: "0.05em",
+    marginBottom: 8,
   },
   adminMessage: { marginTop: 16, color: "#facc15", fontWeight: 850 },
   errorText: { color: "#fca5a5", fontWeight: 800 },
