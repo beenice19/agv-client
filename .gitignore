@@ -32,3 +32,10 @@ src/*CORRUPTED*.jsx
 src/*GOLD-STABLE*.jsx
 src/*RESTORE*.jsx
 src/*WORKING*.jsx
+# AGV local backup files
+src/*.BEFORE-*.js
+src/*.BEFORE-*.jsx
+src/*.GOLD-STABLE*.js
+src/*.GOLD-STABLE*.jsx
+src/*BACKUP*.js
+src/*BACKUP*.jsx
