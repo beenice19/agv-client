@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGV System Readiness Dashboard</title>
+  <style>
+    :root {
+      --bg: #050b16;
+      --panel: rgba(255, 255, 255, 0.075);
+      --panel2: rgba(7, 17, 31, 0.85);
+      --border: rgba(255, 255, 255, 0.14);
+      --gold: #facc15;
+      --gold2: #c99a3b;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(250, 204, 21, 0.20), transparent 34%),
+        linear-gradient(135deg, #050b16 0%, #071526 44%, #111827 100%);
+      color: var(--text);
+      font-family: Inter, system-ui, Segoe UI, Arial, sans-serif;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: grid;
+      gap: 22px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background: var(--panel);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #06111f;
+      display: grid;
+      place-items: center;
+      font-weight: 950;
+      letter-spacing: -0.04em;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      margin: 10px 0 0;
+      line-height: 1.5;
+      max-width: 760px;
+      font-size: 16px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    button, a.button {
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #06111f;
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 34px;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-weight: 800;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 20px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .serviceTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .serviceName {
+      font-size: 21px;
+      font-weight: 950;
+      margin-bottom: 5px;
+    }
+
+    .serviceMeta {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 950;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .online {
+      color: #bbf7d0;
+      background: rgba(34, 197, 94, 0.14);
+      border-color: rgba(34, 197, 94, 0.36);
+    }
+
+    .offline {
+      color: #fecaca;
+      background: rgba(239, 68, 68, 0.14);
+      border-color: rgba(239, 68, 68, 0.36);
+    }
+
+    .checking {
+      color: #bfdbfe;
+      background: rgba(96, 165, 250, 0.14);
+      border-color: rgba(96, 165, 250, 0.36);
+    }
+
+    .warning {
+      color: #fed7aa;
+      background: rgba(251, 146, 60, 0.14);
+      border-color: rgba(251, 146, 60, 0.36);
+    }
+
+    pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: var(--panel2);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 14px;
+      color: #cbd5e1;
+      max-height: 160px;
+      overflow: auto;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 12px;
+      font-size: 13px;
+    }
+
+    .smallNote {
+      color: #fde68a;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 14px;
+      }
+
+      .summary {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="header">
+      <div class="brand">
+        <div class="logo">AGV</div>
+        <div>
+          <div class="eyebrow">System Readiness Dashboard</div>
+          <h1>AGV Service Health</h1>
+          <p class="subtitle">
+            Use this screen after a reboot to confirm every AGV local service is online before testing tickets, camera, billing, chat, bulletins, or moderator controls.
+          </p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" onclick="runChecks()">Refresh Checks</button>
+        <a class="button secondary" href="/">Back to AGV</a>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="stat">
+        <strong id="onlineCount">0</strong>
+        <span>Online</span>
+      </div>
+
+      <div class="stat">
+        <strong id="offlineCount">0</strong>
+        <span>Offline</span>
+      </div>
+
+      <div class="stat">
+        <strong id="totalCount">0</strong>
+        <span>Total Services</span>
+      </div>
+
+      <div class="stat">
+        <strong id="lastChecked">--</strong>
+        <span>Last Checked</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="serviceTop">
+        <div>
+          <div class="serviceName">Quick Guidance</div>
+          <div class="serviceMeta">
+            If camera fails, check <strong>8791</strong>. If Ticket Admin or Viewer Ticket Entry fails, check <strong>8790</strong>. If plan or account sync fails, check <strong>8792</strong>. If billing fails, check <strong>8793</strong>.
+          </div>
+        </div>
+        <div class="badge warning">Local Dev Tool</div>
+      </div>
+      <div class="smallNote">
+        This dashboard does not change AGV data. It only checks whether local services respond.
+      </div>
+    </section>
+
+    <main class="grid" id="servicesGrid"></main>
+
+    <div class="footer">
+      Avant Global Vision — Local Readiness Dashboard
+    </div>
+  </div>
+
+  <script>
+    const services = [
+      {
+        key: "client",
+        name: "CLIENT 5175 — AGV Frontend",
+        url: "http://127.0.0.1:5175",
+        method: "GET",
+        type: "text",
+        purpose: "Main frontend app.",
+        critical: true
+      },
+      {
+        key: "tickets",
+        name: "SERVER 8790 — Ticket Server",
+        url: "http://127.0.0.1:8790/health",
+        method: "GET",
+        type: "json",
+        purpose: "Ticket Admin, ticket creation, viewer ticket verification.",
+        critical: true
+      },
+      {
+        key: "livekit",
+        name: "SERVER 8791 — LiveKit Token Server",
+        url: "http://127.0.0.1:8791/api/livekit/token",
+        method: "POST",
+        type: "json",
+        body: {
+          roomName: "readiness-check",
+          identity: "agv-readiness-check",
+          name: "AGV Readiness Check",
+          role: "host"
+        },
+        purpose: "Camera, host broadcast, viewer stream tokens.",
+        critical: true
+      },
+      {
+        key: "subscription",
+        name: "SERVER 8792 — Subscription / Account Server",
+        url: "http://127.0.0.1:8792/health",
+        method: "GET",
+        type: "json",
+        purpose: "Account sync, plan limits, room enforcement, Stripe customer fields.",
+        critical: true
+      },
+      {
+        key: "billing",
+        name: "SERVER 8793 — Stripe Billing Server",
+        url: "http://127.0.0.1:8793/health",
+        method: "GET",
+        type: "json",
+        purpose: "Checkout, billing portal, Stripe customer sync.",
+        critical: true
+      },
+      {
+        key: "events",
+        name: "SERVER 8786 — Event Server",
+        url: "http://127.0.0.1:8786/health",
+        method: "GET",
+        type: "json",
+        purpose: "Event ownership and event records.",
+        critical: false
+      },
+      {
+        key: "bulletin",
+        name: "SERVER 8785 — Bulletin Server",
+        url: "http://127.0.0.1:8785/health",
+        method: "GET",
+        type: "json",
+        purpose: "Room bulletin board messages.",
+        critical: false
+      },
+      {
+        key: "chat",
+        name: "SERVER 8788 — Chat Server",
+        url: "http://127.0.0.1:8788/health",
+        method: "GET",
+        type: "json",
+        purpose: "Room chat messages.",
+        critical: false
+      },
+      {
+        key: "moderator",
+        name: "SERVER 8789 — Moderator Server",
+        url: "http://127.0.0.1:8789/health",
+        method: "GET",
+        type: "json",
+        purpose: "Moderator assignments and room controls.",
+        critical: false
+      }
+    ];
+
+    const state = {};
+
+    function badgeClass(status) {
+      if (status === "online") return "badge online";
+      if (status === "offline") return "badge offline";
+      if (status === "warning") return "badge warning";
+      return "badge checking";
+    }
+
+    function badgeText(status) {
+      if (status === "online") return "Online";
+      if (status === "offline") return "Offline";
+      if (status === "warning") return "Warning";
+      return "Checking";
+    }
+
+    function render() {
+      const grid = document.getElementById("servicesGrid");
+      grid.innerHTML = "";
+
+      let online = 0;
+      let offline = 0;
+
+      services.forEach((service) => {
+        const item = state[service.key] || {
+          status: "checking",
+          details: "Waiting to check..."
+        };
+
+        if (item.status === "online") online++;
+        if (item.status === "offline") offline++;
+
+        const card = document.createElement("article");
+        card.className = "card";
+        card.innerHTML = `
+          <div class="serviceTop">
+            <div>
+              <div class="serviceName">${service.name}</div>
+              <div class="serviceMeta">${service.purpose}</div>
+              <div class="serviceMeta">Endpoint: ${service.url}</div>
+              <div class="serviceMeta">Critical: ${service.critical ? "Yes" : "No"}</div>
+            </div>
+            <div class="${badgeClass(item.status)}">${badgeText(item.status)}</div>
+          </div>
+          <pre>${escapeHtml(item.details)}</pre>
+        `;
+        grid.appendChild(card);
+      });
+
+      document.getElementById("onlineCount").textContent = online;
+      document.getElementById("offlineCount").textContent = offline;
+      document.getElementById("totalCount").textContent = services.length;
+      document.getElementById("lastChecked").textContent = new Date().toLocaleTimeString();
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function checkService(service) {
+      state[service.key] = {
+        status: "checking",
+        details: "Checking..."
+      };
+      render();
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5500);
+
+      try {
+        const options = {
+          method: service.method || "GET",
+          signal: controller.signal,
+          headers: {}
+        };
+
+        if (service.method === "POST") {
+          options.headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify(service.body || {});
+        }
+
+        const response = await fetch(service.url, options);
+
+        let payload = "";
+
+        if (service.type === "json") {
+          try {
+            const json = await response.json();
+            payload = JSON.stringify(json, null, 2);
+          } catch {
+            payload = await response.text();
+          }
+        } else {
+          const text = await response.text();
+          payload = text.slice(0, 400) || "Response received.";
+        }
+
+        clearTimeout(timeout);
+
+        if (!response.ok) {
+          state[service.key] = {
+            status: "offline",
+            details: `HTTP ${response.status}\n${payload}`
+          };
+          render();
+          return;
+        }
+
+        state[service.key] = {
+          status: "online",
+          details: `HTTP ${response.status}\n${payload}`
+        };
+        render();
+      } catch (error) {
+        clearTimeout(timeout);
+
+        state[service.key] = {
+          status: "offline",
+          details:
+            error && error.name === "AbortError"
+              ? "Timed out. Service may be offline."
+              : (error && error.message) || "Failed to fetch."
+        };
+        render();
+      }
+    }
+
+    async function runChecks() {
+      services.forEach((service) => {
+        state[service.key] = {
+          status: "checking",
+          details: "Queued..."
+        };
+      });
+
+      render();
+
+      await Promise.allSettled(services.map(checkService));
+      render();
+    }
+
+    runChecks();
+  </script>
+</body>
+</html>
