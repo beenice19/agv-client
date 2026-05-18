@@ -2,17 +2,22 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppCore from "./AppCore.jsx";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
 
-const TICKET_API_BASE = "http://127.0.0.1:8790";
+const TICKET_API_BASE =
+  import.meta.env.VITE_AGV_TICKET_API_URL ||
+  "https://agv-ticket-server-clean.onrender.com";
 const TEMP_LOCAL_HOST_PIN = "AGV-HOST-2026";
 
 const SUBSCRIPTION_API_BASE =
-  import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
+  import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL ||
+  "https://agv-subscription-server.onrender.com";
 
 const BILLING_API_BASE =
-  import.meta.env.VITE_AGV_BILLING_API_URL || "http://127.0.0.1:8793";
+  import.meta.env.VITE_AGV_BILLING_API_URL ||
+  "https://agv-billing-server.onrender.com";
 
 const EVENT_API_BASE =
-  import.meta.env.VITE_AGV_EVENT_API_URL || "http://127.0.0.1:8786";
+  import.meta.env.VITE_AGV_EVENT_API_URL ||
+  "https://agv-event-server.onrender.com";
 
 const PLAN_LIMITS = {
   FREE: {
@@ -828,7 +833,7 @@ function TicketGate({ onApproved, onBack }) {
 function TicketAdminPanel({ onBack }) {
   const [adminPin, setAdminPin] = useState(() => localStorage.getItem("agv_ticket_admin_pin") || "");
   const [adminUnlocked, setAdminUnlocked] = useState(false);
-  const [message, setMessage] = useState("Enter the ticket admin PIN used by the local ticket server.");
+  const [message, setMessage] = useState("Enter the ticket admin PIN used by the AGV ticket server.");
   const [working, setWorking] = useState(false);
   const [tickets, setTickets] = useState([]);
 
@@ -908,11 +913,11 @@ function TicketAdminPanel({ onBack }) {
       localStorage.setItem("agv_ticket_admin_pin", cleanPin);
       setAdminUnlocked(true);
       setTickets(normalizeTicketResponse(data));
-      setMessage("Ticket Admin connected to the local ticket server.");
+      setMessage("Ticket Admin connected to the AGV ticket server.");
       await loadTicketRooms();
     } catch {
       setAdminUnlocked(false);
-      setMessage("Failed to fetch ticket list. Local ticket server could not be reached from the browser.");
+      setMessage("Failed to fetch ticket list. Remote ticket server could not be reached from the browser.");
     }
 
     setWorking(false);
@@ -967,7 +972,7 @@ function TicketAdminPanel({ onBack }) {
 
       await loadTickets(cleanPin);
     } catch {
-      setMessage("Failed to fetch while creating ticket. Check the local ticket server and browser connection.");
+      setMessage("Failed to fetch while creating ticket. Check the AGV ticket server and browser connection.");
     }
 
     setWorking(false);
@@ -988,7 +993,7 @@ function TicketAdminPanel({ onBack }) {
           <div style={styles.logoMark}>AGV</div>
           <div>
             <div style={styles.brandName}>Ticket Admin</div>
-            <div style={styles.brandSub}>Local ticket server control panel</div>
+            <div style={styles.brandSub}>AGV ticket server control panel</div>
           </div>
         </div>
 
@@ -1014,7 +1019,7 @@ function TicketAdminPanel({ onBack }) {
 
           <div style={styles.accountCard}>
             <div>
-              <div style={styles.accountTitle}>Local Ticket Server</div>
+              <div style={styles.accountTitle}>AGV Ticket Server</div>
               <div style={styles.accountLine}>{TICKET_API_BASE}</div>
               <div style={styles.accountLine}>
                 Status: {adminUnlocked ? "Connected" : "Locked / Not verified"}
@@ -1204,7 +1209,7 @@ function AgvLandingPage({
         window.location.href = data.checkoutUrl;
       }
     } catch {
-      setBillingMessage("Could not reach billing server on 8793.");
+      setBillingMessage("Could not reach the remote billing server.");
     }
   }
 
@@ -1248,7 +1253,7 @@ function AgvLandingPage({
 
       setBillingMessage("Billing Portal opened, but no portal URL was returned.");
     } catch {
-      setBillingMessage("Could not reach billing server on 8793.");
+      setBillingMessage("Could not reach the remote billing server.");
     }
   }
 
