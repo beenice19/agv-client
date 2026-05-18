@@ -319,7 +319,7 @@ export default function App() {
         }
       } catch {
         setPlanMessage(
-          `Payment successful. AGV saved your ${PLAN_LIMITS[returnedPlan]?.label || returnedPlan} plan locally, but SERVER 8792 account sync could not be reached.`
+          `Payment successful. AGV saved your ${PLAN_LIMITS[returnedPlan]?.label || returnedPlan} plan locally, but AGV subscription service account sync could not be reached.`
         );
       }
 
@@ -357,7 +357,7 @@ export default function App() {
           saveStoredAccount(serverAccount);
 
           setPlanMessage(
-            `Current AGV plan loaded from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account synced for ${serverAccount.email}.`
+            `Current AGV plan loaded from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account synced for ${serverAccount.email}.`
           );
         } else {
           const localAccount = getStoredAccount();
@@ -366,16 +366,16 @@ export default function App() {
             try {
               await upsertAccountToServer(localAccount, serverPlan, true);
               setPlanMessage(
-                `Current AGV plan loaded from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Local account synced.`
+                `Current AGV plan loaded from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Local account synced.`
               );
             } catch {
               setPlanMessage(
-                `Current AGV plan loaded from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account fields are not synced yet.`
+                `Current AGV plan loaded from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account fields are not synced yet.`
               );
             }
           } else {
             setPlanMessage(
-              `Current AGV plan loaded from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account fields are not synced yet.`
+              `Current AGV plan loaded from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}. Account fields are not synced yet.`
             );
           }
         }
@@ -387,7 +387,7 @@ export default function App() {
     } catch {
       const localPlan = cleanPublicPlan(localStorage.getItem("agv_current_plan") || "FREE");
       setCurrentPlan(localPlan);
-      setPlanMessage(`SERVER 8792 is offline. Using local AGV plan status: ${PLAN_LIMITS[localPlan]?.label || localPlan}.`);
+      setPlanMessage(`AGV subscription service is offline. Using saved AGV plan status: ${PLAN_LIMITS[localPlan]?.label || localPlan}.`);
     }
 
     setPlanLoaded(true);
@@ -565,9 +565,9 @@ function FreeSignupGate({ currentPlan, onApproved, onBack }) {
         }),
       });
 
-      setMessage("Account synced with SERVER 8792.");
+      setMessage("Account synced with AGV subscription service.");
     } catch {
-      setMessage("Account saved locally. SERVER 8792 account sync was not reachable.");
+      setMessage("Account saved in this browser. AGV subscription service was not reachable.");
     }
 
     onApproved(account);
@@ -579,7 +579,7 @@ function FreeSignupGate({ currentPlan, onApproved, onBack }) {
         <div style={styles.badge}>AGV ACCOUNT SYNC</div>
         <h1 style={styles.ctaTitle}>Create or Sync Your AGV Account</h1>
         <p style={styles.ctaText}>
-          This connects your name, email, organization, and current AGV plan to SERVER 8792.
+          This connects your name, email, organization, and current AGV plan to AGV subscription service.
         </p>
 
         <input
@@ -736,7 +736,7 @@ function TicketGate({ onApproved, onBack }) {
 
       setSubscriptionPlan(data.plan || "FREE");
       if (data.limits) setSubscriptionLimits(data.limits);
-      setSubscriptionMessage("Viewer Gate connected to SERVER 8792.");
+      setSubscriptionMessage("Viewer Gate connected to AGV subscription service.");
     } catch {
       setSubscriptionMessage("Subscription server offline. Using local fallback.");
     }
