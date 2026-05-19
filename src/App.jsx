@@ -210,6 +210,7 @@ function normalizeTicketResponse(data) {
 
 export default function App() {
   const [entryMode, setEntryMode] = useState("");
+  const [directViewerEntry, setDirectViewerEntry] = useState(false);
   const [ticketApproved, setTicketApproved] = useState(false);
   const [showTicketAdmin, setShowTicketAdmin] = useState(false);
   const [showSuperAdmin, setShowSuperAdmin] = useState(false);
@@ -404,6 +405,34 @@ export default function App() {
     setBillingReturn({ status: "", plan: "" });
   }
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roleParam = String(params.get("role") || params.get("mode") || "").trim().toLowerCase();
+    const roomParam = params.get("room") || params.get("roomId") || params.get("r");
+
+    const isViewerLink =
+      roleParam === "viewer" ||
+      roleParam === "watch" ||
+      roleParam === "audience";
+
+    if (!isViewerLink) return;
+
+    const targetRoomId = normalizeRoomId(
+      roomParam ||
+        localStorage.getItem("agv_ticket_room_id") ||
+        "main-hall"
+    );
+
+    localStorage.setItem("agv_ticket_code", "DIRECT-VIEWER-LINK");
+    localStorage.setItem("agv_ticket_room_id", targetRoomId);
+    localStorage.setItem("agv_ticket_event_name", "AGV Public Room");
+    localStorage.setItem("agv_direct_viewer_link", "true");
+
+    setTicketApproved(true);
+    setDirectViewerEntry(true);
+    setEntryMode("viewer");
+  }, []);
+
   if (showSuperAdmin) {
     return <SuperAdminPanel onBack={() => setShowSuperAdmin(false)} />;
   }
@@ -457,7 +486,7 @@ export default function App() {
     return <AppCore entryRole="host" />;
   }
 
-  if (entryMode === "viewer" && !ticketApproved && currentPlan !== "FREE") {
+  if (entryMode === "viewer" && !ticketApproved && currentPlan !== "FREE" && !directViewerEntry) {
     return (
       <TicketGate
         onBack={() => setEntryMode("")}
@@ -466,7 +495,7 @@ export default function App() {
     );
   }
 
-  if (entryMode === "viewer" && (ticketApproved || currentPlan === "FREE")) {
+  if (entryMode === "viewer" && (ticketApproved || currentPlan === "FREE" || directViewerEntry)) {
     return <AppCore entryRole="viewer" />;
   }
 
@@ -1314,7 +1343,7 @@ function AgvLandingPage({
         <div style={styles.navActions}>
           <button style={styles.navButton} onClick={onSuperAdmin}>Super Admin</button>
           <button style={styles.navButton} onClick={onAdmin}>Ticket Admin</button>
-          <button style={styles.navButton} onClick={onViewerEnter}>Viewer Ticket Entry</button>
+          <button style={styles.navButton} onClick={onViewerEnter}>Viewer Entry</button>
           <button style={styles.navButtonGold} onClick={onHostEnter}>Admin / Host Entry</button>
         </div>
       </header>
