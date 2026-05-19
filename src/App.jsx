@@ -885,7 +885,7 @@ function TicketAdminPanel({ onBack }) {
     const cleanPin = String(pinOverride || adminPin || "").trim();
 
     if (!cleanPin) {
-      setMessage("Enter the local ticket admin PIN.");
+      setMessage("Enter the AGV ticket admin PIN.");
       return;
     }
 
@@ -905,7 +905,7 @@ function TicketAdminPanel({ onBack }) {
       if (!response.ok || !data?.ok) {
         setAdminUnlocked(false);
         setTickets([]);
-        setMessage(data?.message || data?.error || "Ticket admin access denied. Check the local ticket admin PIN.");
+        setMessage(data?.message || data?.error || "Ticket admin access denied. Check the AGV ticket admin PIN.");
         setWorking(false);
         return;
       }
@@ -931,7 +931,7 @@ function TicketAdminPanel({ onBack }) {
     const cleanRoomId = normalizeRoomId(roomId || "main-hall");
 
     if (!cleanPin) {
-      setMessage("Enter the local ticket admin PIN first.");
+      setMessage("Enter the AGV ticket admin PIN first.");
       return;
     }
 
@@ -1038,13 +1038,13 @@ function TicketAdminPanel({ onBack }) {
         <section style={styles.planSection}>
           <h2 style={styles.sectionTitle}>Admin PIN</h2>
           <p style={styles.sectionText}>
-            Use your local ticket admin PIN. Current local PIN: AGV-TICKET-2026.
+            Use your AGV ticket admin PIN.
           </p>
 
           <input
             value={adminPin}
             onChange={(e) => setAdminPin(e.target.value)}
-            placeholder="Local ticket admin PIN"
+            placeholder="AGV ticket admin PIN"
             type="password"
             style={styles.ticketInput}
           />
@@ -1159,7 +1159,7 @@ function TicketAdminPanel({ onBack }) {
             ) : (
               <div style={styles.subscriptionCard}>
                 <p style={styles.sectionText}>
-                  Enter the local ticket admin PIN and click Connect / Refresh Tickets.
+                  Enter the AGV ticket admin PIN and click Connect / Refresh Tickets.
                 </p>
               </div>
             )}
