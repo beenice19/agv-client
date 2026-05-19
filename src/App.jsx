@@ -1338,7 +1338,16 @@ function AgvLandingPage({
             </div>
 
             <div style={styles.successActions}>
-              <button style={styles.primaryButton} onClick={onHostEnter}>
+              <button
+                style={styles.primaryButton}
+                onClick={() => {
+                  if (currentPlan === "FREE") {
+                    onViewerEnter();
+                    return;
+                  }
+                  onHostEnter();
+                }}
+              >
                 Enter AGV Platform
               </button>
 
@@ -1390,7 +1399,16 @@ function AgvLandingPage({
             <p style={styles.cardText}>{activePlan.description}</p>
 
             <div style={styles.buttonRowLeft}>
-              <button style={styles.primaryButton} onClick={onHostEnter}>
+              <button
+                style={styles.primaryButton}
+                onClick={() => {
+                  if (currentPlan === "FREE") {
+                    onViewerEnter();
+                    return;
+                  }
+                  onHostEnter();
+                }}
+              >
                 Enter Platform
               </button>
 
