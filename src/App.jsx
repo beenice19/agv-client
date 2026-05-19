@@ -457,7 +457,7 @@ export default function App() {
     return <AppCore entryRole="host" />;
   }
 
-  if (entryMode === "viewer" && !ticketApproved) {
+  if (entryMode === "viewer" && !ticketApproved && currentPlan !== "FREE") {
     return (
       <TicketGate
         onBack={() => setEntryMode("")}
@@ -466,7 +466,7 @@ export default function App() {
     );
   }
 
-  if (entryMode === "viewer" && ticketApproved) {
+  if (entryMode === "viewer" && (ticketApproved || currentPlan === "FREE")) {
     return <AppCore entryRole="viewer" />;
   }
 
@@ -480,7 +480,15 @@ export default function App() {
       onClearBillingMessage={clearBillingMessage}
       onFreeStart={() => setEntryMode("free-signup")}
       onHostEnter={() => setEntryMode("host")}
-      onViewerEnter={() => setEntryMode("viewer")}
+      onViewerEnter={() => {
+        if (currentPlan === "FREE") {
+          localStorage.setItem("agv_ticket_code", "FREE-ROOM");
+          localStorage.setItem("agv_ticket_room_id", "main-hall");
+          localStorage.setItem("agv_ticket_event_name", "Free AGV Room");
+          setTicketApproved(true);
+        }
+        setEntryMode("viewer");
+      }}
       onAdmin={() => setShowTicketAdmin(true)}
       onSuperAdmin={() => setShowSuperAdmin(true)}
     />

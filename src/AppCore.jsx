@@ -404,9 +404,9 @@ export default function AppCore({ entryRole = "viewer" }) {
 
       setRooms(syncedRooms);
 
-      setStatus(`Plan synced from SERVER 8792: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}`);
+      setStatus(`Plan synced from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}`);
     } catch {
-      setStatus(`SERVER 8792 offline. Using local plan: ${PLAN_LIMITS[localPlan]?.label || localPlan}`);
+      setStatus(`AGV subscription service offline. Using local plan: ${PLAN_LIMITS[localPlan]?.label || localPlan}`);
     }
   }
 
@@ -1382,7 +1382,7 @@ export default function AppCore({ entryRole = "viewer" }) {
                   {currentPlanLimits.allowTicketOnly ? "Allowed" : "Upgrade required"}
                 </div>
                 <button style={styles.secondaryButton} onClick={syncPlanFromSubscriptionServer}>
-                  Refresh Plan From SERVER 8792
+                  Refresh Plan From AGV subscription service
                 </button>
               </div>
 

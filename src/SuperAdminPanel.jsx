@@ -141,7 +141,7 @@ export default function SuperAdminPanel({ onBack }) {
   const [upgradeMessage, setUpgradeMessage] = useState("");
   const [billingMessage, setBillingMessage] = useState("");
   const [enforcementMessage, setEnforcementMessage] = useState(
-    "SERVER 8792 plan enforcement not checked yet."
+    "AGV subscription service plan enforcement not checked yet."
   );
   const [lastEnforcement, setLastEnforcement] = useState(null);
 
@@ -182,16 +182,16 @@ export default function SuperAdminPanel({ onBack }) {
         }));
       }
 
-      setSubscriptionMessage("Subscription loaded from SERVER 8792.");
+      setSubscriptionMessage("Subscription loaded from AGV subscription service.");
 
       if (data.enforcement?.enabled) {
-        setEnforcementMessage("SERVER 8792 enforcement is active.");
+        setEnforcementMessage("AGV subscription enforcement is active.");
       } else {
-        setEnforcementMessage("SERVER 8792 loaded, enforcement status not reported.");
+        setEnforcementMessage("AGV subscription service loaded, enforcement status not reported.");
       }
     } catch {
       setSubscriptionMessage("Subscription server offline. Using local fallback rules.");
-      setEnforcementMessage("SERVER 8792 enforcement offline. Local fallback checks will run.");
+      setEnforcementMessage("AGV subscription service enforcement offline. Local fallback checks will run.");
     }
   }
 
@@ -232,7 +232,7 @@ export default function SuperAdminPanel({ onBack }) {
         }));
       }
 
-      setSubscriptionMessage(`Saved ${savedPlan} plan to SERVER 8792.`);
+      setSubscriptionMessage(`Saved ${savedPlan} plan to AGV subscription service.`);
     } catch {
       setSubscriptionMessage("Could not reach subscription server. Local plan changed only.");
     }
@@ -303,20 +303,20 @@ export default function SuperAdminPanel({ onBack }) {
       if (!response.ok || !data?.ok) {
         return {
           allowed: rooms.length < limits.maxRooms,
-          reason: "SERVER 8792 check failed. Local fallback check was used.",
+          reason: "AGV subscription service check failed. Local fallback check was used.",
           data,
         };
       }
 
       return {
         allowed: Boolean(data.allowed),
-        reason: data.reason || "SERVER 8792 room-create check completed.",
+        reason: data.reason || "AGV subscription service room-create check completed.",
         data,
       };
     } catch {
       return {
         allowed: rooms.length < limits.maxRooms,
-        reason: "SERVER 8792 offline. Local fallback room limit check was used.",
+        reason: "AGV subscription service offline. Local fallback room limit check was used.",
         data: null,
       };
     }
@@ -352,20 +352,20 @@ export default function SuperAdminPanel({ onBack }) {
       if (!response.ok || !data?.ok) {
         return {
           allowed: Boolean(limits.allowPrivate),
-          reason: "SERVER 8792 private-room check failed. Local fallback check was used.",
+          reason: "AGV subscription service private-room check failed. Local fallback check was used.",
           data,
         };
       }
 
       return {
         allowed: Boolean(data.allowed),
-        reason: data.reason || "SERVER 8792 private-room check completed.",
+        reason: data.reason || "AGV subscription service private-room check completed.",
         data,
       };
     } catch {
       return {
         allowed: Boolean(limits.allowPrivate),
-        reason: "SERVER 8792 offline. Local fallback private-room check was used.",
+        reason: "AGV subscription service offline. Local fallback private-room check was used.",
         data: null,
       };
     }
@@ -401,20 +401,20 @@ export default function SuperAdminPanel({ onBack }) {
       if (!response.ok || !data?.ok) {
         return {
           allowed: Boolean(limits.allowTicketOnly),
-          reason: "SERVER 8792 ticket-only check failed. Local fallback check was used.",
+          reason: "AGV subscription service ticket-only check failed. Local fallback check was used.",
           data,
         };
       }
 
       return {
         allowed: Boolean(data.allowed),
-        reason: data.reason || "SERVER 8792 ticket-only check completed.",
+        reason: data.reason || "AGV subscription service ticket-only check completed.",
         data,
       };
     } catch {
       return {
         allowed: Boolean(limits.allowTicketOnly),
-        reason: "SERVER 8792 offline. Local fallback ticket-only check was used.",
+        reason: "AGV subscription service offline. Local fallback ticket-only check was used.",
         data: null,
       };
     }
@@ -428,7 +428,7 @@ export default function SuperAdminPanel({ onBack }) {
       return;
     }
 
-    setUpgradeMessage("Checking SERVER 8792 plan enforcement...");
+    setUpgradeMessage("Checking AGV subscription service plan enforcement...");
     setLastEnforcement(null);
 
     const roomCheck = await checkServerRoomCreate();
@@ -437,7 +437,7 @@ export default function SuperAdminPanel({ onBack }) {
 
     if (!roomCheck.allowed) {
       setUpgradeMessage(roomCheck.reason);
-      setEnforcementMessage("Room creation blocked by SERVER 8792 enforcement.");
+      setEnforcementMessage("Room creation blocked by AGV subscription service enforcement.");
       return;
     }
 
@@ -445,7 +445,7 @@ export default function SuperAdminPanel({ onBack }) {
 
     if (!privateCheck.allowed) {
       setUpgradeMessage(privateCheck.reason);
-      setEnforcementMessage("Private-room creation blocked by SERVER 8792 enforcement.");
+      setEnforcementMessage("Private-room creation blocked by AGV subscription service enforcement.");
       setLastEnforcement(privateCheck.data);
       return;
     }
@@ -454,7 +454,7 @@ export default function SuperAdminPanel({ onBack }) {
 
     if (!ticketCheck.allowed) {
       setUpgradeMessage(ticketCheck.reason);
-      setEnforcementMessage("Ticket-only room creation blocked by SERVER 8792 enforcement.");
+      setEnforcementMessage("Ticket-only room creation blocked by AGV subscription service enforcement.");
       setLastEnforcement(ticketCheck.data);
       return;
     }
@@ -483,7 +483,7 @@ export default function SuperAdminPanel({ onBack }) {
     setVisibility("Public");
     setHost("Unassigned");
     setUpgradeMessage(roomCheck.reason || "Room created under active plan enforcement.");
-    setEnforcementMessage("SERVER 8792 enforcement approved this room creation.");
+    setEnforcementMessage("AGV subscription service enforcement approved this room creation.");
   }
 
   function deleteRoom(id) {
@@ -517,7 +517,7 @@ export default function SuperAdminPanel({ onBack }) {
 
         if (response.ok && data?.ok && !data.allowed) {
           setUpgradeMessage(data.reason || "Private rooms require an upgraded plan.");
-          setEnforcementMessage("Visibility change blocked by SERVER 8792 enforcement.");
+          setEnforcementMessage("Visibility change blocked by AGV subscription service enforcement.");
           setLastEnforcement(data);
           return;
         }
@@ -548,7 +548,7 @@ export default function SuperAdminPanel({ onBack }) {
 
         if (response.ok && data?.ok && !data.allowed) {
           setUpgradeMessage(data.reason || "Ticket-only rooms require an upgraded plan.");
-          setEnforcementMessage("Visibility change blocked by SERVER 8792 enforcement.");
+          setEnforcementMessage("Visibility change blocked by AGV subscription service enforcement.");
           setLastEnforcement(data);
           return;
         }
@@ -575,7 +575,7 @@ export default function SuperAdminPanel({ onBack }) {
     );
 
     setUpgradeMessage(`Room visibility changed to ${nextVisibility}.`);
-    setEnforcementMessage("SERVER 8792 visibility enforcement passed or local fallback allowed it.");
+    setEnforcementMessage("AGV subscription service visibility enforcement passed or local fallback allowed it.");
   }
 
   function updateRoomStatus(id, nextStatus) {
@@ -636,7 +636,7 @@ export default function SuperAdminPanel({ onBack }) {
           <div style={styles.badge}>AGV SERVER-SIDE PLAN ENFORCEMENT</div>
           <h1 style={styles.title}>Super Admin Control Center</h1>
           <p style={styles.subtitle}>
-            Manage rooms, subscription limits, Stripe upgrade paths, and SERVER 8792 plan enforcement.
+            Manage rooms, subscription limits, Stripe upgrade paths, and AGV subscription service plan enforcement.
           </p>
           <p style={styles.serverMessage}>{subscriptionMessage}</p>
           <p style={styles.enforcementMessage}>{enforcementMessage}</p>
@@ -707,7 +707,7 @@ export default function SuperAdminPanel({ onBack }) {
           </div>
 
           <div style={styles.enforcementBox}>
-            <strong>SERVER 8792 Enforcement Check</strong>
+            <strong>AGV Subscription Enforcement Check</strong>
             <div>{enforcementMessage}</div>
             {lastEnforcement ? (
               <>
