@@ -979,6 +979,32 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
   }
 
+  async function copyViewerRoomLink() {
+    try {
+      const baseUrl = window.location.origin || "https://agv-client.vercel.app";
+      const targetRoomId = selectedRoomId || localStorage.getItem("agv_ticket_room_id") || "main-hall";
+      const viewerUrl = new URL(baseUrl);
+
+      viewerUrl.searchParams.set("room", targetRoomId);
+      viewerUrl.searchParams.set("role", "viewer");
+
+      await navigator.clipboard.writeText(viewerUrl.toString());
+
+      setStatus(`Viewer link copied for room: ${targetRoomId}`);
+    } catch {
+      const fallbackRoomId = selectedRoomId || localStorage.getItem("agv_ticket_room_id") || "main-hall";
+      const fallbackUrl = `${window.location.origin || "https://agv-client.vercel.app"}?room=${encodeURIComponent(
+        fallbackRoomId
+      )}&role=viewer`;
+
+      try {
+        window.prompt("Copy this viewer link:", fallbackUrl);
+      } catch {}
+
+      setStatus("Viewer link ready to copy.");
+    }
+  }
+
   async function joinAsViewer() {
     await connectToRoom("viewer", selectedRoomId);
   }
@@ -1077,6 +1103,34 @@ export default function AppCore({ entryRole = "viewer" }) {
           </button>
         </div>
       </header>
+
+      {!isViewerOnly ? (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            gap: 10,
+            padding: "0 18px 0 18px",
+          }}
+        >
+          <button
+            type="button"
+            onClick={copyViewerRoomLink}
+            style={{
+              border: "1px solid rgba(250, 204, 21, 0.45)",
+              background: "rgba(250, 204, 21, 0.12)",
+              color: "#fde68a",
+              borderRadius: 14,
+              padding: "10px 14px",
+              fontWeight: 800,
+              cursor: "pointer",
+            }}
+          >
+            Copy Viewer Link
+          </button>
+        </div>
+      ) : null}
 
       <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
