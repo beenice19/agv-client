@@ -333,7 +333,7 @@ export default function AppCore({ entryRole = "viewer" }) {
   const isModerator = moderators.length > 0;
   const canModerate = isHost || isModerator;
   const canControlStage = isHost;
-  const viewerNeedsTicket = isViewerOnly && !ticketApproved;
+  const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
 
   const selectedRoomMessages = messagesByRoom[selectedRoomId] || [];
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
@@ -871,8 +871,8 @@ export default function AppCore({ entryRole = "viewer" }) {
 
   async function connectToRoom(nextRole = roleMode, roomId = selectedRoomId) {
     if (nextRole === "viewer" && !ticketApproved) {
-      setStatus("Ticket required before viewer can join the room.");
-      setTicketMessage("Enter a valid ticket code to unlock viewer access.");
+      setStatus(currentPlan === "FREE" ? "Free viewer access allowed." : "Ticket required before viewer can join the room.");
+      setTicketMessage(currentPlan === "FREE" ? "Free viewer access is unlocked." : "Enter a valid ticket code to unlock viewer access.");
       return null;
     }
 
@@ -1153,7 +1153,7 @@ export default function AppCore({ entryRole = "viewer" }) {
               <div style={styles.ticketBadge}>AGV TICKET LOCK</div>
               <h2 style={styles.ticketTitle}>Enter your event ticket code</h2>
               <p style={styles.ticketText}>
-                Viewer access is locked until a valid ticket code is approved.
+                Viewer access is locked until a valid ticket code is approved. Free plan public rooms do not require a ticket.
               </p>
 
               <input
@@ -1513,7 +1513,7 @@ export default function AppCore({ entryRole = "viewer" }) {
               <div style={styles.controlBox}>
                 <div style={styles.controlTitle}>Ticket Lock Pass</div>
                 <div style={styles.helperText}>
-                  Host/Admin bypasses ticket lock. Viewer must verify a ticket before joining the room.
+                  Host/Admin bypasses ticket lock. Paid or ticket-only viewers must verify a ticket before joining the room. Free public rooms do not require a ticket.
                 </div>
               </div>
 
