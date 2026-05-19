@@ -479,7 +479,17 @@ export default function App() {
       billingReturn={billingReturn}
       onClearBillingMessage={clearBillingMessage}
       onFreeStart={() => setEntryMode("free-signup")}
-      onHostEnter={() => setEntryMode("host")}
+      onHostEnter={() => {
+        if (cleanPublicPlan(currentPlan) === "FREE") {
+          localStorage.setItem("agv_current_plan", "FREE");
+          localStorage.setItem("agv_host_trial_mode", "true");
+          setTicketApproved(true);
+          setEntryMode("host-approved");
+          return;
+        }
+
+        setEntryMode("host");
+      }}
       onViewerEnter={() => {
         if (currentPlan === "FREE") {
           localStorage.setItem("agv_ticket_code", "FREE-ROOM");
@@ -1316,7 +1326,7 @@ function AgvLandingPage({
             Turn your live event into a professional online venue.
           </h1>
           <p style={styles.subtitle}>
-            Start free with one AGV room, then upgrade when your audience grows.
+            Start free with one public AGV host room, then upgrade when your audience grows.
           </p>
 
           {billingMessage ? <p style={styles.adminMessage}>{billingMessage}</p> : null}
@@ -1341,10 +1351,6 @@ function AgvLandingPage({
               <button
                 style={styles.primaryButton}
                 onClick={() => {
-                  if (currentPlan === "FREE") {
-                    onViewerEnter();
-                    return;
-                  }
                   onHostEnter();
                 }}
               >
@@ -1402,10 +1408,6 @@ function AgvLandingPage({
               <button
                 style={styles.primaryButton}
                 onClick={() => {
-                  if (currentPlan === "FREE") {
-                    onViewerEnter();
-                    return;
-                  }
                   onHostEnter();
                 }}
               >
@@ -1432,7 +1434,7 @@ function AgvLandingPage({
             <PublicPlanCard
               title="Free"
               price="$0"
-              text="1 room, 25 viewers, public room access. Try before you buy."
+              text="1 public host room, 25 viewers, no ticket required. Try before you buy."
               buttonText="Start Free"
               onClick={onFreeStart}
               active={currentPlan === "FREE"}
