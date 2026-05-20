@@ -340,7 +340,7 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [viewerVolume, setViewerVolume] = useState(1);
   const [viewerAudioMessage, setViewerAudioMessage] = useState(
     isViewerOnly
-      ? "Tap Enable Audio if you can see the broadcast but cannot hear it."
+      ? "Tap to hear the host. On mobile, tap once here, then use your phone volume buttons."
       : ""
   );
 
@@ -911,10 +911,19 @@ export default function AppCore({ entryRole = "viewer" }) {
           }
 
           if (track.kind === "audio") {
-            element.autoplay = true;
-            element.style.display = "none";
-            document.body.appendChild(element);
-            audioElementsRef.current.push(element);
+            rememberViewerAudioElement(element, publication, track);
+
+            if (isViewerOnly && viewerAudioEnabled) {
+              setTimeout(() => {
+                try {
+                  element.muted = false;
+                  element.volume = Number(viewerVolume || 1);
+                  element.play?.();
+                } catch {}
+              }, 100);
+            }
+
+            setStatus("Receiving LiveKit audio");
           }
         },
 
@@ -988,10 +997,125 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
   }
 
+  function rememberViewerAudioElement(element, publication, track) {
+    if (!element) return null;
+
+    try {
+      const trackSid =
+        publication?.trackSid ||
+        publication?.sid ||
+        track?.sid ||
+        track?.mediaStreamTrack?.id ||
+        "";
+
+      if (trackSid) {
+        element.dataset.agvTrackSid = String(trackSid);
+      }
+
+      element.setAttribute("data-agv-livekit-audio", "true");
+      element.autoplay = false;
+      element.controls = false;
+      element.playsInline = true;
+      element.style.display = "none";
+      element.muted = viewerMuted;
+      element.volume = viewerMuted ? 0 : Number(viewerVolume || 1);
+
+      if (!document.body.contains(element)) {
+        document.body.appendChild(element);
+      }
+
+      if (!audioElementsRef.current.includes(element)) {
+        audioElementsRef.current.push(element);
+      }
+    } catch {}
+
+    return element;
+  }
+
+  function attachExistingViewerAudioTracks() {
+    if (!isViewerOnly || !livekitRoom) return [];
+
+    const attached = [];
+
+    try {
+      const participants = Array.from(livekitRoom.remoteParticipants?.values?.() || []);
+
+      participants.forEach((participant) => {
+        const publications = [
+          ...Array.from(participant.audioTrackPublications?.values?.() || []),
+          ...Array.from(participant.trackPublications?.values?.() || []),
+        ];
+
+        publications.forEach((publication) => {
+          try {
+            const track = publication?.track;
+            const kind = String(track?.kind || publication?.kind || "").toLowerCase();
+
+            if (!track || kind !== "audio" || typeof track.attach !== "function") return;
+
+            const trackSid =
+              publication?.trackSid ||
+              publication?.sid ||
+              track?.sid ||
+              track?.mediaStreamTrack?.id ||
+              "";
+
+            const alreadyAttached = audioElementsRef.current.some((element) => {
+              return trackSid && element?.dataset?.agvTrackSid === String(trackSid);
+            });
+
+            if (alreadyAttached) return;
+
+            const element = track.attach();
+            rememberViewerAudioElement(element, publication, track);
+            attached.push(element);
+          } catch {}
+        });
+      });
+    } catch {}
+
+    return attached;
+  }
+
+  async function playViewerAudioElements() {
+    const existingElements = [
+      ...audioElementsRef.current,
+      ...Array.from(document.querySelectorAll("audio[data-agv-livekit-audio='true']")),
+      ...Array.from(document.querySelectorAll("audio")),
+    ].filter(Boolean);
+
+    const uniqueElements = Array.from(new Set(existingElements));
+    let started = 0;
+
+    for (const media of uniqueElements) {
+      try {
+        media.muted = false;
+        media.volume = Number(viewerVolume || 1);
+        media.playsInline = true;
+
+        if (typeof media.play === "function") {
+          await media.play();
+        }
+
+        started += 1;
+      } catch {}
+    }
+
+    return started;
+  }
+
   function applyViewerAudioSettings() {
     if (!isViewerOnly) return;
 
-    const mediaElements = Array.from(document.querySelectorAll("video, audio"));
+    attachExistingViewerAudioTracks();
+
+    const mediaElements = Array.from(
+      new Set([
+        ...audioElementsRef.current,
+        ...Array.from(document.querySelectorAll("audio[data-agv-livekit-audio='true']")),
+        ...Array.from(document.querySelectorAll("audio")),
+      ])
+    ).filter(Boolean);
 
     mediaElements.forEach((media) => {
       try {
@@ -1017,22 +1141,9 @@ export default function AppCore({ entryRole = "viewer" }) {
   async function enableViewerAudio() {
     if (!isViewerOnly) return;
 
-    const mediaElements = Array.from(document.querySelectorAll("video, audio"));
-    let started = 0;
+    attachExistingViewerAudioTracks();
 
-    for (const media of mediaElements) {
-      try {
-        media.muted = false;
-        media.volume = Number(viewerVolume || 1);
-        media.playsInline = true;
-
-        if (typeof media.play === "function") {
-          await media.play();
-        }
-
-        started += 1;
-      } catch {}
-    }
+    let started = await playViewerAudioElements();
 
     setViewerMuted(false);
     setViewerAudioEnabled(true);
