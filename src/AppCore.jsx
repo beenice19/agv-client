@@ -335,6 +335,15 @@ export default function AppCore({ entryRole = "viewer" }) {
   const canControlStage = isHost;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
 
+  const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
+  const [viewerMuted, setViewerMuted] = useState(false);
+  const [viewerVolume, setViewerVolume] = useState(1);
+  const [viewerAudioMessage, setViewerAudioMessage] = useState(
+    isViewerOnly
+      ? "Tap Enable Audio if you can see the broadcast but cannot hear it."
+      : ""
+  );
+
   const selectedRoomMessages = messagesByRoom[selectedRoomId] || [];
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
 
@@ -979,6 +988,98 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
   }
 
+  function applyViewerAudioSettings() {
+    if (!isViewerOnly) return;
+
+    const mediaElements = Array.from(document.querySelectorAll("video, audio"));
+
+    mediaElements.forEach((media) => {
+      try {
+        media.muted = viewerMuted;
+        media.volume = viewerMuted ? 0 : Number(viewerVolume || 1);
+        media.playsInline = true;
+      } catch {}
+    });
+  }
+
+  useEffect(() => {
+    if (!isViewerOnly) return;
+
+    applyViewerAudioSettings();
+
+    const interval = window.setInterval(() => {
+      applyViewerAudioSettings();
+    }, 2000);
+
+    return () => window.clearInterval(interval);
+  }, [isViewerOnly, viewerMuted, viewerVolume]);
+
+  async function enableViewerAudio() {
+    if (!isViewerOnly) return;
+
+    const mediaElements = Array.from(document.querySelectorAll("video, audio"));
+    let started = 0;
+
+    for (const media of mediaElements) {
+      try {
+        media.muted = false;
+        media.volume = Number(viewerVolume || 1);
+        media.playsInline = true;
+
+        if (typeof media.play === "function") {
+          await media.play();
+        }
+
+        started += 1;
+      } catch {}
+    }
+
+    setViewerMuted(false);
+    setViewerAudioEnabled(true);
+
+    if (started > 0) {
+      setViewerAudioMessage(
+        "Viewer audio enabled. On phones and tablets, use the device volume buttons for loudness."
+      );
+      setStatus("Viewer audio enabled.");
+    } else {
+      setViewerAudioMessage(
+        "Audio unlock requested. If sound is still low, use your phone/tablet volume buttons and make sure silent mode is off."
+      );
+      setStatus("Viewer audio unlock requested.");
+    }
+
+    setTimeout(applyViewerAudioSettings, 250);
+  }
+
+  function toggleViewerMute() {
+    if (!isViewerOnly) return;
+
+    const nextMuted = !viewerMuted;
+    setViewerMuted(nextMuted);
+
+    setViewerAudioMessage(
+      nextMuted
+        ? "Viewer audio muted."
+        : "Viewer audio unmuted. Use your device volume buttons if you are on mobile."
+    );
+
+    setTimeout(applyViewerAudioSettings, 0);
+  }
+
+  function changeViewerVolume(nextValue) {
+    const nextVolume = Math.max(0, Math.min(1, Number(nextValue || 0)));
+
+    setViewerVolume(nextVolume);
+    setViewerMuted(nextVolume === 0);
+
+    setViewerAudioMessage(
+      "Viewer volume adjusted. On some mobile browsers, the phone/tablet volume buttons control final loudness."
+    );
+
+    setTimeout(applyViewerAudioSettings, 0);
+  }
+
   async function copyViewerRoomLink() {
     try {
       const baseUrl = window.location.origin || "https://agv-client.vercel.app";
@@ -1129,6 +1230,108 @@ export default function AppCore({ entryRole = "viewer" }) {
           >
             Copy Viewer Link
           </button>
+        </div>
+      ) : null}
+
+      {isViewerOnly ? (
+        <div
+          style={{
+            margin: "0 18px 12px 18px",
+            padding: "12px",
+            borderRadius: 16,
+            border: "1px solid rgba(96, 165, 250, 0.35)",
+            background: "rgba(15, 23, 42, 0.82)",
+            boxShadow: "0 14px 30px rgba(0,0,0,0.28)",
+            color: "#e5e7eb",
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 10,
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 900, color: "#bfdbfe" }}>
+                Viewer Audio
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.82 }}>
+                {viewerAudioMessage}
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <button
+                type="button"
+                onClick={enableViewerAudio}
+                style={{
+                  border: "1px solid rgba(34, 197, 94, 0.55)",
+                  background: viewerAudioEnabled
+                    ? "rgba(34, 197, 94, 0.22)"
+                    : "rgba(34, 197, 94, 0.14)",
+                  color: "#bbf7d0",
+                  borderRadius: 14,
+                  padding: "10px 14px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                {viewerAudioEnabled ? "Audio Enabled" : "Tap to Hear Audio"}
+              </button>
+
+              <button
+                type="button"
+                onClick={toggleViewerMute}
+                style={{
+                  border: "1px solid rgba(250, 204, 21, 0.45)",
+                  background: "rgba(250, 204, 21, 0.12)",
+                  color: "#fde68a",
+                  borderRadius: 14,
+                  padding: "10px 14px",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                {viewerMuted ? "Unmute" : "Mute"}
+              </button>
+            </div>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "90px 1fr 54px",
+              alignItems: "center",
+              gap: 10,
+              fontSize: 13,
+            }}
+          >
+            <span style={{ color: "#cbd5e1", fontWeight: 800 }}>Volume</span>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={Math.round(Number(viewerVolume || 0) * 100)}
+              onChange={(event) =>
+                changeViewerVolume(Number(event.target.value) / 100)
+              }
+              style={{ width: "100%" }}
+              aria-label="Viewer volume"
+            />
+            <span style={{ color: "#cbd5e1", textAlign: "right" }}>
+              {Math.round(Number(viewerVolume || 0) * 100)}%
+            </span>
+          </div>
+
+          <div style={{ fontSize: 12, opacity: 0.72 }}>
+            Mobile note: after tapping audio, use your phone or tablet volume
+            buttons for final loudness.
+          </div>
         </div>
       ) : null}
 
