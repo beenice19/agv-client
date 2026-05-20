@@ -1016,7 +1016,12 @@ export default function AppCore({ entryRole = "viewer" }) {
       element.autoplay = false;
       element.controls = false;
       element.playsInline = true;
-      element.style.display = "none";
+      element.style.position = "fixed";
+      element.style.left = "-9999px";
+      element.style.bottom = "0";
+      element.style.width = "1px";
+      element.style.height = "1px";
+      element.style.opacity = "0.01";
       element.muted = viewerMuted;
       element.volume = viewerMuted ? 0 : Number(viewerVolume || 1);
 
@@ -1141,6 +1146,12 @@ export default function AppCore({ entryRole = "viewer" }) {
   async function enableViewerAudio() {
     if (!isViewerOnly) return;
 
+    try {
+      if (livekitRoom && typeof livekitRoom.startAudio === "function") {
+        await livekitRoom.startAudio();
+      }
+    } catch {}
+
     attachExistingViewerAudioTracks();
 
     let started = await playViewerAudioElements();
@@ -1150,7 +1161,7 @@ export default function AppCore({ entryRole = "viewer" }) {
 
     if (started > 0) {
       setViewerAudioMessage(
-        "Viewer audio enabled. On phones and tablets, use the device volume buttons for loudness."
+        "Viewer audio enabled. On iPhone/iPad, turn Silent Mode off and use the side volume buttons."
       );
       setStatus("Viewer audio enabled.");
     } else {
@@ -1161,6 +1172,12 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
 
     setTimeout(applyViewerAudioSettings, 250);
+    setTimeout(() => {
+      try {
+        attachExistingViewerAudioTracks();
+        playViewerAudioElements();
+      } catch {}
+    }, 900);
   }
 
   function toggleViewerMute() {
@@ -1440,7 +1457,7 @@ export default function AppCore({ entryRole = "viewer" }) {
           </div>
 
           <div style={{ fontSize: 12, opacity: 0.72 }}>
-            Mobile note: after tapping audio, use your phone or tablet volume
+            Mobile note: after tapping audio, turn Silent Mode off and use your phone/tablet volume
             buttons for final loudness.
           </div>
         </div>
