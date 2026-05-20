@@ -902,7 +902,7 @@ export default function AppCore({ entryRole = "viewer" }) {
         name: `${nextRole.toUpperCase()} AGV`,
         role: nextRole,
 
-        onTrackSubscribed: (track) => {
+        onTrackSubscribed: (track, publication, participant) => {
           const element = track.attach();
 
           if (track.kind === "video") {
