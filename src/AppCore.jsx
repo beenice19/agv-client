@@ -1208,6 +1208,22 @@ export default function AppCore({ entryRole = "viewer" }) {
     setTimeout(applyViewerAudioSettings, 0);
   }
 
+  function openAgvAcademyCompanion() {
+    try {
+      const companionUrl =
+        import.meta.env.VITE_AGV_ACADEMY_URL ||
+        "/agv-academy-companion.html";
+
+      const finalUrl = new URL(companionUrl, window.location.origin);
+
+      window.open(finalUrl.toString(), "_blank", "noopener,noreferrer");
+      setStatus("AGV Companion Teacher Toolkit / Student Portal opened in a new tab.");
+    } catch {
+      window.open("/agv-academy-companion.html", "_blank", "noopener,noreferrer");
+      setStatus("AGV Companion opened in a new tab.");
+    }
+  }
+
   async function copyViewerRoomLink() {
     try {
       const baseUrl = window.location.origin || "https://agv-client.vercel.app";
@@ -1460,6 +1476,52 @@ export default function AppCore({ entryRole = "viewer" }) {
             Mobile note: after tapping audio, turn Silent Mode off and use your phone/tablet volume
             buttons for final loudness.
           </div>
+        </div>
+      ) : null}
+
+      {!isViewerOnly ? (
+        <div
+          style={{
+            margin: "0 18px 12px 18px",
+            padding: "14px",
+            borderRadius: 18,
+            border: "1px solid rgba(242, 198, 74, 0.38)",
+            background:
+              "linear-gradient(135deg, rgba(242,198,74,0.12), rgba(22,198,163,0.10), rgba(15,23,42,0.86))",
+            boxShadow: "0 14px 30px rgba(0,0,0,0.28)",
+            color: "#e5e7eb",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ minWidth: 240 }}>
+            <div style={{ fontWeight: 950, color: "#fde68a", fontSize: 15 }}>
+              AGV Companion Education Toolkit
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.82, lineHeight: 1.5 }}>
+              Open the Teacher Toolkit and Student Portal in a separate tab, then screen-share it to your AGV class.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={openAgvAcademyCompanion}
+            style={{
+              border: "1px solid rgba(242, 198, 74, 0.55)",
+              background: "linear-gradient(135deg, #f2c64a, #fff0bd)",
+              color: "#07111f",
+              borderRadius: 999,
+              padding: "11px 16px",
+              fontWeight: 950,
+              cursor: "pointer",
+              boxShadow: "0 10px 24px rgba(242,198,74,0.16)",
+            }}
+          >
+            Open Teacher Toolkit / Student Portal
+          </button>
         </div>
       ) : null}
 
