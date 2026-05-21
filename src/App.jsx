@@ -499,6 +499,50 @@ export default function App() {
     return <AppCore entryRole="viewer" />;
   }
 
+  const isAgvOwnerRequest = (() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+
+      return (
+        window.location.pathname === "/agv-owner" ||
+        window.location.pathname === "/agv-owner.html" ||
+        params.get("agvOwner") === "1" ||
+        window.location.hash === "#agv-owner"
+      );
+    } catch {
+      return false;
+    }
+  })();
+
+  if (isAgvOwnerRequest) {
+    return (
+      <AgvOwnerAccessPage
+        onPublicHome={() => {
+          try {
+            window.history.pushState({}, "", "/");
+          } catch {}
+
+          setShowTicketAdmin(false);
+          setShowSuperAdmin(false);
+          setEntryMode("");
+        }}
+        onSuperAdmin={() => {
+          setShowTicketAdmin(false);
+          setShowSuperAdmin(true);
+        }}
+        onTicketAdmin={() => {
+          setShowSuperAdmin(false);
+          setShowTicketAdmin(true);
+        }}
+        onHostEnter={() => {
+          setShowTicketAdmin(false);
+          setShowSuperAdmin(false);
+          setEntryMode("host");
+        }}
+      />
+    );
+  }
+
   return (
     <AgvLandingPage
       currentPlan={currentPlan}
@@ -1210,6 +1254,103 @@ function TicketAdminPanel({ onBack }) {
                 </p>
               </div>
             )}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
+}
+
+
+function AgvOwnerAccessPage({
+  onPublicHome,
+  onSuperAdmin,
+  onTicketAdmin,
+  onHostEnter,
+}) {
+  function openAcademyCompanion() {
+    window.open("/agv-academy-companion.html", "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <div style={styles.page}>
+      <div style={styles.goldGlow}></div>
+      <div style={styles.blueGlow}></div>
+
+      <header style={styles.nav}>
+        <div style={styles.brand}>
+          <div style={styles.logoMark}>AGV</div>
+          <div>
+            <div style={styles.brandName}>AGV Owner Access</div>
+            <div style={styles.brandSub}>Private business tools and ticket booth entry</div>
+          </div>
+        </div>
+
+        <div style={styles.navActions}>
+          <button style={styles.navButton} onClick={onPublicHome}>
+            Public Home
+          </button>
+        </div>
+      </header>
+
+      <main style={styles.shell}>
+        <section style={styles.hero}>
+          <div style={styles.badge}>PRIVATE BUSINESS OWNER PAGE</div>
+          <h1 style={styles.title}>Business tools are separate from the public splash page.</h1>
+          <p style={styles.subtitle}>
+            Use this owner access page to reach AGV business tools without exposing Super Admin
+            or Ticket Admin buttons on the public customer entrance.
+          </p>
+        </section>
+
+        <section style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: 16,
+          marginTop: 24,
+        }}>
+          <div style={styles.subscriptionCard}>
+            <div style={styles.badgeSmall}>OWNER ACCESS</div>
+            <h2 style={styles.sectionTitle}>Super Admin / Host</h2>
+            <p style={styles.sectionText}>
+              Open the secured host/admin access gate for broadcast platform control.
+            </p>
+            <button style={styles.primaryButton} onClick={onSuperAdmin}>
+              Open Super Admin
+            </button>
+          </div>
+
+          <div style={styles.subscriptionCard}>
+            <div style={styles.badgeSmall}>TICKET BOOTH</div>
+            <h2 style={styles.sectionTitle}>Ticket Admin</h2>
+            <p style={styles.sectionText}>
+              Create tickets, refresh issued tickets, and manage event access from the ticket server.
+            </p>
+            <button style={styles.primaryButton} onClick={onTicketAdmin}>
+              Open Ticket Booth
+            </button>
+          </div>
+
+          <div style={styles.subscriptionCard}>
+            <div style={styles.badgeSmall}>EDUCATION COMPANION</div>
+            <h2 style={styles.sectionTitle}>Teacher Toolkit / Student Portal</h2>
+            <p style={styles.sectionText}>
+              Open AGV Academy Companion in a separate tab for courses, schedules, handouts, and replay links.
+            </p>
+            <button style={styles.primaryButton} onClick={openAcademyCompanion}>
+              Open AGV Companion
+            </button>
+          </div>
+
+          <div style={styles.subscriptionCard}>
+            <div style={styles.badgeSmall}>HOST ENTRY</div>
+            <h2 style={styles.sectionTitle}>Regular Host Entry</h2>
+            <p style={styles.sectionText}>
+              Enter the host platform through the normal host access workflow.
+            </p>
+            <button style={styles.secondaryButton} onClick={onHostEnter}>
+              Open Host Entry
+            </button>
           </div>
         </section>
       </main>
