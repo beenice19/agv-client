@@ -1341,10 +1341,7 @@ function AgvLandingPage({
         </div>
 
         <div style={styles.navActions}>
-          <button style={styles.navButton} onClick={onSuperAdmin}>Super Admin</button>
-          <button style={styles.navButton} onClick={onAdmin}>Ticket Admin</button>
-          <button style={styles.navButton} onClick={onViewerEnter}>Viewer Entry</button>
-          <button style={styles.navButtonGold} onClick={onHostEnter}>Admin / Host Entry</button>
+          <button style={styles.navButtonGold} onClick={onViewerEnter}>Verify Event Ticket</button>
         </div>
       </header>
 
