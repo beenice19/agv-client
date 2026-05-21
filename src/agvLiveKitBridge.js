@@ -155,23 +155,125 @@ export async function publishAgvHostCamera(room) {
 }
 
 export async function publishAgvScreenShare(room) {
-  if (!room) {
+  if (!room?.localParticipant) {
     throw new Error("No LiveKit room is connected.");
   }
 
-  await room.localParticipant.setScreenShareEnabled(true);
+  if (typeof room.localParticipant.createScreenTracks !== "function") {
+    await room.localParticipant.setScreenShareEnabled(true);
+
+    return {
+      ok: true,
+      hasScreenAudio: false,
+      fallback: true,
+    };
+  }
+
+  const screenTracks = await room.localParticipant.createScreenTracks({
+    video: {
+      frameRate: { ideal: 24, max: 30 },
+    },
+    audio: true,
+  });
+
+  const screenVideoTrack =
+    screenTracks.find((track) => String(track.kind || "").toLowerCase() === "video") ||
+    null;
+
+  const screenAudioTrack =
+    screenTracks.find((track) => String(track.kind || "").toLowerCase() === "audio") ||
+    null;
+
+  if (!screenVideoTrack) {
+    screenTracks.forEach((track) => {
+      try {
+        track.stop();
+      } catch {}
+    });
+
+    throw new Error("No screen video track was selected.");
+  }
+
+  await room.localParticipant.publishTrack(screenVideoTrack, {
+    name: "agv-screen-video",
+    source: "screen_share",
+    videoEncoding: {
+      maxBitrate: 1_500_000,
+      maxFramerate: 24,
+    },
+  });
+
+  if (screenAudioTrack) {
+    await room.localParticipant.publishTrack(screenAudioTrack, {
+      name: "agv-screen-audio",
+      audioEncoding: {
+        maxBitrate: 96_000,
+      },
+    });
+  }
+
+  const stopSharedTracks = () => {
+    [screenVideoTrack, screenAudioTrack].filter(Boolean).forEach((track) => {
+      try {
+        room.localParticipant.unpublishTrack(track);
+      } catch {}
+
+      try {
+        track.stop();
+      } catch {}
+    });
+  };
+
+  try {
+    const mediaStreamTrack =
+      screenVideoTrack.mediaStreamTrack ||
+      screenVideoTrack._mediaStreamTrack ||
+      null;
+
+    if (mediaStreamTrack?.addEventListener) {
+      mediaStreamTrack.addEventListener("ended", stopSharedTracks, { once: true });
+    }
+  } catch {}
 
   return {
     ok: true,
+    videoTrack: screenVideoTrack,
+    screenTrack: screenVideoTrack,
+    audioTrack: screenAudioTrack || null,
+    screenAudioTrack: screenAudioTrack || null,
+    hasScreenAudio: Boolean(screenAudioTrack),
   };
 }
 
 export async function stopAgvScreenShare(room) {
-  if (!room) {
-    throw new Error("No LiveKit room is connected.");
+  if (!room?.localParticipant) {
+    return { ok: true };
   }
 
-  await room.localParticipant.setScreenShareEnabled(false);
+  try {
+    await room.localParticipant.setScreenShareEnabled(false);
+  } catch {}
+
+  const publications = Array.from(
+    room.localParticipant.trackPublications?.values?.() || []
+  );
+
+  for (const publication of publications) {
+    try {
+      const track = publication.track;
+      const name = String(publication.trackName || track?.name || "");
+
+      if (!track || !name.includes("agv-screen")) continue;
+
+      try {
+        room.localParticipant.unpublishTrack(track);
+      } catch {}
+
+      try {
+        track.stop();
+      } catch {}
+    } catch {}
+  }
 
   return {
     ok: true,
