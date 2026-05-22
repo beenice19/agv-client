@@ -1630,6 +1630,48 @@ export default function AppCore({ entryRole = "viewer" }) {
               </button>
             </div>
 
+            <div
+              style={{
+                border: "1px solid rgba(22,198,163,0.24)",
+                background: "rgba(22,198,163,0.08)",
+                borderRadius: 16,
+                padding: 12,
+                marginBottom: 14,
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div style={{ color: "#99f6e4", fontWeight: 950, fontSize: 12 }}>
+                Room Capacity
+              </div>
+
+              <div style={{ color: "#cbd5e1", fontSize: 12, lineHeight: 1.5 }}>
+                {currentRoomViewerEstimate} active / {currentRoomCapacity} seats
+              </div>
+
+              <div
+                style={{
+                  height: 8,
+                  borderRadius: 999,
+                  overflow: "hidden",
+                  background: "rgba(255,255,255,0.10)",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${currentRoomCapacityPercent}%`,
+                    height: "100%",
+                    borderRadius: 999,
+                    background: "linear-gradient(90deg, #16c6a3, #facc15)",
+                  }}
+                />
+              </div>
+
+              <div style={{ color: "#fde68a", fontSize: 11, fontWeight: 900 }}>
+                {currentRoomCapacityStatus} • {currentRoomSeatsRemaining} seats remaining
+              </div>
+            </div>
+
             <div style={styles.roomList}>
               {rooms.map((room) => (
                 <button
@@ -1707,102 +1749,6 @@ export default function AppCore({ entryRole = "viewer" }) {
               }}
             >
               <div>
-                <div
-                  style={{
-                    color: "#99f6e4",
-                    fontWeight: 950,
-                    letterSpacing: 1.8,
-                    fontSize: 11,
-                    marginBottom: 6,
-                  }}
-                >
-                  AGV ROOM CAPACITY
-                </div>
-
-                <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 950 }}>
-                  {currentPlanLimits.label} Plan Capacity Control
-                </div>
-
-                <div
-                  style={{
-                    color: "#cbd5e1",
-                    fontSize: 12,
-                    marginTop: 5,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  Capacity display is active. Server-side room lock comes in PASS 31B.
-                </div>
-              </div>
-
-              <div
-                style={{
-                  padding: "9px 12px",
-                  borderRadius: 999,
-                  background: "rgba(250,204,21,0.12)",
-                  border: "1px solid rgba(250,204,21,0.35)",
-                  color: "#fde68a",
-                  fontWeight: 950,
-                  fontSize: 12,
-                }}
-              >
-                {currentRoomCapacityStatus}
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                gap: 10,
-              }}
-            >
-              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
-                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Room Limit</span>
-                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomCapacity}</strong>
-              </div>
-
-              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
-                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Estimated Active Viewers</span>
-                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomViewerEstimate}</strong>
-              </div>
-
-              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
-                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Seats Remaining</span>
-                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomSeatsRemaining}</strong>
-              </div>
-
-              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
-                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Usage</span>
-                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomCapacityPercent}%</strong>
-              </div>
-            </div>
-
-            <div
-              style={{
-                height: 10,
-                borderRadius: 999,
-                overflow: "hidden",
-                background: "rgba(255,255,255,0.10)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div
-                style={{
-                  height: "100%",
-                  borderRadius: 999,
-                  background: "linear-gradient(90deg, #16c6a3, #facc15)",
-                  transition: "width 0.25s ease",
-                  width: `${currentRoomCapacityPercent}%`,
-                }}
-              />
-            </div>
-
-            <div style={{ color: "#cbd5e1", fontSize: 12, lineHeight: 1.55 }}>
-              {currentRoomUpgradeMessage}
-            </div>
-          </div>
-
           {viewerNeedsTicket ? (
             <div style={styles.ticketGate}>
               <div style={styles.ticketBadge}>AGV TICKET LOCK</div>
