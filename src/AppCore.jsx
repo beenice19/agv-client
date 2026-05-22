@@ -1523,6 +1523,55 @@ export default function AppCore({ entryRole = "viewer" }) {
             Open Teacher Toolkit / Student Portal
           </button>
         </div>
+      ) : !isViewerOnly && currentPlan === "FREE" ? (
+        <div
+          style={{
+            margin: "0 18px 12px 18px",
+            padding: "14px",
+            borderRadius: 18,
+            border: "1px solid rgba(22, 198, 163, 0.34)",
+            background:
+              "linear-gradient(135deg, rgba(22,198,163,0.11), rgba(242,198,74,0.08), rgba(15,23,42,0.86))",
+            boxShadow: "0 14px 30px rgba(0,0,0,0.22)",
+            color: "#e5e7eb",
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ minWidth: 240 }}>
+            <div style={{ fontWeight: 950, color: "#99f6e4", fontSize: 15 }}>
+              Unlock AGV Companion With Any Paid Plan
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.86, lineHeight: 1.5 }}>
+              Upgrade to Creator, Ministry, or Convention and receive the AGV Companion Teacher Toolkit
+              and Student Portal included with your subscription.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                window.location.href = "/";
+              } catch {}
+            }}
+            style={{
+              border: "1px solid rgba(22, 198, 163, 0.55)",
+              background: "linear-gradient(135deg, #16c6a3, #77f2d9)",
+              color: "#03110e",
+              borderRadius: 999,
+              padding: "11px 16px",
+              fontWeight: 950,
+              cursor: "pointer",
+              boxShadow: "0 10px 24px rgba(22,198,163,0.14)",
+            }}
+          >
+            View Paid Plans
+          </button>
+        </div>
       ) : null}
 
       <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
