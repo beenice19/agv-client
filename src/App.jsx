@@ -519,12 +519,12 @@ export default function App() {
       <AgvOwnerAccessPage
         onPublicHome={() => {
           try {
-            window.history.pushState({}, "", "/");
-          } catch {}
-
-          setShowTicketAdmin(false);
-          setShowSuperAdmin(false);
-          setEntryMode("");
+            window.location.href = "/";
+          } catch {
+            setShowTicketAdmin(false);
+            setShowSuperAdmin(false);
+            setEntryMode("");
+          }
         }}
         onSuperAdmin={() => {
           setShowTicketAdmin(false);
