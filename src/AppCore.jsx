@@ -333,6 +333,7 @@ export default function AppCore({ entryRole = "viewer" }) {
   const isModerator = moderators.length > 0;
   const canModerate = isHost || isModerator;
   const canControlStage = isHost;
+  const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
 
   const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
@@ -502,6 +503,11 @@ export default function AppCore({ entryRole = "viewer" }) {
   async function createEvent() {
     if (!isHost) {
       setStatus("Host access required to create events.");
+      return;
+    }
+
+    if (paidBusinessToolsLocked) {
+      setStatus("Event creation is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
       return;
     }
 
@@ -678,6 +684,11 @@ export default function AppCore({ entryRole = "viewer" }) {
       return;
     }
 
+    if (paidBusinessToolsLocked) {
+      setStatus("Moderator controls are included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
+      return;
+    }
+
     const value = moderatorInput.trim();
 
     if (!value) {
@@ -716,6 +727,11 @@ export default function AppCore({ entryRole = "viewer" }) {
   async function removeModerator(moderatorId) {
     if (!isHost) {
       setStatus("Host access required to remove moderators.");
+      return;
+    }
+
+    if (paidBusinessToolsLocked) {
+      setStatus("Removing moderators is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
       return;
     }
 
@@ -1941,6 +1957,24 @@ export default function AppCore({ entryRole = "viewer" }) {
               </div>
 
               <div style={styles.controlBox}>
+                {paidBusinessToolsLocked ? (
+                  <div
+                    style={{
+                      border: "1px solid rgba(250, 204, 21, 0.34)",
+                      background: "rgba(250, 204, 21, 0.10)",
+                      color: "#fde68a",
+                      borderRadius: 14,
+                      padding: 10,
+                      marginBottom: 10,
+                      fontSize: 12,
+                      fontWeight: 850,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Events and moderator controls are paid-plan tools. Upgrade to Creator, Ministry, or Convention.
+                  </div>
+                ) : null}
+
                 <div style={styles.controlTitle}>Event Creation System</div>
 
                 <div style={styles.helperText}>
