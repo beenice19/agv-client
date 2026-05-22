@@ -1315,6 +1315,53 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
   }
 
+  async function clearBulletins() {
+    if (!canModerate) {
+      setStatus("Moderator or Host access required.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Clear the bulletin board for this room? This will remove the old bulletin information for everyone viewing this room."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `${BULLETIN_API_BASE}/api/bulletins/${encodeURIComponent(selectedRoomId)}/clear`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok) {
+        setStatus(data?.error || "Could not clear bulletin board.");
+        return;
+      }
+
+      const nextBulletins = Array.isArray(data.bulletins)
+        ? data.bulletins
+        : Array.isArray(data?.state?.bulletins)
+        ? data.state.bulletins
+        : [];
+
+      setBulletinsByRoom((prev) => ({
+        ...prev,
+        [selectedRoomId]: nextBulletins,
+      }));
+
+      setNewBulletin("");
+      setStatus("Bulletin board cleared.");
+      await loadBulletins(selectedRoomId, true);
+    } catch {
+      setStatus("Could not reach bulletin server on 8785.");
+    }
+  }
+
   function copyInviteLink() {
     const base = window.location.origin || "http://127.0.0.1:5175";
     const invite = `${base}/?room=${encodeURIComponent(selectedRoomId)}`;
@@ -1763,6 +1810,18 @@ export default function AppCore({ entryRole = "viewer" }) {
 
                   <button style={styles.primaryButton} onClick={addBulletin}>
                     Add Bulletin
+                  </button>
+
+                  <button
+                    style={{
+                      ...styles.dangerButton,
+                      width: "100%",
+                      justifyContent: "center",
+                      marginTop: 8,
+                    }}
+                    onClick={clearBulletins}
+                  >
+                    Clear Bulletin Board
                   </button>
                 </>
               ) : (
