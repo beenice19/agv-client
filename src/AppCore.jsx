@@ -1551,26 +1551,25 @@ export default function AppCore({ entryRole = "viewer" }) {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              try {
-                window.location.href = "/";
-              } catch {}
-            }}
+          <div
             style={{
-              border: "1px solid rgba(22, 198, 163, 0.55)",
-              background: "linear-gradient(135deg, #16c6a3, #77f2d9)",
-              color: "#03110e",
+              border: "1px solid rgba(22, 198, 163, 0.42)",
+              background: "rgba(3, 17, 14, 0.72)",
+              color: "#ccfbf1",
               borderRadius: 999,
-              padding: "11px 16px",
-              fontWeight: 950,
-              cursor: "pointer",
+              padding: "10px 14px",
+              fontWeight: 900,
+              minWidth: 280,
+              maxWidth: 520,
+              overflow: "hidden",
               boxShadow: "0 10px 24px rgba(22,198,163,0.14)",
             }}
+            aria-label="AGV Companion paid plan message"
           >
-            View Paid Plans
-          </button>
+            <marquee behavior="scroll" direction="left" scrollamount="4">
+              Unlock AGV Companion With Any Paid Plan — Upgrade to Creator, Ministry, or Convention and receive the AGV Companion Teacher Toolkit and Student Portal included with your subscription.
+            </marquee>
+          </div>
         </div>
       ) : null}
 
