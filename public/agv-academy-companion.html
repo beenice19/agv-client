@@ -863,6 +863,71 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    function agvCompanionPlanAllowed() {
+      try {
+        const plan = String(
+          localStorage.getItem("agv_current_plan") ||
+          localStorage.getItem("agv_viewer_plan") ||
+          "FREE"
+        ).trim().toUpperCase();
+
+        return plan && plan !== "FREE";
+      } catch {
+        return false;
+      }
+    }
+
+    function renderAgvCompanionPlanLock() {
+      const target = document.getElementById("app");
+      if (!target) return;
+
+      target.innerHTML = `
+        <header class="header">
+          <div class="brand-wrap">
+            <div class="brand">
+              <div class="brand-mark">AGV</div>
+              <div class="brand-title">
+                <strong>AGV Academy Companion</strong>
+                <span>Paid Plan Required</span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <section class="center-page">
+          <div class="hero-panel">
+            <div class="eyebrow">AGV Paid Feature</div>
+            <h1>Teacher Toolkit access is included with paid AGV plans.</h1>
+            <p>
+              The AGV Academy Companion Teacher Toolkit and Student Portal are available for
+              Creator, Ministry, and Convention plans. Free Host accounts can use the public
+              AGV room, but education companion tools require an upgrade.
+            </p>
+
+            <div class="landing-grid">
+              <div class="choice-card primary" onclick="window.location.href='/'">
+                <div class="choice-icon">↩</div>
+                <strong>Return to AGV Home</strong>
+                <span>Go back to the public AGV page to upgrade or enter an event.</span>
+              </div>
+
+              <div class="choice-card" onclick="window.location.href='/'">
+                <div class="choice-icon">★</div>
+                <strong>Upgrade Required</strong>
+                <span>Choose Creator, Ministry, or Convention to unlock the teaching companion.</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    if (!agvCompanionPlanAllowed()) {
+      renderAgvCompanionPlanLock();
+      throw new Error("AGV Companion locked for Free plan.");
+    }
+
+
     const KEY = "agv_courses_v1_html";
     const app = document.getElementById("app");
     const toastEl = document.getElementById("toast");

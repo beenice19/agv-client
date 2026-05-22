@@ -1479,7 +1479,7 @@ export default function AppCore({ entryRole = "viewer" }) {
         </div>
       ) : null}
 
-      {!isViewerOnly ? (
+      {!isViewerOnly && currentPlan !== "FREE" ? (
         <div
           style={{
             margin: "0 18px 12px 18px",
