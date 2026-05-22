@@ -705,6 +705,11 @@ export default function AppCore({ entryRole = "viewer" }) {
           body: JSON.stringify({
             name: value,
             email: value.includes("@") ? value : "",
+            plan: currentPlan,
+            currentPlan,
+            createdByPlan: currentPlan,
+            requesterRole: isSuperAdmin ? "super-admin" : "owner",
+            requesterEmail: storedAccount?.email || freeAccount?.email || "",
           }),
         }
       );
@@ -741,7 +746,14 @@ export default function AppCore({ entryRole = "viewer" }) {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ moderatorId }),
+          body: JSON.stringify({
+            moderatorId,
+            plan: currentPlan,
+            currentPlan,
+            createdByPlan: currentPlan,
+            requesterRole: isSuperAdmin ? "super-admin" : "owner",
+            requesterEmail: storedAccount?.email || freeAccount?.email || "",
+          }),
         }
       );
 
