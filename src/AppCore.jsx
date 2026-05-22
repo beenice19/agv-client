@@ -310,6 +310,47 @@ export default function AppCore({ entryRole = "viewer" }) {
 
   const currentPlanLimits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.FREE;
 
+  const currentRoomCapacity = Number(
+    selectedRoom?.maxViewers || currentPlanLimits.maxViewers || 0
+  );
+
+  const livekitParticipantEstimate = Number(
+    livekitRoom?.numParticipants ||
+      livekitRoom?.remoteParticipants?.size ||
+      0
+  );
+
+  const currentRoomViewerEstimate = Math.max(0, livekitParticipantEstimate);
+
+  const currentRoomSeatsRemaining = Math.max(
+    0,
+    currentRoomCapacity - currentRoomViewerEstimate
+  );
+
+  const currentRoomCapacityPercent =
+    currentRoomCapacity > 0
+      ? Math.min(
+          100,
+          Math.round((currentRoomViewerEstimate / currentRoomCapacity) * 100)
+        )
+      : 0;
+
+  const currentRoomCapacityStatus =
+    currentRoomCapacityPercent >= 100
+      ? "At Capacity"
+      : currentRoomCapacityPercent >= 85
+      ? "Almost Full"
+      : "Available";
+
+  const currentRoomUpgradeMessage =
+    currentPlan === "FREE"
+      ? "Free rooms are limited to 25 viewers. Upgrade to Creator, Ministry, or Convention to seat larger audiences."
+      : currentPlan === "CREATOR"
+      ? "Creator rooms support up to 100 viewers. Upgrade to Ministry or Convention for larger teaching and event capacity."
+      : currentPlan === "MINISTRY"
+      ? "Ministry rooms support up to 500 viewers. Upgrade to Convention for large-scale digital events."
+      : "Convention plan is active for large-capacity AGV events.";
+
   const isViewerOnly = roleMode === "viewer";
   const isHost = roleMode === "host";
   const isAccountHost = Boolean(freeAccount?.email) && isHost;
@@ -1641,6 +1682,124 @@ export default function AppCore({ entryRole = "viewer" }) {
               <span style={styles.chip}>{selectedRoom?.isLocked ? "Locked" : "Open"}</span>
               <span style={styles.chip}>{livekitRoom ? "Connected" : "Standby"}</span>
               <span style={styles.chip}>{ticketApproved ? "Ticket OK" : "Ticket Needed"}</span>
+            </div>
+          </div>
+
+          <div
+            style={{
+              borderRadius: 24,
+              padding: 18,
+              background:
+                "linear-gradient(135deg, rgba(22,198,163,0.12), rgba(212,175,55,0.10), rgba(15,23,42,0.86))",
+              border: "1px solid rgba(22,198,163,0.26)",
+              boxShadow: "0 16px 34px rgba(0,0,0,0.22)",
+              display: "grid",
+              gap: 14,
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    color: "#99f6e4",
+                    fontWeight: 950,
+                    letterSpacing: 1.8,
+                    fontSize: 11,
+                    marginBottom: 6,
+                  }}
+                >
+                  AGV ROOM CAPACITY
+                </div>
+
+                <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 950 }}>
+                  {currentPlanLimits.label} Plan Capacity Control
+                </div>
+
+                <div
+                  style={{
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                    marginTop: 5,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Capacity display is active. Server-side room lock comes in PASS 31B.
+                </div>
+              </div>
+
+              <div
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 999,
+                  background: "rgba(250,204,21,0.12)",
+                  border: "1px solid rgba(250,204,21,0.35)",
+                  color: "#fde68a",
+                  fontWeight: 950,
+                  fontSize: 12,
+                }}
+              >
+                {currentRoomCapacityStatus}
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                gap: 10,
+              }}
+            >
+              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
+                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Room Limit</span>
+                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomCapacity}</strong>
+              </div>
+
+              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
+                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Estimated Active Viewers</span>
+                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomViewerEstimate}</strong>
+              </div>
+
+              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
+                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Seats Remaining</span>
+                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomSeatsRemaining}</strong>
+              </div>
+
+              <div style={{ borderRadius: 16, border: "1px solid rgba(255,255,255,0.09)", background: "rgba(255,255,255,0.055)", padding: 12, display: "grid", gap: 5 }}>
+                <span style={{ color: "#cbd5e1", fontSize: 12 }}>Usage</span>
+                <strong style={{ color: "#f8fafc", fontSize: 22 }}>{currentRoomCapacityPercent}%</strong>
+              </div>
+            </div>
+
+            <div
+              style={{
+                height: 10,
+                borderRadius: 999,
+                overflow: "hidden",
+                background: "rgba(255,255,255,0.10)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div
+                style={{
+                  height: "100%",
+                  borderRadius: 999,
+                  background: "linear-gradient(90deg, #16c6a3, #facc15)",
+                  transition: "width 0.25s ease",
+                  width: `${currentRoomCapacityPercent}%`,
+                }}
+              />
+            </div>
+
+            <div style={{ color: "#cbd5e1", fontSize: 12, lineHeight: 1.55 }}>
+              {currentRoomUpgradeMessage}
             </div>
           </div>
 
