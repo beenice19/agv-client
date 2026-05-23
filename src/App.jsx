@@ -1272,7 +1272,11 @@ function AgvOwnerAccessPage({
     localStorage.setItem("agv_owner_companion_access", "true");
     localStorage.setItem("agv_host_pin_verified", "true");
     localStorage.setItem("agv_owner_companion_access_at", new Date().toISOString());
-    window.open("/agv-academy-companion.html?owner=1", "_blank", "noopener,noreferrer");
+    localStorage.setItem("agv_owner_companion_access", "true");
+    localStorage.setItem("agv_host_pin_verified", "true");
+    localStorage.setItem("agv_current_plan", "CONVENTION");
+    localStorage.setItem("agv_owner_companion_access_at", new Date().toISOString());
+    window.open("/agv-academy-companion.html?owner=1&admin=1&plan=CONVENTION", "_blank", "noopener,noreferrer");
   }
 
   

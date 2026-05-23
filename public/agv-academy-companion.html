@@ -1,6 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script id="agv-owner-companion-force-unlock">
+(function () {
+  try {
+    var params = new URLSearchParams(window.location.search || "");
+    var isOwner =
+      params.get("owner") === "1" ||
+      params.get("admin") === "1" ||
+      params.get("plan") === "CONVENTION" ||
+      localStorage.getItem("agv_owner_companion_access") === "true";
+
+    if (!isOwner) return;
+
+    localStorage.setItem("agv_owner_companion_access", "true");
+    localStorage.setItem("agv_host_pin_verified", "true");
+    localStorage.setItem("agv_current_plan", "CONVENTION");
+    localStorage.setItem("agv_owner_companion_access_at", new Date().toISOString());
+
+    var existing = {};
+    try {
+      existing = JSON.parse(localStorage.getItem("agv_account") || "{}");
+    } catch {}
+
+    localStorage.setItem(
+      "agv_account",
+      JSON.stringify({
+        name: existing.name || "AGV Owner",
+        email: existing.email || "owner@agv.local",
+        organization: existing.organization || "Avant Global Vision",
+        plan: "CONVENTION",
+        ownerCompanionAccess: true,
+        updatedAt: new Date().toISOString()
+      })
+    );
+  } catch {}
+})();
+</script>
+
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AGV Academy Companion</title>
@@ -859,6 +896,17 @@
   </style>
 </head>
 <body>
+<script id="agv-owner-companion-plan-override">
+(function () {
+  try {
+    // AGV_OWNER_COMPANION_PLAN_OVERRIDE
+    if (typeof hasOwnerCompanionAccess === "function" && hasOwnerCompanionAccess()) {
+      localStorage.setItem("agv_current_plan", "CONVENTION");
+    }
+  } catch {}
+})();
+</script>
+
     <div id="ownerCompanionAccessNotice" style="display:none; padding:10px 14px; background:#042f2e; color:#99f6e4; font-family:Arial,sans-serif; font-weight:800; text-align:center;">
       AGV Owner/Admin access unlocked — Companion Toolkit available.
     </div>
