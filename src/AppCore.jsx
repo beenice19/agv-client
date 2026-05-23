@@ -262,12 +262,30 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [moderators, setModerators] = useState([]);
   const [moderatorInput, setModeratorInput] = useState("");
 
-  const [events, setEvents] = useState([]);
+    const [events, setEvents] = useState([]);
   const [eventTitle, setEventTitle] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [eventPrice, setEventPrice] = useState("");
+
+  const [revenueReports, setRevenueReports] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("agv_revenue_reports_v1") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  const [revenueEventName, setRevenueEventName] = useState("");
+  const [revenueRoomId, setRevenueRoomId] = useState("");
+  const [revenueEventDate, setRevenueEventDate] = useState("");
+  const [revenueTicketsSold, setRevenueTicketsSold] = useState("");
+  const [revenueGross, setRevenueGross] = useState("");
+  const [revenueRefunds, setRevenueRefunds] = useState("");
+  const [revenueGateway, setRevenueGateway] = useState("");
+  const [revenueNotes, setRevenueNotes] = useState("");
+
   const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState(() => {
     return window.localStorage.getItem("agv_host_vendor_agreement_v1") === "accepted";
   });
@@ -1402,7 +1420,107 @@ export default function AppCore({ entryRole = "viewer" }) {
       setStatus("Could not reach bulletin server on 8785.");
     }
   }
+  function moneyValue(value) {
+    const number = Number(String(value || "").replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(number) ? number : 0;
+  }
 
+  function formatMoney(value) {
+    return moneyValue(value).toLocaleString(undefined, {
+      style: "currency",
+      currency: "USD",
+    });
+  }
+
+  function saveRevenueReports(nextReports) {
+    setRevenueReports(nextReports);
+
+    try {
+      localStorage.setItem("agv_revenue_reports_v1", JSON.stringify(nextReports));
+    } catch {}
+  }
+
+  function submitRevenueReport() {
+    if (paidBusinessToolsLocked) {
+      setStatus("Revenue reporting is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
+      return;
+    }
+
+    if (hostVendorAgreementRequired) {
+      setStatus("Host/Vendor Agreement required before submitting AGV ticket revenue reports.");
+      return;
+    }
+
+    const cleanEventName = revenueEventName.trim();
+    const cleanRoomId = revenueRoomId.trim() || selectedRoomId;
+    const cleanGateway = revenueGateway.trim();
+    const gross = moneyValue(revenueGross);
+    const refunds = moneyValue(revenueRefunds);
+    const netRevenue = Math.max(0, gross - refunds);
+    const agvFee = Number((netRevenue * 0.02).toFixed(2));
+
+    if (!cleanEventName) {
+      setStatus("Enter the event name before submitting a revenue report.");
+      return;
+    }
+
+    if (!cleanGateway) {
+      setStatus("Enter the payment gateway used by the host/vendor.");
+      return;
+    }
+
+    if (gross <= 0) {
+      setStatus("Enter gross collected ticket revenue before submitting the report.");
+      return;
+    }
+
+    const ownerEmail = String(storedAccount?.email || freeAccount?.email || "admin@agv.local")
+      .trim()
+      .toLowerCase();
+
+    const report = {
+      id: `revenue-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      eventName: cleanEventName,
+      roomId: cleanRoomId,
+      eventDate: revenueEventDate.trim(),
+      ticketsSold: Number(revenueTicketsSold || 0),
+      grossRevenue: gross,
+      refunds,
+      netRevenue,
+      agvFee,
+      feeRate: 0.02,
+      gateway: cleanGateway,
+      notes: revenueNotes.trim(),
+      status: "Reported",
+      ownerId: currentOwnerId,
+      ownerName: storedAccount?.name || freeAccount?.name || "AGV Host",
+      ownerEmail,
+      organization: storedAccount?.organization || freeAccount?.organization || "Not set",
+      plan: currentPlan,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextReports = [report, ...revenueReports];
+    saveRevenueReports(nextReports);
+
+    setRevenueEventName("");
+    setRevenueRoomId("");
+    setRevenueEventDate("");
+    setRevenueTicketsSold("");
+    setRevenueGross("");
+    setRevenueRefunds("");
+    setRevenueGateway("");
+    setRevenueNotes("");
+
+    setStatus(`Revenue report submitted. AGV 2% room leasing fee: ${formatMoney(agvFee)}.`);
+  }
+
+  function clearRevenueReportsLocal() {
+    if (!window.confirm("Clear local AGV revenue reports from this browser?")) return;
+
+    saveRevenueReports([]);
+    setStatus("Local revenue reports cleared from this browser.");
+  }
   function acceptHostVendorAgreement() {
     window.localStorage.setItem("agv_host_vendor_agreement_v1", "accepted");
     window.localStorage.setItem("agv_host_vendor_agreement_accepted_at", new Date().toISOString());
@@ -2060,7 +2178,138 @@ export default function AppCore({ entryRole = "viewer" }) {
                     </button>
                   </div>
                 ) : null}
+                <div style={styles.controlBox}>
+                  <div style={styles.controlTitle}>Ticket Revenue Report / 2% AGV Fee Tracking</div>
+                  <div style={styles.helperText}>
+                    Paid hosts who use their own payment gateway can report ticket revenue here.
+                    AGV calculates a 2% digital room leasing fee based on net collected revenue after refunds.
+                  </div>
 
+                  {paidBusinessToolsLocked ? (
+                    <div style={styles.viewerLockBox}>
+                      Revenue reports are paid-plan tools. Upgrade to Creator, Ministry, or Convention.
+                    </div>
+                  ) : hostVendorAgreementRequired ? (
+                    <div style={styles.viewerLockBox}>
+                      Host/Vendor Agreement required before submitting ticket revenue reports.
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        style={styles.chatInput}
+                        value={revenueEventName}
+                        onChange={(event) => setRevenueEventName(event.target.value)}
+                        placeholder="Event name"
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueRoomId}
+                        onChange={(event) => setRevenueRoomId(event.target.value)}
+                        placeholder={`Room ID - default: ${selectedRoomId}`}
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueEventDate}
+                        onChange={(event) => setRevenueEventDate(event.target.value)}
+                        placeholder="Event date"
+                        type="date"
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueTicketsSold}
+                        onChange={(event) => setRevenueTicketsSold(event.target.value)}
+                        placeholder="Tickets sold"
+                        type="number"
+                        min="0"
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueGross}
+                        onChange={(event) => setRevenueGross(event.target.value)}
+                        placeholder="Gross collected ticket revenue"
+                        inputMode="decimal"
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueRefunds}
+                        onChange={(event) => setRevenueRefunds(event.target.value)}
+                        placeholder="Refunds issued"
+                        inputMode="decimal"
+                      />
+
+                      <input
+                        style={styles.chatInput}
+                        value={revenueGateway}
+                        onChange={(event) => setRevenueGateway(event.target.value)}
+                        placeholder="Payment gateway used - Stripe, PayPal, Square, Cash App, Eventbrite, etc."
+                      />
+
+                      <textarea
+                        style={styles.textarea}
+                        value={revenueNotes}
+                        onChange={(event) => setRevenueNotes(event.target.value)}
+                        placeholder="Host/vendor notes"
+                      />
+
+                      <div style={styles.ownerSyncBox}>
+                        <div style={styles.ownerSyncTitle}>AGV 2% Fee Preview</div>
+                        <div style={styles.helperText}>
+                          Gross: {formatMoney(revenueGross)} • Refunds: {formatMoney(revenueRefunds)}
+                        </div>
+                        <div style={styles.helperText}>
+                          Net collected revenue: {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)))}
+                        </div>
+                        <div style={styles.helperText}>
+                          AGV 2% digital room leasing fee:{" "}
+                          {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)) * 0.02)}
+                        </div>
+                      </div>
+
+                      <div style={styles.buttonRow}>
+                        <button style={styles.primaryButton} onClick={submitRevenueReport}>
+                          Submit Revenue Report
+                        </button>
+
+                        <button style={styles.secondaryButton} onClick={clearRevenueReportsLocal}>
+                          Clear Local Reports
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <div style={styles.ownerSyncBox}>
+                    <div style={styles.ownerSyncTitle}>Local Revenue Reports</div>
+
+                    {revenueReports.length ? (
+                      <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
+                        {revenueReports.slice(0, 5).map((report) => (
+                          <div key={report.id} style={styles.eventOwnerCard}>
+                            <div style={styles.eventOwnerTitle}>
+                              {report.eventName} • {report.status || "Reported"}
+                            </div>
+                            <div style={styles.helperText}>
+                              Room: {report.roomId || "Not set"} • Gateway: {report.gateway || "Not set"}
+                            </div>
+                            <div style={styles.helperText}>
+                              Tickets: {report.ticketsSold || 0} • Net: {formatMoney(report.netRevenue)} • AGV 2% Fee:{" "}
+                              {formatMoney(report.agvFee)}
+                            </div>
+                            <div style={styles.helperText}>
+                              Host: {report.ownerName || "AGV Host"} • {report.organization || "Organization not set"}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div style={styles.emptyText}>No local revenue reports submitted yet.</div>
+                    )}
+                  </div>
+                </div>
                 <div style={styles.controlTitle}>Event Creation System</div>
 
                 <div style={styles.helperText}>
