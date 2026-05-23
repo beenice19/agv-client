@@ -1269,29 +1269,14 @@ function AgvOwnerAccessPage({
   onHostEnter,
 }) {
   function openAcademyCompanion() {
-    window.open("/agv-academy-companion.html", "_blank", "noopener,noreferrer");
-  }
-
-  function activateOwnerTestPlan(plan) {
-    const normalizedPlan = String(plan || "FREE").trim().toUpperCase();
-
-    localStorage.setItem("agv_owner_super_admin_mode", "true");
+    localStorage.setItem("agv_owner_companion_access", "true");
     localStorage.setItem("agv_host_pin_verified", "true");
-    localStorage.setItem("agv_current_plan", normalizedPlan);
-    localStorage.setItem("agv_owner_test_plan", normalizedPlan);
-    localStorage.setItem("agv_owner_test_plan_started_at", new Date().toISOString());
-
-    window.location.href = "/?role=host";
+    localStorage.setItem("agv_owner_companion_access_at", new Date().toISOString());
+    window.open("/agv-academy-companion.html?owner=1", "_blank", "noopener,noreferrer");
   }
 
-  function exitOwnerTestMode() {
-    localStorage.removeItem("agv_owner_super_admin_mode");
-    localStorage.removeItem("agv_owner_test_plan");
-    localStorage.removeItem("agv_owner_test_plan_started_at");
-
-    window.location.href = "/agv-owner.html";
-  }
-
+  
+  
   return (
     <div style={styles.page}>
       <div style={styles.goldGlow}></div>
@@ -1329,52 +1314,6 @@ function AgvOwnerAccessPage({
           gap: 16,
           marginTop: 24,
         }}>
-          <div style={styles.subscriptionCard}>
-            <div style={styles.badgeSmall}>OWNER TEST MODE</div>
-            <h2 style={styles.sectionTitle}>Subscription Tier Switcher</h2>
-            <p style={styles.sectionText}>
-              Owner-only testing controls. Use these buttons to test AGV as Free, Creator,
-              Ministry, or Convention without changing the public customer flow.
-            </p>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                gap: 10,
-                marginTop: 12,
-              }}
-            >
-              <button style={styles.secondaryButton} onClick={() => activateOwnerTestPlan("FREE")}>
-                Test Free
-              </button>
-
-              <button style={styles.primaryButton} onClick={() => activateOwnerTestPlan("CREATOR")}>
-                Test Creator
-              </button>
-
-              <button style={styles.primaryButton} onClick={() => activateOwnerTestPlan("MINISTRY")}>
-                Test Ministry
-              </button>
-
-              <button style={styles.primaryButton} onClick={() => activateOwnerTestPlan("CONVENTION")}>
-                Test Convention
-              </button>
-            </div>
-
-            <button
-              style={{
-                ...styles.secondaryButton,
-                width: "100%",
-                justifyContent: "center",
-                marginTop: 12,
-              }}
-              onClick={exitOwnerTestMode}
-            >
-              Exit Owner Test Mode
-            </button>
-          </div>
-
           <div style={styles.subscriptionCard}>
             <div style={styles.badgeSmall}>OWNER ACCESS</div>
             <h2 style={styles.sectionTitle}>Super Admin / Host</h2>

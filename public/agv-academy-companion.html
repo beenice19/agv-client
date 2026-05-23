@@ -859,10 +859,34 @@
   </style>
 </head>
 <body>
+    <div id="ownerCompanionAccessNotice" style="display:none; padding:10px 14px; background:#042f2e; color:#99f6e4; font-family:Arial,sans-serif; font-weight:800; text-align:center;">
+      AGV Owner/Admin access unlocked — Companion Toolkit available.
+    </div>
+    <script>
+      try {
+        if (hasOwnerCompanionAccess()) {
+          document.getElementById("ownerCompanionAccessNotice").style.display = "block";
+        }
+      } catch {}
+    </script>
   <main class="app-shell" id="app"></main>
   <div class="toast" id="toast"></div>
 
   <script>
+    function hasOwnerCompanionAccess() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        return (
+          params.get("owner") === "1" ||
+          localStorage.getItem("agv_owner_companion_access") === "true" ||
+          localStorage.getItem("agv_host_pin_verified") === "true"
+        );
+      } catch {
+        return false;
+      }
+    }
+
+
     function agvCompanionPlanAllowed() {
       try {
         const plan = String(
