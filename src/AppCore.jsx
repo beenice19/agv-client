@@ -1459,7 +1459,69 @@ export default function AppCore({ entryRole = "viewer" }) {
 
     return data;
   }
+  async function loadRevenueReportsFromServer() {
+    if (!isSuperAdmin) {
+      setStatus("Super Admin access required to review AGV revenue reports.");
+      return;
+    }
 
+    setStatus("Loading AGV revenue reports from SERVER 8794...");
+
+    try {
+      const response = await fetch(`${REVENUE_API_BASE}/api/revenue-reports`);
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !Array.isArray(data.reports)) {
+        setStatus(data?.error || "Could not load AGV revenue reports from SERVER 8794.");
+        return;
+      }
+
+      saveRevenueReports(data.reports);
+      setStatus(`Loaded ${data.reports.length} AGV revenue report(s) from SERVER 8794.`);
+    } catch {
+      setStatus("Revenue review server offline. Start SERVER 8794.");
+    }
+  }
+
+  async function updateRevenueReportStatus(reportId, nextStatus) {
+    if (!isSuperAdmin) {
+      setStatus("Super Admin access required to update revenue report status.");
+      return;
+    }
+
+    const adminNotes = window.prompt(
+      `Optional admin note for status: ${nextStatus}`,
+      ""
+    );
+
+    setStatus(`Updating revenue report to ${nextStatus}...`);
+
+    try {
+      const response = await fetch(
+        `${REVENUE_API_BASE}/api/revenue-reports/${encodeURIComponent(reportId)}/status`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            status: nextStatus,
+            adminNotes: adminNotes || "",
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data?.ok || !Array.isArray(data.reports)) {
+        setStatus(data?.error || "Could not update revenue report status.");
+        return;
+      }
+
+      saveRevenueReports(data.reports);
+      setStatus(`Revenue report marked as ${nextStatus}.`);
+    } catch {
+      setStatus("Revenue review server offline. Could not update status.");
+    }
+  }
   async function submitRevenueReport() {
     if (paidBusinessToolsLocked) {
       setStatus("Revenue reporting is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
@@ -2363,7 +2425,111 @@ export default function AppCore({ entryRole = "viewer" }) {
                     ) : (
                       <div style={styles.emptyText}>No local revenue reports submitted yet.</div>
                     )}
-                  </div>
+                                    </div>
+
+                  {isSuperAdmin ? (
+                    <div style={styles.ownerSyncBox}>
+                      <div style={styles.ownerSyncTitle}>Admin Revenue Review Dashboard</div>
+                      <div style={styles.helperText}>
+                        Owner/Admin review area for vendor ticket revenue reports and AGV 2% room leasing fees.
+                      </div>
+
+                      <button style={styles.secondaryButton} onClick={loadRevenueReportsFromServer}>
+                        Load Reports From SERVER 8794
+                      </button>
+
+                      {revenueReports.length ? (
+                        <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
+                          {revenueReports.map((report) => (
+                            <div key={report.id} style={styles.eventOwnerCard}>
+                              <div style={styles.eventOwnerTitle}>
+                                {report.eventName} • {report.status || "Reported"}
+                              </div>
+
+                              <div style={styles.helperText}>
+                                Host: {report.ownerName || "AGV Host"} • {report.organization || "Organization not set"}
+                              </div>
+
+                              <div style={styles.helperText}>
+                                Email: {report.ownerEmail || "Not saved"} • Plan: {report.plan || "Not saved"}
+                              </div>
+
+                              <div style={styles.helperText}>
+                                Room: {report.roomId || "main-hall"} • Date: {report.eventDate || "Not set"} • Gateway:{" "}
+                                {report.gateway || "Not reported"}
+                              </div>
+
+                              <div style={styles.helperText}>
+                                Tickets: {report.ticketsSold || 0} • Gross: {formatMoney(report.grossRevenue)} • Refunds:{" "}
+                                {formatMoney(report.refunds)}
+                              </div>
+
+                              <div style={styles.helperText}>
+                                Net Revenue: {formatMoney(report.netRevenue)} • AGV 2% Fee Owed:{" "}
+                                {formatMoney(report.agvFee)}
+                              </div>
+
+                              {report.notes ? (
+                                <div style={styles.helperText}>Host Notes: {report.notes}</div>
+                              ) : null}
+
+                              {report.adminNotes ? (
+                                <div style={styles.helperText}>Admin Notes: {report.adminNotes}</div>
+                              ) : null}
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  flexWrap: "wrap",
+                                  gap: 8,
+                                  marginTop: 10,
+                                }}
+                              >
+                                <button
+                                  style={styles.secondaryButton}
+                                  onClick={() => updateRevenueReportStatus(report.id, "Reported")}
+                                >
+                                  Reported
+                                </button>
+
+                                <button
+                                  style={styles.secondaryButton}
+                                  onClick={() => updateRevenueReportStatus(report.id, "Invoiced")}
+                                >
+                                  Invoiced
+                                </button>
+
+                                <button
+                                  style={styles.primaryButton}
+                                  onClick={() => updateRevenueReportStatus(report.id, "Paid")}
+                                >
+                                  Paid
+                                </button>
+
+                                <button
+                                  style={styles.secondaryButton}
+                                  onClick={() => updateRevenueReportStatus(report.id, "Disputed")}
+                                >
+                                  Disputed
+                                </button>
+
+                                <button
+                                  style={styles.dangerButton}
+                                  onClick={() => updateRevenueReportStatus(report.id, "Closed")}
+                                >
+                                  Closed
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div style={styles.emptyText}>
+                          No revenue reports loaded yet. Click “Load Reports From SERVER 8794.”
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
                 </div>
                 <div style={styles.controlTitle}>Event Creation System</div>
 
