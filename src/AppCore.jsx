@@ -19,9 +19,11 @@ const MODERATOR_API_BASE =
 const EVENT_API_BASE =
   import.meta.env.VITE_AGV_EVENT_API_URL || "http://127.0.0.1:8786";
 
+const REVENUE_API_BASE =
+  import.meta.env.VITE_AGV_REVENUE_API_URL || "http://127.0.0.1:8794";
+
 const SUBSCRIPTION_API_BASE =
   import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
-
 const TICKET_API_BASE =
   import.meta.env.VITE_AGV_TICKET_API_URL ||
   "https://agv-ticket-server-clean.onrender.com";
@@ -1432,7 +1434,7 @@ export default function AppCore({ entryRole = "viewer" }) {
     });
   }
 
-  function saveRevenueReports(nextReports) {
+    function saveRevenueReports(nextReports) {
     setRevenueReports(nextReports);
 
     try {
@@ -1440,7 +1442,25 @@ export default function AppCore({ entryRole = "viewer" }) {
     } catch {}
   }
 
-  function submitRevenueReport() {
+  async function sendRevenueReportToServer(report) {
+    const response = await fetch(`${REVENUE_API_BASE}/api/revenue-reports/create`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(report),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data?.ok) {
+      throw new Error(data?.error || "Revenue server rejected the report.");
+    }
+
+    return data;
+  }
+
+  async function submitRevenueReport() {
     if (paidBusinessToolsLocked) {
       setStatus("Revenue reporting is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
       return;
@@ -1500,19 +1520,54 @@ export default function AppCore({ entryRole = "viewer" }) {
       createdAt: new Date().toISOString(),
     };
 
-    const nextReports = [report, ...revenueReports];
-    saveRevenueReports(nextReports);
+    setStatus("Submitting revenue report to AGV revenue server...");
 
-    setRevenueEventName("");
-    setRevenueRoomId("");
-    setRevenueEventDate("");
-    setRevenueTicketsSold("");
-    setRevenueGross("");
-    setRevenueRefunds("");
-    setRevenueGateway("");
-    setRevenueNotes("");
+    try {
+      const data = await sendRevenueReportToServer(report);
+      const serverReport = data.report || report;
+      const nextReports = Array.isArray(data.reports)
+        ? data.reports
+        : [serverReport, ...revenueReports];
 
-    setStatus(`Revenue report submitted. AGV 2% room leasing fee: ${formatMoney(agvFee)}.`);
+      saveRevenueReports(nextReports);
+
+      setRevenueEventName("");
+      setRevenueRoomId("");
+      setRevenueEventDate("");
+      setRevenueTicketsSold("");
+      setRevenueGross("");
+      setRevenueRefunds("");
+      setRevenueGateway("");
+      setRevenueNotes("");
+
+      setStatus(
+        `Revenue report saved to SERVER 8794. AGV 2% room leasing fee: ${formatMoney(
+          serverReport.agvFee ?? agvFee
+        )}.`
+      );
+    } catch (error) {
+      const fallbackReport = {
+        ...report,
+        serverSync: "pending",
+        serverError: error?.message || "Revenue server unavailable.",
+      };
+
+      const nextReports = [fallbackReport, ...revenueReports];
+      saveRevenueReports(nextReports);
+
+      setRevenueEventName("");
+      setRevenueRoomId("");
+      setRevenueEventDate("");
+      setRevenueTicketsSold("");
+      setRevenueGross("");
+      setRevenueRefunds("");
+      setRevenueGateway("");
+      setRevenueNotes("");
+
+      setStatus(
+        `Revenue report saved locally. SERVER 8794 was not reachable. AGV 2% room leasing fee: ${formatMoney(agvFee)}.`
+      );
+    }
   }
 
   function clearRevenueReportsLocal() {
