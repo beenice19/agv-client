@@ -316,10 +316,13 @@ export default function AppCore({ entryRole = "viewer" }) {
   const isViewerOnly = roleMode === "viewer";
   const isHost = roleMode === "host";
   const isAccountHost = Boolean(freeAccount?.email) && isHost;
+  const ownerSuperAdminMode =
+    localStorage.getItem("agv_owner_super_admin_mode") === "true" &&
+    localStorage.getItem("agv_host_pin_verified") === "true";
   const isSuperAdmin =
     isHost &&
     localStorage.getItem("agv_host_pin_verified") === "true" &&
-    !isAccountHost;
+    (!isAccountHost || ownerSuperAdminMode);
 
   const hostModeLabel = isViewerOnly
     ? "USER / VIEWER"
