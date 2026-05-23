@@ -268,6 +268,9 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [eventDate, setEventDate] = useState("");
   const [eventTime, setEventTime] = useState("");
   const [eventPrice, setEventPrice] = useState("");
+  const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState(() => {
+    return window.localStorage.getItem("agv_host_vendor_agreement_v1") === "accepted";
+  });
 
   const [status, setStatus] = useState("AGV LiveKit platform ready");
 
@@ -334,6 +337,8 @@ export default function AppCore({ entryRole = "viewer" }) {
   const canModerate = isHost || isModerator;
   const canControlStage = isHost;
   const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
+  const hostVendorAgreementRequired =
+    isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
 
   const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
@@ -508,6 +513,11 @@ export default function AppCore({ entryRole = "viewer" }) {
 
     if (paidBusinessToolsLocked) {
       setStatus("Event creation is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
+      return;
+    }
+
+    if (hostVendorAgreementRequired) {
+      setStatus("Host/Vendor Agreement required before creating ticketed AGV events.");
       return;
     }
 
@@ -1390,6 +1400,15 @@ export default function AppCore({ entryRole = "viewer" }) {
     }
   }
 
+  function acceptHostVendorAgreement() {
+    window.localStorage.setItem("agv_host_vendor_agreement_v1", "accepted");
+    window.localStorage.setItem("agv_host_vendor_agreement_accepted_at", new Date().toISOString());
+    window.localStorage.setItem("agv_host_vendor_agreement_plan", currentPlan);
+    window.localStorage.setItem("agv_host_vendor_agreement_owner_email", storedAccount?.email || freeAccount?.email || "");
+    setHostVendorAgreementAccepted(true);
+    setStatus("Host/Vendor Agreement accepted. Ticketed event tools are unlocked for this paid account.");
+  }
+
   function copyInviteLink() {
     const base = window.location.origin || "http://127.0.0.1:5175";
     const invite = `${base}/?room=${encodeURIComponent(selectedRoomId)}`;
@@ -1984,6 +2003,58 @@ export default function AppCore({ entryRole = "viewer" }) {
                     }}
                   >
                     Events and moderator controls are paid-plan tools. Upgrade to Creator, Ministry, or Convention.
+                  </div>
+                ) : null}
+
+                {hostVendorAgreementRequired ? (
+                  <div
+                    style={{
+                      border: "1px solid rgba(22, 198, 163, 0.38)",
+                      background: "rgba(2, 6, 23, 0.92)",
+                      color: "#e5e7eb",
+                      borderRadius: 16,
+                      padding: 14,
+                      marginBottom: 12,
+                      boxShadow: "0 14px 30px rgba(0,0,0,0.24)",
+                    }}
+                  >
+                    <div style={{ color: "#99f6e4", fontWeight: 950, fontSize: 14, marginBottom: 8 }}>
+                      AGV Host/Vendor Agreement Required
+                    </div>
+
+                    <div style={{ fontSize: 12, lineHeight: 1.55, opacity: 0.94, display: "grid", gap: 6 }}>
+                      <div>
+                        By creating ticketed events or leasing digital room access through AGV, the host agrees that
+                        they are an independent vendor / contractor and not an employee, partner, or agent of AGV.
+                      </div>
+
+                      <div>
+                        The host is responsible for their own payment gateway, ticket sales, taxes, refunds,
+                        chargebacks, customer disputes, business licenses, event promises, and legal compliance.
+                      </div>
+
+                      <div>
+                        If the host uses an outside payment provider, the host agrees to report collected ticket revenue
+                        and pay AGV a 2% digital room leasing fee based on gross collected ticket revenue after refunds.
+                      </div>
+
+                      <div>
+                        AGV provides digital room technology, ticket verification, and platform access only. AGV does
+                        not guarantee sales, attendance, revenue, event success, or customer satisfaction.
+                      </div>
+                    </div>
+
+                    <button
+                      style={{
+                        ...styles.primaryButton,
+                        width: "100%",
+                        justifyContent: "center",
+                        marginTop: 12,
+                      }}
+                      onClick={acceptHostVendorAgreement}
+                    >
+                      I Agree — Unlock Ticketed Event Tools
+                    </button>
                   </div>
                 ) : null}
 
