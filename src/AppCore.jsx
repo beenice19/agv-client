@@ -288,7 +288,13 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [revenueGateway, setRevenueGateway] = useState("");
   const [revenueNotes, setRevenueNotes] = useState("");
 
-  const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState(() => {
+  
+
+  // PASS31IB_REVENUE_ADMIN_PIN_SAFE_V2
+  const [revenueAdminPin, setRevenueAdminPin] = useState(() => {
+    return localStorage.getItem("agv_revenue_admin_pin") || "";
+  });
+const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState(() => {
     return window.localStorage.getItem("agv_host_vendor_agreement_v1") === "accepted";
   });
 
@@ -1442,6 +1448,37 @@ export default function AppCore({ entryRole = "viewer" }) {
     } catch {}
   }
 
+  function getRevenueAdminHeaders() {
+    const cleanPin = String(revenueAdminPin || "").trim();
+
+    if (!cleanPin) {
+      return {};
+    }
+
+    return {
+      "x-agv-admin-pin": cleanPin,
+    };
+  }
+
+  function saveRevenueAdminPin() {
+    const cleanPin = String(revenueAdminPin || "").trim();
+
+    if (!cleanPin) {
+      localStorage.removeItem("agv_revenue_admin_pin");
+      setStatus("Revenue Admin PIN cleared from this browser.");
+      return;
+    }
+
+    localStorage.setItem("agv_revenue_admin_pin", cleanPin);
+    setStatus("Revenue Admin PIN saved in this browser for admin review.");
+  }
+
+  function clearRevenueAdminPin() {
+    localStorage.removeItem("agv_revenue_admin_pin");
+    setRevenueAdminPin("");
+    setStatus("Revenue Admin PIN cleared from this browser.");
+  }
+
   async function sendRevenueReportToServer(report) {
     const response = await fetch(`${REVENUE_API_BASE}/api/revenue-reports/create`, {
       method: "POST",
@@ -1465,27 +1502,40 @@ export default function AppCore({ entryRole = "viewer" }) {
       return;
     }
 
-    setStatus("Loading AGV revenue reports from SERVER 8794...");
+    if (!String(revenueAdminPin || "").trim()) {
+      setStatus("Enter and save the Revenue Admin PIN before loading AGV revenue reports.");
+      return;
+    }
+
+    setStatus("Loading AGV revenue reports from secure revenue server...");
 
     try {
-      const response = await fetch(`${REVENUE_API_BASE}/api/revenue-reports`);
+      const response = await fetch(`${REVENUE_API_BASE}/api/revenue-reports`, {
+        headers: getRevenueAdminHeaders(),
+      });
+
       const data = await response.json();
 
       if (!response.ok || !data?.ok || !Array.isArray(data.reports)) {
-        setStatus(data?.error || "Could not load AGV revenue reports from SERVER 8794.");
+        setStatus(data?.error || "Could not load AGV revenue reports. Check Revenue Admin PIN.");
         return;
       }
 
       saveRevenueReports(data.reports);
-      setStatus(`Loaded ${data.reports.length} AGV revenue report(s) from SERVER 8794.`);
+      setStatus(`Loaded ${data.reports.length} AGV revenue report(s) from secure revenue server.`);
     } catch {
-      setStatus("Revenue review server offline. Start SERVER 8794.");
+      setStatus("Revenue review server offline or unreachable.");
     }
   }
 
   async function updateRevenueReportStatus(reportId, nextStatus) {
     if (!isSuperAdmin) {
       setStatus("Super Admin access required to update revenue report status.");
+      return;
+    }
+
+    if (!String(revenueAdminPin || "").trim()) {
+      setStatus("Enter and save the Revenue Admin PIN before updating report status.");
       return;
     }
 
@@ -1501,7 +1551,10 @@ export default function AppCore({ entryRole = "viewer" }) {
         `${REVENUE_API_BASE}/api/revenue-reports/${encodeURIComponent(reportId)}/status`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...getRevenueAdminHeaders(),
+          },
           body: JSON.stringify({
             status: nextStatus,
             adminNotes: adminNotes || "",
@@ -1512,7 +1565,7 @@ export default function AppCore({ entryRole = "viewer" }) {
       const data = await response.json();
 
       if (!response.ok || !data?.ok || !Array.isArray(data.reports)) {
-        setStatus(data?.error || "Could not update revenue report status.");
+        setStatus(data?.error || "Could not update revenue report status. Check Revenue Admin PIN.");
         return;
       }
 
@@ -1522,6 +1575,7 @@ export default function AppCore({ entryRole = "viewer" }) {
       setStatus("Revenue review server offline. Could not update status.");
     }
   }
+
   async function submitRevenueReport() {
     if (paidBusinessToolsLocked) {
       setStatus("Revenue reporting is included with paid AGV plans. Upgrade to Creator, Ministry, or Convention.");
@@ -2434,8 +2488,33 @@ export default function AppCore({ entryRole = "viewer" }) {
                         Owner/Admin review area for vendor ticket revenue reports and AGV 2% room leasing fees.
                       </div>
 
+                      <div style={styles.ownerSyncBox}>
+                        <div style={styles.ownerSyncTitle}>Revenue Admin PIN</div>
+                        <div style={styles.helperText}>
+                          Enter your private AGV Revenue Admin PIN to load reports and update invoice status.
+                        </div>
+
+                        <input
+                          style={styles.chatInput}
+                          value={revenueAdminPin}
+                          onChange={(event) => setRevenueAdminPin(event.target.value)}
+                          placeholder="Revenue Admin PIN"
+                          type="password"
+                        />
+
+                        <div style={styles.buttonRow}>
+                          <button style={styles.secondaryButton} onClick={saveRevenueAdminPin}>
+                            Save PIN
+                          </button>
+
+                          <button style={styles.dangerButton} onClick={clearRevenueAdminPin}>
+                            Clear PIN
+                          </button>
+                        </div>
+                      </div>
+
                       <button style={styles.secondaryButton} onClick={loadRevenueReportsFromServer}>
-                        Load Reports From SERVER 8794
+                        Load Reports From Secure Revenue Server
                       </button>
 
                       {revenueReports.length ? (
