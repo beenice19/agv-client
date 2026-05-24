@@ -2082,8 +2082,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   {screenOn ? "Stop Share" : "Share Screen"}
                 </button>
 
-                <button style={styles.secondaryButton} onClick={() => connectToRoom("host", selectedRoomId)}>
-                  Connect Host
+
+                {/* PASS31V_B_SWAP_DRIVE_CONNECT_HOST */}
+                <button style={styles.secondaryButton} onClick={() => window.open("https://drive.google.com", "_blank")}>
+                  Open Google Drive
                 </button>
               </div>
             ) : (
@@ -2812,8 +2814,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 Copy Room Invite
               </button>
 
-              <button style={styles.secondaryButton} onClick={() => window.open("https://drive.google.com", "_blank")}>
-                Open Google Drive
+
+              <button style={styles.secondaryButton} onClick={() => connectToRoom("host", selectedRoomId)}>
+                Connect Host
               </button>
 
               <div style={styles.controlBox}>
