@@ -2263,9 +2263,32 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
           {selectedPanel === "controls" && !isViewerOnly ? (
             <div style={styles.card}>
-              <div style={styles.panelTitle}>Control Center</div>
+                            {/* PASS31U_V2_CONTROL_CENTER_SECTIONS */}
+              <div style={styles.panelTitle}>Control Center — Host Tools</div>
+              <div style={styles.helperText}>
+                Organized host tools for plan authority, tickets, revenue, events, files, invites, and moderation.
+              </div>
 
               <div style={styles.controlBox}>
+                
+              <div
+                style={{
+                  marginTop: 14,
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  background: "rgba(212,175,55,0.10)",
+                  color: "#fef3c7",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 13, letterSpacing: 0.4 }}>
+                  Plan & Authority
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(254,243,199,0.72)", marginTop: 3 }}>
+                  Confirm host plan limits, room access, and subscription authority.
+                </div>
+              </div>
                 <div style={styles.controlTitle}>Plan Authority</div>
                 <div style={styles.helperText}>
                   Current Plan: {currentPlanLimits.label} • Host Mode: {hostModeLabel}
@@ -2353,6 +2376,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   </div>
                 ) : null}
                 <div style={styles.controlBox}>
+                  
+              <div
+                style={{
+                  marginTop: 14,
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  background: "rgba(212,175,55,0.10)",
+                  color: "#fef3c7",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 13, letterSpacing: 0.4 }}>
+                  Tickets & Revenue
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(254,243,199,0.72)", marginTop: 3 }}>
+                  Manage ticketed event agreement, revenue reporting, and AGV room leasing fee tracking.
+                </div>
+              </div>
                   <div style={styles.controlTitle}>Ticket Revenue Report / 2% AGV Fee Tracking</div>
                   <div style={styles.helperText}>
                     Paid hosts who use their own payment gateway can report ticket revenue here.
@@ -2613,6 +2655,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     </div>
                   ) : null}
                 </div>
+                
+              <div
+                style={{
+                  marginTop: 14,
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  background: "rgba(212,175,55,0.10)",
+                  color: "#fef3c7",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 13, letterSpacing: 0.4 }}>
+                  Events
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(254,243,199,0.72)", marginTop: 3 }}>
+                  Create, refresh, review, and manage AGV events tied to the current room.
+                </div>
+              </div>
                 <div style={styles.controlTitle}>Event Creation System</div>
 
                 <div style={styles.helperText}>
@@ -2728,6 +2789,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 )}
               </div>
 
+              
+              <div
+                style={{
+                  marginTop: 14,
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  background: "rgba(212,175,55,0.10)",
+                  color: "#fef3c7",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 13, letterSpacing: 0.4 }}>
+                  Files & Invites
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(254,243,199,0.72)", marginTop: 3 }}>
+                  Share the room invite link and open external file tools when needed.
+                </div>
+              </div>
               <button style={styles.primaryButton} onClick={copyInviteLink}>
                 Copy Room Invite
               </button>
@@ -2737,6 +2817,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </button>
 
               <div style={styles.controlBox}>
+                
+              <div
+                style={{
+                  marginTop: 14,
+                  marginBottom: 10,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(212,175,55,0.28)",
+                  background: "rgba(212,175,55,0.10)",
+                  color: "#fef3c7",
+                }}
+              >
+                <div style={{ fontWeight: 950, fontSize: 13, letterSpacing: 0.4 }}>
+                  System & Moderation
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(254,243,199,0.72)", marginTop: 3 }}>
+                  Review ticket lock rules and assign moderators for chat and bulletin support.
+                </div>
+              </div>
                 <div style={styles.controlTitle}>Ticket Lock Pass</div>
                 <div style={styles.helperText}>
                   Host/Admin bypasses ticket lock. Paid or ticket-only viewers must verify a ticket before joining the room. Free public rooms do not require a ticket.
