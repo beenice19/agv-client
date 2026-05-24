@@ -946,9 +946,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   async function connectToRoom(nextRole = roleMode, roomId = selectedRoomId) {
-    if (nextRole === "viewer" && !ticketApproved) {
-      setStatus(currentPlan === "FREE" ? "Free viewer access allowed." : "Ticket required before viewer can join the room.");
-      setTicketMessage(currentPlan === "FREE" ? "Free viewer access is unlocked." : "Enter a valid ticket code to unlock viewer access.");
+    // PASS31R_V3_VIEWER_TICKET_GUARD
+    if (nextRole === "viewer" && currentPlan !== "FREE" && !ticketApproved) {
+      setStatus("Ticket required before viewer can join the room.");
+      setTicketMessage("Enter a valid ticket code to unlock viewer access.");
       return null;
     }
 
