@@ -1632,7 +1632,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       ownerName: storedAccount?.name || freeAccount?.name || "AGV Host",
       ownerEmail,
       organization: storedAccount?.organization || freeAccount?.organization || "Not set",
-      plan: currentPlan,
+      // PASS31K_OWNER_ADMIN_REVENUE_PLAN
+
+      plan: isSuperAdmin ? "OWNER_ADMIN" : currentPlan,
       createdAt: new Date().toISOString(),
     };
 
