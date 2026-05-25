@@ -1449,12 +1449,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       return;
     }
 
-    if (paidBusinessToolsLocked && !isSuperAdmin) {
-      setStatus("Room creation is a paid-plan tool. Upgrade to Creator, Ministry, or Convention.");
+    // PASS32D_E_FREE_ROOM_CREATION_BLOCK
+    if (!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1) {
+      setStatus("Free plan limit reached. Free hosts can create only 1 owned room. Upgrade to Creator to add more rooms.");
       return;
     }
 
-    if (roomLimitReached) {
+    if (!isSuperAdmin && ownedRoomCount >= currentPlanLimits.maxRooms) {
       setStatus(`Room limit reached for ${currentPlanLimits.label}. Limit: ${currentPlanLimits.maxRooms} room(s).`);
       return;
     }
@@ -2271,9 +2272,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used • Plan: {currentPlanLimits.label}
               </div>
 
-              {paidBusinessToolsLocked && !isSuperAdmin ? (
+              {!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1 ? (
                 <div style={styles.viewerLockBox}>
-                  Room creation is a paid-plan tool. Upgrade to Creator, Ministry, or Convention.
+                  Free plan limit reached. Free hosts can create only 1 owned room. Upgrade to Creator to add more rooms.
                 </div>
               ) : roomLimitReached ? (
                 <div style={styles.viewerLockBox}>
