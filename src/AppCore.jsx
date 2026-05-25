@@ -2438,6 +2438,85 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   Manage ticketed event agreement, revenue reporting, and AGV room leasing fee tracking.
                 </div>
               </div>
+                  {/* PASS31Z_VENDOR_FINANCIAL_HUB */}
+                  <div style={styles.ownerSyncBox}>
+                    <div style={styles.ownerSyncTitle}>Vendor Financial Hub</div>
+
+                    <div style={styles.helperText}>
+                      Connect vendor payment workflow, track ticket revenue, review AGV's 2% platform fee, and prepare for future gateway automation.
+                    </div>
+
+                    <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
+                      <div style={styles.eventOwnerCard}>
+                        <div style={styles.eventOwnerTitle}>Gateway Connectivity</div>
+                        <div style={styles.helperText}>
+                          Status: Manual reporting mode • Future gateway connection: Ready for SERVER integration
+                        </div>
+                        <div style={styles.helperText}>
+                          Current reported gateway: {revenueGateway || revenueReports?.[0]?.gateway || "Not connected / not reported"}
+                        </div>
+                        <button
+                          style={styles.secondaryButton}
+                          onClick={() =>
+                            setStatus("Vendor gateway onboarding shell is ready. SERVER Stripe Connect foundation is the next required step.")
+                          }
+                        >
+                          Connect Payment Gateway — Coming Soon
+                        </button>
+                      </div>
+
+                      <div style={styles.eventOwnerCard}>
+                        <div style={styles.eventOwnerTitle}>Receivables Snapshot</div>
+                        <div style={styles.helperText}>
+                          Tickets sold: {revenueTicketsSold || revenueReports?.[0]?.ticketsSold || 0}
+                        </div>
+                        <div style={styles.helperText}>
+                          Gross ticket revenue: {formatMoney(moneyValue(revenueGross) || revenueReports?.[0]?.grossRevenue || 0)}
+                        </div>
+                        <div style={styles.helperText}>
+                          Refunds / adjustments: {formatMoney(moneyValue(revenueRefunds) || revenueReports?.[0]?.refunds || 0)}
+                        </div>
+                        <div style={styles.helperText}>
+                          Net vendor receivable:{" "}
+                          {formatMoney(
+                            Math.max(
+                              0,
+                              (moneyValue(revenueGross) || revenueReports?.[0]?.grossRevenue || 0) -
+                                (moneyValue(revenueRefunds) || revenueReports?.[0]?.refunds || 0)
+                            )
+                          )}
+                        </div>
+                      </div>
+
+                      <div style={styles.eventOwnerCard}>
+                        <div style={styles.eventOwnerTitle}>AGV 2% Payable</div>
+                        <div style={styles.helperText}>Fee rate: 2% digital room leasing / platform fee</div>
+                        <div style={styles.helperText}>
+                          AGV payable estimate:{" "}
+                          {formatMoney(
+                            Math.max(
+                              0,
+                              (moneyValue(revenueGross) || revenueReports?.[0]?.grossRevenue || 0) -
+                                (moneyValue(revenueRefunds) || revenueReports?.[0]?.refunds || 0)
+                            ) * 0.02
+                          )}
+                        </div>
+                        <div style={styles.helperText}>
+                          Revenue server: SERVER 8794 reporting path already prepared
+                        </div>
+                      </div>
+
+                      <div style={styles.eventOwnerCard}>
+                        <div style={styles.eventOwnerTitle}>Onboarding Steps</div>
+                        <div style={styles.helperText}>1. Accept Host/Vendor Agreement</div>
+                        <div style={styles.helperText}>2. Choose payment gateway or manual reporting</div>
+                        <div style={styles.helperText}>3. Report ticket revenue after event</div>
+                        <div style={styles.helperText}>4. Review AGV 2% fee</div>
+                        <div style={styles.helperText}>5. Future: connect Stripe/payment gateway automation</div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div style={styles.controlTitle}>Ticket Revenue Report / 2% AGV Fee Tracking</div>
                   <div style={styles.helperText}>
                     Paid hosts who use their own payment gateway can report ticket revenue here.
