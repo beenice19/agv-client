@@ -30,6 +30,12 @@ const TICKET_API_BASE =
 
 const TICKET_STORAGE_KEY = "agv_ticket_code";
 
+// PASS32D_C_V3_HOST_ROOM_CREATION_UI
+const ROOM_API_BASE =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_AGV_SERVER_API_URL ||
+  "http://127.0.0.1:8787";
+
 const DEFAULT_ROOMS = [
   { id: "main-hall", name: "Main Hall", category: "Convention", isPrivate: false, isLocked: false },
   { id: "studio-a", name: "Studio A", category: "Media", isPrivate: false, isLocked: false },
@@ -263,6 +269,12 @@ export default function AppCore({ entryRole = "viewer" }) {
 
   const [moderators, setModerators] = useState([]);
   const [moderatorInput, setModeratorInput] = useState("");
+  // PASS32D_C_V3_HOST_ROOM_CREATION_UI
+  const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomCategory, setNewRoomCategory] = useState("Custom");
+  const [newRoomPrivate, setNewRoomPrivate] = useState(false);
+  const [newRoomTicketOnly, setNewRoomTicketOnly] = useState(false);
+  const [roomCreateWorking, setRoomCreateWorking] = useState(false);
 
     const [events, setEvents] = useState([]);
   const [eventTitle, setEventTitle] = useState("");
@@ -411,6 +423,22 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     freeAccount?.name,
   ]);
 
+  // PASS32D_C_V3_HOST_ROOM_CREATION_UI
+  const ownedRoomCount = useMemo(() => {
+    const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
+
+    return (Array.isArray(rooms) ? rooms : []).filter((room) => {
+      const roomOwnerId = String(room.ownerId || room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+      const roomOwnerEmail = String(room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+
+      return (
+        Boolean(currentOwnerId && roomOwnerId && roomOwnerId === currentOwnerId) ||
+        Boolean(currentEmail && roomOwnerEmail && roomOwnerEmail === currentEmail)
+      );
+    }).length;
+  }, [rooms, currentOwnerId, storedAccount?.email, freeAccount?.email]);
+
+  const roomLimitReached = !isSuperAdmin && ownedRoomCount >= currentPlanLimits.maxRooms;
   const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
   const [viewerMuted, setViewerMuted] = useState(false);
   const [viewerVolume, setViewerVolume] = useState(1);
@@ -1375,6 +1403,161 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     setStatus("Disconnected");
   }
 
+  function getServerAuthToken() {
+    try {
+      return (
+        localStorage.getItem("agv_auth_token") ||
+        localStorage.getItem("agv_server_token") ||
+        localStorage.getItem("agvToken") ||
+        localStorage.getItem("token") ||
+        ""
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  async function createHostOwnedRoom() {
+    if (!isHost) {
+      setStatus("Host access required to create rooms.");
+      return;
+    }
+
+    const cleanName = newRoomName.trim();
+    const cleanCategory = newRoomCategory.trim() || "Custom";
+
+    if (!cleanName) {
+      setStatus("Enter a room name.");
+      return;
+    }
+
+    if (paidBusinessToolsLocked && !isSuperAdmin) {
+      setStatus("Room creation is a paid-plan tool. Upgrade to Creator, Ministry, or Convention.");
+      return;
+    }
+
+    if (roomLimitReached) {
+      setStatus(`Room limit reached for ${currentPlanLimits.label}. Limit: ${currentPlanLimits.maxRooms} room(s).`);
+      return;
+    }
+
+    const ownerEmail = String(storedAccount?.email || freeAccount?.email || "admin@agv.local").trim().toLowerCase();
+    const ownerName = storedAccount?.name || freeAccount?.name || "AGV Host";
+    const organization = storedAccount?.organization || freeAccount?.organization || "Not set";
+
+    const payload = {
+      name: cleanName,
+      category: cleanCategory,
+      isPrivate: Boolean(newRoomPrivate && currentPlanLimits.allowPrivate),
+      allowTicketOnly: Boolean(newRoomTicketOnly && currentPlanLimits.allowTicketOnly),
+      ownerId: currentOwnerId,
+      ownerEmail,
+      ownerName,
+      organization,
+      currentPlan,
+      plan: currentPlan,
+      createdByPlan: currentPlan,
+      requesterId: currentOwnerId,
+      requesterEmail: ownerEmail,
+      requesterRole: isSuperAdmin ? "super-admin" : "owner",
+    };
+
+    setRoomCreateWorking(true);
+    setStatus("Creating host-owned room...");
+
+    try {
+      const token = getServerAuthToken();
+      const headers = { "Content-Type": "application/json" };
+
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${ROOM_API_BASE}/api/rooms`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (response.ok && data?.ok) {
+        const nextRooms = Array.isArray(data.rooms)
+          ? data.rooms
+          : data.room
+          ? [...rooms, data.room]
+          : rooms;
+
+        const syncedRooms = syncRoomsForCurrentPlan(nextRooms, currentPlan, currentOwnerId, freeAccount);
+
+        setRooms(syncedRooms);
+        localStorage.setItem("agv_super_admin_rooms", JSON.stringify(syncedRooms));
+
+        if (data.room?.id) {
+          handleJoinRoom(data.room.id);
+        }
+
+        setNewRoomName("");
+        setNewRoomCategory("Custom");
+        setNewRoomPrivate(false);
+        setNewRoomTicketOnly(false);
+        setStatus(`Room created: ${data.room?.name || cleanName}`);
+        return;
+      }
+
+      setStatus(data?.error || "SERVER room creation not available. Saving locally for this host.");
+    } catch {
+      setStatus("SERVER room creation offline. Saving locally for this host.");
+    } finally {
+      setRoomCreateWorking(false);
+    }
+
+    const fallbackIdBase = cleanName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || `room-${Date.now()}`;
+
+    let fallbackId = fallbackIdBase;
+    let attempt = 1;
+
+    while (rooms.some((room) => room.id === fallbackId)) {
+      attempt += 1;
+      fallbackId = `${fallbackIdBase}-${attempt}`;
+    }
+
+    const fallbackRoom = {
+      id: fallbackId,
+      name: cleanName,
+      category: cleanCategory,
+      isPrivate: Boolean(newRoomPrivate && currentPlanLimits.allowPrivate),
+      isLocked: false,
+      allowTicketOnly: Boolean(newRoomTicketOnly && currentPlanLimits.allowTicketOnly),
+      ownerId: currentOwnerId,
+      ownerEmail,
+      ownerName,
+      organization,
+      createdBy: currentOwnerId,
+      createdByPlan: currentPlan,
+      planMode: currentPlan,
+      planLabel: currentPlanLimits.label,
+      planHostLabel: currentPlanLimits.hostLabel,
+      maxRooms: currentPlanLimits.maxRooms,
+      maxViewers: currentPlanLimits.maxViewers,
+      createdAt: new Date().toISOString(),
+    };
+
+    const nextRooms = syncRoomsForCurrentPlan([...rooms, fallbackRoom], currentPlan, currentOwnerId, freeAccount);
+
+    setRooms(nextRooms);
+    localStorage.setItem("agv_super_admin_rooms", JSON.stringify(nextRooms));
+    handleJoinRoom(fallbackRoom.id);
+
+    setNewRoomName("");
+    setNewRoomCategory("Custom");
+    setNewRoomPrivate(false);
+    setNewRoomTicketOnly(false);
+    setStatus(`Room created locally: ${fallbackRoom.name}. SERVER auth connection can be wired later.`);
+  }
   function handleJoinRoom(roomId) {
     disconnectFromLiveKit();
     setSelectedRoomId(roomId);
@@ -2063,6 +2246,67 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </button>
             </div>
 
+            <div style={styles.controlBox}>
+              <div style={styles.controlTitle}>Create Host-Owned Room</div>
+
+              <div style={styles.helperText}>
+                Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used • Plan: {currentPlanLimits.label}
+              </div>
+
+              {paidBusinessToolsLocked && !isSuperAdmin ? (
+                <div style={styles.viewerLockBox}>
+                  Room creation is a paid-plan tool. Upgrade to Creator, Ministry, or Convention.
+                </div>
+              ) : roomLimitReached ? (
+                <div style={styles.viewerLockBox}>
+                  Room limit reached for this plan. Upgrade to add more host-owned rooms.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 8, marginTop: 8 }}>
+                  <input
+                    style={styles.chatInput}
+                    value={newRoomName}
+                    onChange={(event) => setNewRoomName(event.target.value)}
+                    placeholder="Room name, example: Youth Teaching Room"
+                  />
+
+                  <input
+                    style={styles.chatInput}
+                    value={newRoomCategory}
+                    onChange={(event) => setNewRoomCategory(event.target.value)}
+                    placeholder="Room category, example: Teaching, Podcast, Vendor Booth"
+                  />
+
+                  <label style={styles.helperText}>
+                    <input
+                      type="checkbox"
+                      checked={newRoomPrivate}
+                      disabled={!currentPlanLimits.allowPrivate && !isSuperAdmin}
+                      onChange={(event) => setNewRoomPrivate(event.target.checked)}
+                    />{" "}
+                    Private room {currentPlanLimits.allowPrivate || isSuperAdmin ? "" : "(upgrade required)"}
+                  </label>
+
+                  <label style={styles.helperText}>
+                    <input
+                      type="checkbox"
+                      checked={newRoomTicketOnly}
+                      disabled={!currentPlanLimits.allowTicketOnly && !isSuperAdmin}
+                      onChange={(event) => setNewRoomTicketOnly(event.target.checked)}
+                    />{" "}
+                    Ticket-only room {currentPlanLimits.allowTicketOnly || isSuperAdmin ? "" : "(upgrade required)"}
+                  </label>
+
+                  <button
+                    style={styles.primaryButton}
+                    onClick={createHostOwnedRoom}
+                    disabled={roomCreateWorking}
+                  >
+                    {roomCreateWorking ? "Creating Room..." : "Create Room"}
+                  </button>
+                </div>
+              )}
+            </div>
             <div style={styles.roomList}>
               {visibleRooms.map((room) => (
                 <button
