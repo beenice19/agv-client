@@ -1755,6 +1755,51 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       .catch(() => alert(invite));
   }
 
+  // PASS32B_V2_EVENT_LANDING_PAGE_SHELL
+  function buildEventLandingLink(item) {
+    const base = window.location.origin || "http://127.0.0.1:5175";
+    const eventId = item?.id || item?.title || "agv-event";
+    const roomId = item?.roomId || selectedRoomId || "main-hall";
+
+    return `${base}/?event=${encodeURIComponent(eventId)}&room=${encodeURIComponent(roomId)}`;
+  }
+
+  function copyEventLandingLink(item) {
+    const link = buildEventLandingLink(item);
+
+    navigator.clipboard
+      ?.writeText(link)
+      .then(() => setStatus(`Event landing link copied for ${item?.title || "AGV event"}`))
+      .catch(() => alert(link));
+  }
+
+  function previewEventLandingPage(item) {
+    const link = buildEventLandingLink(item);
+    const title = item?.title || "AGV Event";
+    const roomId = item?.roomId || selectedRoomId || "main-hall";
+    const date = item?.eventDate || "Date not set";
+    const time = item?.startTime || "Time not set";
+    const price = item?.ticketPrice || "Free / Not set";
+    const host = item?.ownerName || item?.ownerEmail || item?.ownerId || "AGV Host";
+    const organization = item?.organization || item?.ownerOrganization || "AGV";
+    const description = item?.description || "No event description saved yet.";
+
+    const summary =
+      `AGV Event Landing Page Preview\n\n` +
+      `Event: ${title}\n` +
+      `Host: ${host}\n` +
+      `Organization: ${organization}\n` +
+      `Room: ${roomId}\n` +
+      `Date: ${date}\n` +
+      `Time: ${time}\n` +
+      `Ticket Price: ${price}\n\n` +
+      `Description:\n${description}\n\n` +
+      `Landing Link:\n${link}\n\n` +
+      `This is a CLIENT-only preview shell. Full public event routing and ticket checkout come in a later SERVER pass.`;
+
+    alert(summary);
+  }
+
   return (
     <div style={styles.appShell}>
       <header style={styles.header}>
@@ -2890,6 +2935,49 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         {item.description ? (
                           <div style={styles.helperText}>{item.description}</div>
                         ) : null}
+
+                        <div style={styles.ownerSyncBox}>
+                          <div style={styles.ownerSyncTitle}>Event Landing Page Preview</div>
+
+                          <div style={styles.helperText}>
+                            Public-facing event shell for sharing this show outside the control room.
+                          </div>
+
+                          <div style={styles.eventOwnerCard}>
+                            <div style={styles.eventOwnerTitle}>{item.title || "AGV Event"}</div>
+
+                            <div style={styles.helperText}>
+                              Host: {item.ownerName || item.ownerEmail || item.ownerId || "AGV Host"}
+                            </div>
+
+                            <div style={styles.helperText}>
+                              Organization: {item.organization || item.ownerOrganization || "AGV"}
+                            </div>
+
+                            <div style={styles.helperText}>
+                              Room: {item.roomId || "main-hall"} • Date: {item.eventDate || "Not set"} • Time:{" "}
+                              {item.startTime || "Not set"}
+                            </div>
+
+                            <div style={styles.helperText}>
+                              Ticket Price: {item.ticketPrice || "Free / Not set"}
+                            </div>
+
+                            <div style={styles.helperText}>
+                              Landing Link: {buildEventLandingLink(item)}
+                            </div>
+                          </div>
+
+                          <div style={styles.buttonRow}>
+                            <button style={styles.secondaryButton} onClick={() => copyEventLandingLink(item)}>
+                              Copy Event Landing Link
+                            </button>
+
+                            <button style={styles.secondaryButton} onClick={() => previewEventLandingPage(item)}>
+                              Preview Event Landing Page
+                            </button>
+                          </div>
+                        </div>
 
                         {allowedToDelete ? (
                           <button
