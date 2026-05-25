@@ -397,6 +397,23 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
     const currentName = String(storedAccount?.name || freeAccount?.name || "").trim().toLowerCase();
 
+    // PASS32D_D_FREE_ROOM_VISIBILITY_GUARD
+    const ownedRooms = roomList.filter((room) => {
+      const roomOwnerId = String(room.ownerId || room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+      const roomOwnerEmail = String(room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+      const roomHostName = String(room.host || room.ownerName || "").trim().toLowerCase();
+
+      return (
+        Boolean(currentOwnerId && roomOwnerId && roomOwnerId === currentOwnerId) ||
+        Boolean(currentEmail && roomOwnerEmail && roomOwnerEmail === currentEmail) ||
+        Boolean(currentName && roomHostName && roomHostName === currentName)
+      );
+    });
+
+    if (currentPlan === "FREE") {
+      return ownedRooms.slice(0, 1);
+    }
+
     return roomList.filter((room) => {
       const isDefaultStarterRoom = DEFAULT_ROOMS.some((defaultRoom) => defaultRoom.id === room.id);
 
@@ -421,6 +438,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     storedAccount?.name,
     freeAccount?.email,
     freeAccount?.name,
+    currentPlan,
   ]);
 
   // PASS32D_C_V3_HOST_ROOM_CREATION_UI
