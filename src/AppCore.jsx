@@ -370,6 +370,47 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
 
+  // PASS31X_OWNER_ROOM_VISIBILITY
+  const visibleRooms = useMemo(() => {
+    const roomList = Array.isArray(rooms) ? rooms : [];
+
+    if (isSuperAdmin) {
+      return roomList;
+    }
+
+    if (isViewerOnly) {
+      return roomList.filter((room) => room.id === selectedRoomId);
+    }
+
+    const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
+    const currentName = String(storedAccount?.name || freeAccount?.name || "").trim().toLowerCase();
+
+    return roomList.filter((room) => {
+      const isDefaultStarterRoom = DEFAULT_ROOMS.some((defaultRoom) => defaultRoom.id === room.id);
+
+      const roomOwnerId = String(room.ownerId || room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+      const roomOwnerEmail = String(room.ownerEmail || room.createdBy || "").trim().toLowerCase();
+      const roomHostName = String(room.host || room.ownerName || "").trim().toLowerCase();
+
+      const ownedByCurrentAccount =
+        Boolean(currentOwnerId && roomOwnerId && roomOwnerId === currentOwnerId) ||
+        Boolean(currentEmail && roomOwnerEmail && roomOwnerEmail === currentEmail) ||
+        Boolean(currentName && roomHostName && roomHostName === currentName);
+
+      return isDefaultStarterRoom || ownedByCurrentAccount;
+    });
+  }, [
+    rooms,
+    isSuperAdmin,
+    isViewerOnly,
+    selectedRoomId,
+    currentOwnerId,
+    storedAccount?.email,
+    storedAccount?.name,
+    freeAccount?.email,
+    freeAccount?.name,
+  ]);
+
   const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
   const [viewerMuted, setViewerMuted] = useState(false);
   const [viewerVolume, setViewerVolume] = useState(1);
@@ -1978,7 +2019,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
 
             <div style={styles.roomList}>
-              {rooms.map((room) => (
+              {visibleRooms.map((room) => (
                 <button
                   key={room.id}
                   style={room.id === selectedRoomId ? styles.roomButtonActive : styles.roomButton}
