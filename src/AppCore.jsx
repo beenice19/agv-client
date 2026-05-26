@@ -113,6 +113,16 @@ function getRoomFromUrl() {
   }
 }
 
+// PASS32E_B_EVENT_LANDING_ROUTE_SHELL
+function getEventFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("event") || "";
+  } catch {
+    return "";
+  }
+}
+
 function getFreeAccount() {
   try {
     return JSON.parse(localStorage.getItem("agv_free_account") || "null");
@@ -277,6 +287,8 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [roomCreateWorking, setRoomCreateWorking] = useState(false);
 
     const [events, setEvents] = useState([]);
+  // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
+  const [eventLandingDismissed, setEventLandingDismissed] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [eventDate, setEventDate] = useState("");
@@ -381,6 +393,26 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const hostVendorAgreementRequired =
     isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
+  // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
+  const eventIdFromUrl = getEventFromUrl();
+
+  const selectedLandingEvent = useMemo(() => {
+    if (!eventIdFromUrl) return null;
+
+    const cleanEventId = String(eventIdFromUrl || "").trim().toLowerCase();
+
+    return (
+      events.find((item) => {
+        const itemId = String(item?.id || "").trim().toLowerCase();
+        const itemTitle = String(item?.title || "").trim().toLowerCase();
+
+        return itemId === cleanEventId || itemTitle === cleanEventId;
+      }) || null
+    );
+  }, [events, eventIdFromUrl]);
+
+  const showEventLandingRoute =
+    Boolean(eventIdFromUrl) && !eventLandingDismissed && isViewerOnly;
 
   // PASS31X_OWNER_ROOM_VISIBILITY
   const visibleRooms = useMemo(() => {
@@ -2002,6 +2034,162 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     alert(summary);
   }
 
+  // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
+  if (showEventLandingRoute) {
+    const landingRoomId = selectedLandingEvent?.roomId || selectedRoomId || "main-hall";
+    const landingTitle = selectedLandingEvent?.title || "AGV Event";
+    const landingHost =
+      selectedLandingEvent?.ownerName ||
+      selectedLandingEvent?.ownerEmail ||
+      selectedLandingEvent?.ownerId ||
+      "AGV Host";
+    const landingOrganization =
+      selectedLandingEvent?.organization ||
+      selectedLandingEvent?.ownerOrganization ||
+      "Avant Global Vision";
+    const landingDate = selectedLandingEvent?.eventDate || "Date not set";
+    const landingTime = selectedLandingEvent?.startTime || "Time not set";
+    const landingPrice = selectedLandingEvent?.ticketPrice || "Free / Not set";
+    const landingDescription =
+      selectedLandingEvent?.description ||
+      "This AGV event landing page is ready. Full event details will appear when the event server returns this event.";
+
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          background:
+            "radial-gradient(circle at top, rgba(212,175,55,0.20), transparent 34%), linear-gradient(135deg, #020617, #111827 45%, #1f1306)",
+          color: "#f8fafc",
+          padding: 24,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <section
+          style={{
+            width: "min(960px, 100%)",
+            border: "1px solid rgba(212,175,55,0.32)",
+            borderRadius: 30,
+            padding: 28,
+            background: "rgba(15,23,42,0.86)",
+            boxShadow: "0 30px 100px rgba(0,0,0,0.38)",
+          }}
+        >
+          <div
+            style={{
+              color: "#facc15",
+              fontWeight: 950,
+              letterSpacing: 4,
+              fontSize: 13,
+              marginBottom: 14,
+              textTransform: "uppercase",
+            }}
+          >
+            Avant Global Vision Event
+          </div>
+
+          <h1 style={{ fontSize: 42, lineHeight: 1.05, margin: "0 0 12px", fontWeight: 950 }}>
+            {landingTitle}
+          </h1>
+
+          <p style={{ color: "#cbd5e1", fontSize: 17, lineHeight: 1.65, margin: "0 0 22px" }}>
+            {landingDescription}
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 12,
+              marginBottom: 22,
+            }}
+          >
+            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Host</div>
+              <div style={{ fontWeight: 950 }}>{landingHost}</div>
+            </div>
+
+            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Organization</div>
+              <div style={{ fontWeight: 950 }}>{landingOrganization}</div>
+            </div>
+
+            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Date / Time</div>
+              <div style={{ fontWeight: 950 }}>{landingDate} • {landingTime}</div>
+            </div>
+
+            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
+              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Ticket</div>
+              <div style={{ fontWeight: 950 }}>{landingPrice}</div>
+            </div>
+          </div>
+
+          {!selectedLandingEvent ? (
+            <div
+              style={{
+                border: "1px solid rgba(250,204,21,0.28)",
+                background: "rgba(250,204,21,0.10)",
+                borderRadius: 18,
+                padding: 14,
+                color: "#fde68a",
+                marginBottom: 18,
+                fontWeight: 800,
+              }}
+            >
+              Event details are loading or the event server is offline. You can still enter the assigned AGV room.
+            </div>
+          ) : null}
+
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <button
+              style={{
+                border: 0,
+                borderRadius: 999,
+                padding: "13px 18px",
+                background: "linear-gradient(135deg, #facc15, #d97706)",
+                color: "#111827",
+                fontWeight: 950,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                setEventLandingDismissed(true);
+                handleJoinRoom(landingRoomId);
+              }}
+            >
+              Enter Event Room
+            </button>
+
+            <button
+              style={{
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: 999,
+                padding: "13px 18px",
+                background: "rgba(255,255,255,0.06)",
+                color: "#f8fafc",
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete("event");
+                window.history.replaceState({}, "", url.toString());
+                setEventLandingDismissed(true);
+              }}
+            >
+              Continue to AGV
+            </button>
+          </div>
+
+          <div style={{ marginTop: 18, color: "#94a3b8", fontSize: 13 }}>
+            Room: {landingRoomId} • Powered by Avant Global Vision
+          </div>
+        </section>
+      </main>
+    );
+  }
   return (
     <div style={styles.appShell}>
       <header style={styles.header}>
