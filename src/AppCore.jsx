@@ -2035,6 +2035,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
+  // PASS32G_EVENT_LANDING_PAGE_UPGRADE
   if (showEventLandingRoute) {
     const landingRoomId = selectedLandingEvent?.roomId || selectedRoomId || "main-hall";
     const landingTitle = selectedLandingEvent?.title || "AGV Event";
@@ -2052,16 +2053,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const landingPrice = selectedLandingEvent?.ticketPrice || "Free / Not set";
     const landingDescription =
       selectedLandingEvent?.description ||
-      "This AGV event landing page is ready. Full event details will appear when the event server returns this event.";
+      "This AGV public event page is ready. Full event details will appear when the event server returns this event.";
+
+    const shareLandingLink = () => {
+      const link = window.location.href;
+
+      navigator.clipboard
+        ?.writeText(link)
+        .then(() => setStatus("Event landing link copied."))
+        .catch(() => alert(link));
+    };
 
     return (
       <main
         style={{
           minHeight: "100vh",
           background:
-            "radial-gradient(circle at top, rgba(212,175,55,0.20), transparent 34%), linear-gradient(135deg, #020617, #111827 45%, #1f1306)",
+            "radial-gradient(circle at 20% 0%, rgba(250,204,21,0.26), transparent 32%), radial-gradient(circle at 80% 20%, rgba(180,83,9,0.22), transparent 30%), linear-gradient(135deg, #020617, #0f172a 48%, #1f1306)",
           color: "#f8fafc",
-          padding: 24,
+          padding: 22,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -2069,122 +2079,261 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       >
         <section
           style={{
-            width: "min(960px, 100%)",
-            border: "1px solid rgba(212,175,55,0.32)",
-            borderRadius: 30,
-            padding: 28,
-            background: "rgba(15,23,42,0.86)",
-            boxShadow: "0 30px 100px rgba(0,0,0,0.38)",
+            width: "min(1100px, 100%)",
+            border: "1px solid rgba(212,175,55,0.34)",
+            borderRadius: 34,
+            padding: 24,
+            background: "linear-gradient(180deg, rgba(15,23,42,0.94), rgba(3,7,18,0.92))",
+            boxShadow: "0 34px 110px rgba(0,0,0,0.42)",
           }}
         >
           <div
             style={{
-              color: "#facc15",
-              fontWeight: 950,
-              letterSpacing: 4,
-              fontSize: 13,
-              marginBottom: 14,
-              textTransform: "uppercase",
+              borderRadius: 28,
+              padding: 24,
+              background:
+                "linear-gradient(135deg, rgba(212,175,55,0.20), rgba(15,23,42,0.72)), radial-gradient(circle at top right, rgba(250,204,21,0.22), transparent 38%)",
+              border: "1px solid rgba(212,175,55,0.26)",
+              marginBottom: 18,
             }}
           >
-            Avant Global Vision Event
+            <div
+              style={{
+                color: "#facc15",
+                fontWeight: 950,
+                letterSpacing: 4,
+                fontSize: 12,
+                marginBottom: 12,
+                textTransform: "uppercase",
+              }}
+            >
+              Avant Global Vision Presents
+            </div>
+
+            <h1
+              style={{
+                fontSize: "clamp(34px, 6vw, 64px)",
+                lineHeight: 0.98,
+                margin: "0 0 14px",
+                fontWeight: 950,
+                letterSpacing: "-1.6px",
+              }}
+            >
+              {landingTitle}
+            </h1>
+
+            <p
+              style={{
+                color: "#dbeafe",
+                fontSize: 17,
+                lineHeight: 1.65,
+                margin: "0 0 22px",
+                maxWidth: 820,
+              }}
+            >
+              {landingDescription}
+            </p>
+
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <span
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 999,
+                  background: "rgba(250,204,21,0.14)",
+                  border: "1px solid rgba(250,204,21,0.26)",
+                  color: "#fde68a",
+                  fontWeight: 900,
+                  fontSize: 12,
+                }}
+              >
+                Room: {landingRoomId}
+              </span>
+
+              <span
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "#e2e8f0",
+                  fontWeight: 900,
+                  fontSize: 12,
+                }}
+              >
+                Host: {landingHost}
+              </span>
+
+              <span
+                style={{
+                  padding: "9px 12px",
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.07)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  color: "#e2e8f0",
+                  fontWeight: 900,
+                  fontSize: 12,
+                }}
+              >
+                {landingOrganization}
+              </span>
+            </div>
           </div>
-
-          <h1 style={{ fontSize: 42, lineHeight: 1.05, margin: "0 0 12px", fontWeight: 950 }}>
-            {landingTitle}
-          </h1>
-
-          <p style={{ color: "#cbd5e1", fontSize: 17, lineHeight: 1.65, margin: "0 0 22px" }}>
-            {landingDescription}
-          </p>
 
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: 12,
-              marginBottom: 22,
+              gridTemplateColumns: "minmax(0, 1.2fr) minmax(280px, 0.8fr)",
+              gap: 18,
             }}
           >
-            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Host</div>
-              <div style={{ fontWeight: 950 }}>{landingHost}</div>
-            </div>
-
-            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Organization</div>
-              <div style={{ fontWeight: 950 }}>{landingOrganization}</div>
-            </div>
-
-            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Date / Time</div>
-              <div style={{ fontWeight: 950 }}>{landingDate} • {landingTime}</div>
-            </div>
-
-            <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 18, padding: 14 }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850 }}>Ticket</div>
-              <div style={{ fontWeight: 950 }}>{landingPrice}</div>
-            </div>
-          </div>
-
-          {!selectedLandingEvent ? (
             <div
               style={{
-                border: "1px solid rgba(250,204,21,0.28)",
-                background: "rgba(250,204,21,0.10)",
-                borderRadius: 18,
-                padding: 14,
-                color: "#fde68a",
-                marginBottom: 18,
-                fontWeight: 800,
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                gap: 12,
               }}
             >
-              Event details are loading or the event server is offline. You can still enter the assigned AGV room.
+              <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 20, padding: 16, background: "rgba(255,255,255,0.05)" }}>
+                <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850, marginBottom: 6 }}>Date</div>
+                <div style={{ fontWeight: 950, fontSize: 18 }}>{landingDate}</div>
+              </div>
+
+              <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 20, padding: 16, background: "rgba(255,255,255,0.05)" }}>
+                <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850, marginBottom: 6 }}>Time</div>
+                <div style={{ fontWeight: 950, fontSize: 18 }}>{landingTime}</div>
+              </div>
+
+              <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 20, padding: 16, background: "rgba(255,255,255,0.05)" }}>
+                <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850, marginBottom: 6 }}>Ticket</div>
+                <div style={{ fontWeight: 950, fontSize: 18 }}>{landingPrice}</div>
+              </div>
+
+              <div style={{ border: "1px solid rgba(255,255,255,0.10)", borderRadius: 20, padding: 16, background: "rgba(255,255,255,0.05)" }}>
+                <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 850, marginBottom: 6 }}>Platform</div>
+                <div style={{ fontWeight: 950, fontSize: 18 }}>AGV Live Stage</div>
+              </div>
+
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  border: "1px solid rgba(212,175,55,0.22)",
+                  borderRadius: 22,
+                  padding: 18,
+                  background: "rgba(212,175,55,0.08)",
+                }}
+              >
+                <div style={{ color: "#facc15", fontWeight: 950, marginBottom: 8 }}>
+                  About this AGV event
+                </div>
+
+                <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
+                  This public event page gives viewers a clean place to understand the event before entering the room.
+                  Ticket purchase, ticket code entry, and direct checkout routing can be connected in the next pass.
+                </div>
+              </div>
+
+              {!selectedLandingEvent ? (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    border: "1px solid rgba(250,204,21,0.28)",
+                    background: "rgba(250,204,21,0.10)",
+                    borderRadius: 18,
+                    padding: 14,
+                    color: "#fde68a",
+                    fontWeight: 800,
+                  }}
+                >
+                  Event details are loading or the event server is offline. You can still enter the assigned AGV room.
+                </div>
+              ) : null}
             </div>
-          ) : null}
 
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button
+            <aside
               style={{
-                border: 0,
-                borderRadius: 999,
-                padding: "13px 18px",
-                background: "linear-gradient(135deg, #facc15, #d97706)",
-                color: "#111827",
-                fontWeight: 950,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                setEventLandingDismissed(true);
-                handleJoinRoom(landingRoomId);
+                border: "1px solid rgba(255,255,255,0.10)",
+                borderRadius: 24,
+                padding: 18,
+                background: "rgba(2,6,23,0.52)",
+                display: "grid",
+                gap: 12,
+                alignContent: "start",
               }}
             >
-              Enter Event Room
-            </button>
+              <div style={{ color: "#facc15", fontWeight: 950, fontSize: 18 }}>
+                Enter the AGV room
+              </div>
 
-            <button
-              style={{
-                border: "1px solid rgba(255,255,255,0.14)",
-                borderRadius: 999,
-                padding: "13px 18px",
-                background: "rgba(255,255,255,0.06)",
-                color: "#f8fafc",
-                fontWeight: 900,
-                cursor: "pointer",
-              }}
-              onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("event");
-                window.history.replaceState({}, "", url.toString());
-                setEventLandingDismissed(true);
-              }}
-            >
-              Continue to AGV
-            </button>
-          </div>
+              <div style={{ color: "#cbd5e1", lineHeight: 1.55, fontSize: 14 }}>
+                Join the live room for this event. Ticket validation and checkout can be connected next.
+              </div>
 
-          <div style={{ marginTop: 18, color: "#94a3b8", fontSize: 13 }}>
-            Room: {landingRoomId} • Powered by Avant Global Vision
+              <button
+                style={{
+                  border: 0,
+                  borderRadius: 999,
+                  padding: "14px 18px",
+                  background: "linear-gradient(135deg, #facc15, #d97706)",
+                  color: "#111827",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  setEventLandingDismissed(true);
+                  handleJoinRoom(landingRoomId);
+                }}
+              >
+                Enter Event Room
+              </button>
+
+              <button
+                style={{
+                  border: "1px solid rgba(250,204,21,0.28)",
+                  borderRadius: 999,
+                  padding: "13px 18px",
+                  background: "rgba(250,204,21,0.10)",
+                  color: "#fde68a",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                }}
+                onClick={shareLandingLink}
+              >
+                Share Event Link
+              </button>
+
+              <button
+                style={{
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  borderRadius: 999,
+                  padding: "13px 18px",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#f8fafc",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+                onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("event");
+                  window.history.replaceState({}, "", url.toString());
+                  setEventLandingDismissed(true);
+                }}
+              >
+                Continue to AGV
+              </button>
+
+              <div
+                style={{
+                  marginTop: 8,
+                  paddingTop: 14,
+                  borderTop: "1px solid rgba(255,255,255,0.10)",
+                  color: "#94a3b8",
+                  fontSize: 13,
+                  lineHeight: 1.5,
+                }}
+              >
+                Powered by Avant Global Vision — a digital stage, teaching, convention, and broadcast platform.
+              </div>
+            </aside>
           </div>
         </section>
       </main>
