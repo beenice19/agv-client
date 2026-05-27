@@ -5,18 +5,100 @@ import {
   createLocalVideoTrack,
 } from "livekit-client";
 
-const TOKEN_KEY = "stro_cheivery_auth_token";
+// PASS34B_CLEAN_LIVEKIT_BRIDGE_REBUILD
+// CLIENT SECOND — clean bridge for PASS34A server lane.
+// This file connects only to the configured AGV server token route.
+// No old localhost, old ticket server, or separate token-server fallback is used.
 
 const MAIN_API_BASE =
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://agv-ticket-server-clean.onrender.com";
+  import.meta.env.VITE_API_BASE_URL || "https://agv-server.onrender.com";
 
 const TOKEN_URL =
   import.meta.env.VITE_AGV_LIVEKIT_TOKEN_URL ||
-  "https://agv-livekit-token-server.onrender.com/api/livekit/token";
+  `${MAIN_API_BASE}/api/livekit/token`;
 
-function getAuthToken() {
-  return window.localStorage.getItem(TOKEN_KEY) || "";
+function getOptionalAuthToken() {
+  try {
+    return (
+      window.localStorage.getItem("stro_cheivery_auth_token") ||
+      window.localStorage.getItem("agv_auth_token") ||
+      window.localStorage.getItem("agv_server_token") ||
+      window.localStorage.getItem("agvToken") ||
+      window.localStorage.getItem("token") ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+function cleanText(value, fallback = "") {
+  return String(value ?? fallback).trim();
+}
+
+function makeSafeError(error, fallback = "LiveKit connection failed.") {
+  if (!error) return fallback;
+  if (typeof error?.message === "string" && error.message.trim()) {
+    return error.message.trim();
+  }
+  return fallback;
+}
+
+async function requestAgvLiveKitToken({ roomName, identity, name, role }) {
+  const authToken = getOptionalAuthToken();
+
+  const headers = {
+    "Content-Type": "application/json",
+  };
+
+  if (authToken) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  const response = await fetch(TOKEN_URL, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      roomName,
+      identity,
+      name,
+      role,
+    }),
+  });
+
+  let data = null;
+
+  try {
+    data = await response.json();
+  } catch {
+    data = null;
+  }
+
+  if (!response.ok || !data?.ok) {
+    const serverMessage =
+      data?.message ||
+      data?.error ||
+      `LiveKit token request failed with status ${response.status}`;
+
+    throw new Error(serverMessage);
+  }
+
+  const serverUrl = data.server_url || data.url;
+  const participantToken = data.participant_token || data.token;
+
+  if (!serverUrl) {
+    throw new Error("LiveKit token response did not include server_url.");
+  }
+
+  if (!participantToken) {
+    throw new Error("LiveKit token response did not include participant_token.");
+  }
+
+  return {
+    ...data,
+    server_url: serverUrl,
+    participant_token: participantToken,
+  };
 }
 
 export async function createAgvLiveKitRoom({
@@ -33,27 +115,12 @@ export async function createAgvLiveKitRoom({
   onError,
 } = {}) {
   try {
-    const authToken = getAuthToken();
-
-    const tokenResponse = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      },
-      body: JSON.stringify({
-        roomName,
-        identity,
-        name,
-        role,
-      }),
+    const tokenData = await requestAgvLiveKitToken({
+      roomName: cleanText(roomName, "main-hall"),
+      identity: cleanText(identity, `guest-${Date.now()}`),
+      name: cleanText(name, identity),
+      role: cleanText(role, "viewer"),
     });
-
-    const tokenData = await tokenResponse.json();
-
-    if (!tokenResponse.ok || !tokenData.ok) {
-      throw new Error(tokenData.error || "Failed to get LiveKit token.");
-    }
 
     const room = new Room({
       adaptiveStream: true,
@@ -62,11 +129,11 @@ export async function createAgvLiveKitRoom({
     });
 
     room.on(RoomEvent.Connected, () => {
-      if (onConnected) onConnected(room);
+      if (onConnected) onConnected(room, tokenData);
     });
 
     room.on(RoomEvent.Disconnected, () => {
-      if (onDisconnected) onDisconnected(room);
+      if (onDisconnected) onDisconnected(room, tokenData);
     });
 
     room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
@@ -105,7 +172,7 @@ export async function createAgvLiveKitRoom({
 
     return {
       ok: false,
-      error: error.message || "LiveKit connection failed.",
+      error: makeSafeError(error),
       room: null,
     };
   }
@@ -132,20 +199,10 @@ export async function publishAgvHostCamera(room) {
 
   await room.localParticipant.publishTrack(videoTrack, {
     name: "agv-host-camera",
-    source: "camera",
-    simulcast: true,
-    videoEncoding: {
-      maxBitrate: 900_000,
-      maxFramerate: 24,
-    },
   });
 
   await room.localParticipant.publishTrack(audioTrack, {
     name: "agv-host-audio",
-    source: "microphone",
-    audioEncoding: {
-      maxBitrate: 64_000,
-    },
   });
 
   return {
@@ -155,124 +212,70 @@ export async function publishAgvHostCamera(room) {
 }
 
 export async function publishAgvScreenShare(room) {
-  if (!room?.localParticipant) {
+  if (!room) {
     throw new Error("No LiveKit room is connected.");
   }
 
-  if (typeof room.localParticipant.createScreenTracks !== "function") {
-    await room.localParticipant.setScreenShareEnabled(true);
-
-    return {
-      ok: true,
-      hasScreenAudio: false,
-      fallback: true,
-    };
+  if (!navigator?.mediaDevices?.getDisplayMedia) {
+    throw new Error("Screen sharing is not supported in this browser.");
   }
 
-  const screenTracks = await room.localParticipant.createScreenTracks({
-    video: {
-      frameRate: { ideal: 24, max: 30 },
-    },
+  const stream = await navigator.mediaDevices.getDisplayMedia({
+    video: true,
     audio: true,
   });
 
-  const screenVideoTrack =
-    screenTracks.find((track) => String(track.kind || "").toLowerCase() === "video") ||
-    null;
+  const videoTrack = stream.getVideoTracks()[0] || null;
+  const audioTrack = stream.getAudioTracks()[0] || null;
 
-  const screenAudioTrack =
-    screenTracks.find((track) => String(track.kind || "").toLowerCase() === "audio") ||
-    null;
-
-  if (!screenVideoTrack) {
-    screenTracks.forEach((track) => {
-      try {
-        track.stop();
-      } catch {}
-    });
-
+  if (!videoTrack) {
     throw new Error("No screen video track was selected.");
   }
 
-  await room.localParticipant.publishTrack(screenVideoTrack, {
-    name: "agv-screen-video",
-    source: "screen_share",
-    videoEncoding: {
-      maxBitrate: 1_500_000,
-      maxFramerate: 24,
-    },
+  await room.localParticipant.publishTrack(videoTrack, {
+    name: "agv-screen-share-video",
   });
 
-  if (screenAudioTrack) {
-    await room.localParticipant.publishTrack(screenAudioTrack, {
-      name: "agv-screen-audio",
-      audioEncoding: {
-        maxBitrate: 96_000,
-      },
+  if (audioTrack) {
+    await room.localParticipant.publishTrack(audioTrack, {
+      name: "agv-screen-share-audio",
     });
   }
 
-  const stopSharedTracks = () => {
-    [screenVideoTrack, screenAudioTrack].filter(Boolean).forEach((track) => {
-      try {
-        room.localParticipant.unpublishTrack(track);
-      } catch {}
-
-      try {
-        track.stop();
-      } catch {}
-    });
-  };
-
-  try {
-    const mediaStreamTrack =
-      screenVideoTrack.mediaStreamTrack ||
-      screenVideoTrack._mediaStreamTrack ||
-      null;
-
-    if (mediaStreamTrack?.addEventListener) {
-      mediaStreamTrack.addEventListener("ended", stopSharedTracks, { once: true });
-    }
-  } catch {}
-
   return {
-    ok: true,
-    videoTrack: screenVideoTrack,
-    screenTrack: screenVideoTrack,
-    audioTrack: screenAudioTrack || null,
-    screenAudioTrack: screenAudioTrack || null,
-    hasScreenAudio: Boolean(screenAudioTrack),
+    stream,
+    videoTrack,
+    audioTrack,
   };
 }
 
 export async function stopAgvScreenShare(room) {
-  if (!room?.localParticipant) {
-    return { ok: true };
+  if (!room) {
+    throw new Error("No LiveKit room is connected.");
   }
 
-  try {
-    await room.localParticipant.setScreenShareEnabled(false);
-  } catch {}
-
   const publications = Array.from(
-    room.localParticipant.trackPublications?.values?.() || []
+    room.localParticipant?.trackPublications?.values?.() || []
   );
 
   for (const publication of publications) {
-    try {
-      const track = publication.track;
-      const name = String(publication.trackName || track?.name || "");
+    const track = publication?.track;
+    const name = publication?.trackName || track?.name || "";
 
-      if (!track || !name.includes("agv-screen")) continue;
-
+    if (
+      name.includes("agv-screen-share") ||
+      track?.mediaStreamTrack?.label?.toLowerCase?.().includes("screen")
+    ) {
       try {
-        room.localParticipant.unpublishTrack(track);
+        await room.localParticipant.unpublishTrack(track);
       } catch {}
-
       try {
-        track.stop();
+        track?.stop?.();
       } catch {}
-    } catch {}
+      try {
+        track?.mediaStreamTrack?.stop?.();
+      } catch {}
+    }
   }
 
   return {
@@ -281,7 +284,28 @@ export async function stopAgvScreenShare(room) {
 }
 
 export function disconnectAgvLiveKitRoom(room) {
-  if (room) {
+  if (!room) return;
+
+  try {
+    const publications = Array.from(
+      room.localParticipant?.trackPublications?.values?.() || []
+    );
+
+    for (const publication of publications) {
+      const track = publication?.track;
+      try {
+        room.localParticipant.unpublishTrack(track);
+      } catch {}
+      try {
+        track?.stop?.();
+      } catch {}
+      try {
+        track?.mediaStreamTrack?.stop?.();
+      } catch {}
+    }
+  } catch {}
+
+  try {
     room.disconnect();
-  }
+  } catch {}
 }
