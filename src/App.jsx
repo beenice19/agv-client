@@ -2,9 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppCore from "./AppCore.jsx";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
 
+// PASS34D_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
   import.meta.env.VITE_AGV_TICKET_API_URL ||
-  "https://agv-ticket-server-clean.onrender.com";
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://agv-server.onrender.com";
 const TEMP_LOCAL_HOST_PIN = "AGV-HOST-2026";
 
 const SUBSCRIPTION_API_BASE =
