@@ -1066,6 +1066,174 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     stageRef.current.appendChild(element);
   }
 
+
+  // PASS_BCAST2_VIEWER_BROADCAST_PLAYER
+  async function fetchAgvBroadcastState() {
+    try {
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/state`, {
+        method: "GET",
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        return null;
+      }
+
+      return data.state || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function showBroadcastPlaceholder(state, message = "Broadcast mode is live, but no playback URL is configured yet.") {
+    const box = document.createElement("div");
+    box.style.width = "100%";
+    box.style.height = "100%";
+    box.style.minHeight = "420px";
+    box.style.display = "flex";
+    box.style.flexDirection = "column";
+    box.style.alignItems = "center";
+    box.style.justifyContent = "center";
+    box.style.textAlign = "center";
+    box.style.padding = "32px";
+    box.style.background = "linear-gradient(135deg, #020617, #111827, #1f2937)";
+    box.style.color = "#f9fafb";
+    box.style.border = "1px solid rgba(245, 158, 11, 0.45)";
+    box.style.borderRadius = "18px";
+
+    const title = document.createElement("div");
+    title.textContent = state?.title || "AGV Broadcast";
+    title.style.fontSize = "26px";
+    title.style.fontWeight = "800";
+    title.style.marginBottom = "12px";
+
+    const body = document.createElement("div");
+    body.textContent = message;
+    body.style.fontSize = "16px";
+    body.style.opacity = "0.9";
+    body.style.maxWidth = "720px";
+
+    const room = document.createElement("div");
+    room.textContent = `Room: ${state?.roomId || "main-hall"}`;
+    room.style.marginTop = "18px";
+    room.style.fontSize = "13px";
+    room.style.opacity = "0.75";
+
+    box.appendChild(title);
+    box.appendChild(body);
+    box.appendChild(room);
+
+    showStageElement(box);
+  }
+
+  function showAgvBroadcastPlayer(state) {
+    const playbackUrl = state?.embedUrl || state?.playbackUrl || state?.hlsUrl || "";
+
+    if (!playbackUrl) {
+      showBroadcastPlaceholder(state);
+      return false;
+    }
+
+    const wrap = document.createElement("div");
+    wrap.style.width = "100%";
+    wrap.style.height = "100%";
+    wrap.style.minHeight = "420px";
+    wrap.style.background = "#020617";
+    wrap.style.borderRadius = "18px";
+    wrap.style.overflow = "hidden";
+    wrap.style.border = "1px solid rgba(245, 158, 11, 0.35)";
+    wrap.style.display = "flex";
+    wrap.style.flexDirection = "column";
+
+    const header = document.createElement("div");
+    header.style.padding = "10px 14px";
+    header.style.background = "rgba(15, 23, 42, 0.95)";
+    header.style.color = "#f9fafb";
+    header.style.fontWeight = "800";
+    header.style.letterSpacing = "0.02em";
+    header.textContent = state?.title || "AGV Broadcast";
+
+    const sub = document.createElement("div");
+    sub.style.fontSize = "12px";
+    sub.style.fontWeight = "500";
+    sub.style.opacity = "0.75";
+    sub.style.marginTop = "3px";
+    sub.textContent = state?.message || "Broadcast mode is live.";
+
+    header.appendChild(sub);
+
+    const isHls = playbackUrl.toLowerCase().includes(".m3u8");
+
+    let player;
+
+    if (isHls) {
+      player = document.createElement("video");
+      player.src = playbackUrl;
+      player.controls = true;
+      player.autoplay = true;
+      player.playsInline = true;
+      player.style.background = "#000";
+      player.style.width = "100%";
+      player.style.height = "100%";
+      player.style.flex = "1";
+      player.style.objectFit = "contain";
+    } else {
+      player = document.createElement("iframe");
+      player.src = playbackUrl;
+      player.allow = "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture; fullscreen";
+      player.allowFullscreen = true;
+      player.referrerPolicy = "no-referrer-when-downgrade";
+      player.style.border = "0";
+      player.style.width = "100%";
+      player.style.height = "100%";
+      player.style.flex = "1";
+      player.style.background = "#000";
+    }
+
+    wrap.appendChild(header);
+    wrap.appendChild(player);
+
+    showStageElement(wrap);
+    return true;
+  }
+
+  async function tryJoinBroadcastViewer(roomId = selectedRoomId) {
+    const state = await fetchAgvBroadcastState();
+
+    if (!state?.isLive || state?.viewerMode !== "broadcast") {
+      return false;
+    }
+
+    const stateRoom = String(state.roomId || "main-hall");
+    const requestedRoom = String(roomId || "main-hall");
+
+    if (stateRoom !== requestedRoom && stateRoom !== "all") {
+      return false;
+    }
+
+    clearStage();
+    cleanupLocalTracks();
+
+    if (livekitRoom) {
+      disconnectAgvLiveKitRoom(livekitRoom);
+      setLivekitRoom(null);
+    }
+
+    const displayed = showAgvBroadcastPlayer(state);
+
+    setCameraOn(false);
+    setScreenOn(false);
+    setStatus(
+      displayed
+        ? `Broadcast viewer mode: ${state.title || requestedRoom}`
+        : "Broadcast viewer mode is live, waiting for playback URL."
+    );
+
+    return true;
+  }
+
+
   async function connectToRoom(nextRole = roleMode, roomId = selectedRoomId) {
     // PASS31R_V3_VIEWER_TICKET_GUARD
     if (nextRole === "viewer" && currentPlan !== "FREE" && !ticketApproved) {
@@ -1440,6 +1608,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   async function joinAsViewer() {
+    const usedBroadcastMode = await tryJoinBroadcastViewer(selectedRoomId);
+
+    if (usedBroadcastMode) {
+      return;
+    }
+
     await connectToRoom("viewer", selectedRoomId);
   }
 
