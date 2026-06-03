@@ -22,6 +22,12 @@ const EVENT_API_BASE =
 const REVENUE_API_BASE =
   import.meta.env.VITE_AGV_REVENUE_API_URL || "http://127.0.0.1:8794";
 
+// PASS_FEE1_AGV_EVENT_FEE_STRUCTURE
+const AGV_TICKET_PLATFORM_FEE_RATE = 0.07;
+const AGV_TICKET_PLATFORM_FEE_LABEL = "7% ticket platform fee";
+const AGV_EVENT_FEE_STRUCTURE_LABEL =
+  "7% ticket platform fee + broadcast delivery service fee + payment processing";
+
 const SUBSCRIPTION_API_BASE =
   import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
 // PASS34C_CLIENT_CONFIG_CLEANUP
@@ -2045,7 +2051,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const gross = moneyValue(revenueGross);
     const refunds = moneyValue(revenueRefunds);
     const netRevenue = Math.max(0, gross - refunds);
-    const agvFee = Number((netRevenue * 0.02).toFixed(2));
+    const agvFee = Number((netRevenue * AGV_TICKET_PLATFORM_FEE_RATE).toFixed(2));
 
     if (!cleanEventName) {
       setStatus("Enter the event name before submitting a revenue report.");
@@ -2076,7 +2082,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       refunds,
       netRevenue,
       agvFee,
-      feeRate: 0.02,
+      feeRate: AGV_TICKET_PLATFORM_FEE_RATE,
       gateway: cleanGateway,
       notes: revenueNotes.trim(),
       status: "Reported",
@@ -2111,7 +2117,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setRevenueNotes("");
 
       setStatus(
-        `Revenue report saved to SERVER 8794. AGV 2% room leasing fee: ${formatMoney(
+        `Revenue report saved to SERVER 8794. AGV 7% ticket platform fee: ${formatMoney(
           serverReport.agvFee ?? agvFee
         )}.`
       );
@@ -2135,7 +2141,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setRevenueNotes("");
 
       setStatus(
-        `Revenue report saved locally. SERVER 8794 was not reachable. AGV 2% room leasing fee: ${formatMoney(agvFee)}.`
+        `Revenue report saved locally. SERVER 8794 was not reachable. AGV 7% ticket platform fee: ${formatMoney(agvFee)}.`
       );
     }
   }
@@ -3217,7 +3223,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                       <div>
                         If the host uses an outside payment provider, the host agrees to report collected ticket revenue
-                        and pay AGV a 2% digital room leasing fee based on gross collected ticket revenue after refunds.
+                        and pay AGV a 7% ticket platform fee based on collected ticket revenue after refunds, plus applicable broadcast delivery service fees and payment processing.
                       </div>
 
                       <div>
@@ -3264,7 +3270,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <div style={styles.ownerSyncTitle}>Vendor Financial Hub</div>
 
                     <div style={styles.helperText}>
-                      Connect vendor payment workflow, track ticket revenue, review AGV's 2% platform fee, and prepare for future gateway automation.
+                      Connect vendor payment workflow, track ticket revenue, review AGV's 7% ticket platform fee, track broadcast delivery service fees, account for payment processing, and prepare for future gateway automation.
                     </div>
 
                     <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
@@ -3310,8 +3316,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       </div>
 
                       <div style={styles.eventOwnerCard}>
-                        <div style={styles.eventOwnerTitle}>AGV 2% Payable</div>
-                        <div style={styles.helperText}>Fee rate: 2% digital room leasing / platform fee</div>
+                        <div style={styles.eventOwnerTitle}>AGV 7% Platform Fee Payable</div>
+                        <div style={styles.helperText}>Fee rate: 7% ticket platform fee. Broadcast delivery service fee and payment processing are separate.</div>
                         <div style={styles.helperText}>
                           AGV payable estimate:{" "}
                           {formatMoney(
@@ -3319,7 +3325,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               0,
                               (moneyValue(revenueGross) || revenueReports?.[0]?.grossRevenue || 0) -
                                 (moneyValue(revenueRefunds) || revenueReports?.[0]?.refunds || 0)
-                            ) * 0.02
+                            ) * AGV_TICKET_PLATFORM_FEE_RATE
                           )}
                         </div>
                         <div style={styles.helperText}>
@@ -3332,16 +3338,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         <div style={styles.helperText}>1. Accept Host/Vendor Agreement</div>
                         <div style={styles.helperText}>2. Choose payment gateway or manual reporting</div>
                         <div style={styles.helperText}>3. Report ticket revenue after event</div>
-                        <div style={styles.helperText}>4. Review AGV 2% fee</div>
+                        <div style={styles.helperText}>4. Review AGV 7% ticket platform fee</div>
                         <div style={styles.helperText}>5. Future: connect Stripe/payment gateway automation</div>
                       </div>
                     </div>
                   </div>
 
-                  <div style={styles.controlTitle}>Ticket Revenue Report / 2% AGV Fee Tracking</div>
+                  <div style={styles.controlTitle}>Ticket Revenue Report / 7% AGV Platform Fee Tracking</div>
                   <div style={styles.helperText}>
                     Paid hosts who use their own payment gateway can report ticket revenue here.
-                    AGV calculates a 2% digital room leasing fee based on net collected revenue after refunds.
+                    AGV calculates a 7% ticket platform fee based on net collected ticket revenue after refunds. Broadcast delivery service fees and payment processing are separate.
+                    Official AGV event fee structure: 7% ticket platform fee + broadcast delivery service fee + payment processing.
                   </div>
 
                   {paidBusinessToolsLocked ? (
@@ -3416,7 +3423,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       />
 
                       <div style={styles.ownerSyncBox}>
-                        <div style={styles.ownerSyncTitle}>AGV 2% Fee Preview</div>
+                        <div style={styles.ownerSyncTitle}>AGV 7% Ticket Platform Fee Preview</div>
                         <div style={styles.helperText}>
                           Gross: {formatMoney(revenueGross)} • Refunds: {formatMoney(revenueRefunds)}
                         </div>
@@ -3424,8 +3431,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           Net collected revenue: {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)))}
                         </div>
                         <div style={styles.helperText}>
-                          AGV 2% digital room leasing fee:{" "}
-                          {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)) * 0.02)}
+                          AGV 7% ticket platform fee:{" "}
+                          {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)) * AGV_TICKET_PLATFORM_FEE_RATE)}
                         </div>
                       </div>
 
@@ -3455,7 +3462,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               Room: {report.roomId || "Not set"} • Gateway: {report.gateway || "Not set"}
                             </div>
                             <div style={styles.helperText}>
-                              Tickets: {report.ticketsSold || 0} • Net: {formatMoney(report.netRevenue)} • AGV 2% Fee:{" "}
+                              Tickets: {report.ticketsSold || 0} • Net: {formatMoney(report.netRevenue)} • AGV 7% Platform Fee:{" "}
                               {formatMoney(report.agvFee)}
                             </div>
                             <div style={styles.helperText}>
@@ -3473,7 +3480,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <div style={styles.ownerSyncBox}>
                       <div style={styles.ownerSyncTitle}>Admin Revenue Review Dashboard</div>
                       <div style={styles.helperText}>
-                        Owner/Admin review area for vendor ticket revenue reports and AGV 2% room leasing fees.
+                        Owner/Admin review area for vendor ticket revenue reports and AGV 7% ticket platform fees.
                       </div>
 
                       <div style={styles.ownerSyncBox}>
@@ -3532,7 +3539,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               </div>
 
                               <div style={styles.helperText}>
-                                Net Revenue: {formatMoney(report.netRevenue)} • AGV 2% Fee Owed:{" "}
+                                Net Revenue: {formatMoney(report.netRevenue)} • AGV 7% Platform Fee Owed:{" "}
                                 {formatMoney(report.agvFee)}
                               </div>
 
