@@ -1067,16 +1067,44 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     localTracksRef.current = [];
   }
 
+  // PASS_STAGE1_V2_FULL_SCREEN_SHARE_STAGE_FIT
   function showStageElement(element) {
     if (!stageRef.current || !element) return;
 
+    try {
+      stageRef.current.style.position = "relative";
+      stageRef.current.style.overflow = "hidden";
+      stageRef.current.style.display = "flex";
+      stageRef.current.style.alignItems = "center";
+      stageRef.current.style.justifyContent = "center";
+      stageRef.current.style.background = "#000";
+    } catch {}
+
     element.style.width = "100%";
     element.style.height = "100%";
+    element.style.maxWidth = "100%";
+    element.style.maxHeight = "100%";
+    element.style.display = "block";
     element.style.objectFit = "contain";
-    element.style.background = "#020617";
+    element.style.background = "#000";
+
+    if (element.tagName === "VIDEO") {
+      element.autoplay = true;
+      element.playsInline = true;
+      element.muted = true;
+    }
 
     stageRef.current.innerHTML = "";
     stageRef.current.appendChild(element);
+  }
+
+  function showStageTrack(track, label = "Live stage") {
+    if (!track || typeof track.attach !== "function") return false;
+
+    const element = track.attach();
+    showStageElement(element);
+    setStatus(label);
+    return true;
   }
 
 
@@ -1330,7 +1358,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       if (published?.videoTrack) {
         localTracksRef.current.push(published.videoTrack);
-        showStageElement(published.videoTrack.attach());
+        showStageTrack(published.videoTrack, "Host camera is live");
       }
 
       if (published?.audioTrack) localTracksRef.current.push(published.audioTrack);
@@ -1359,9 +1387,23 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         return;
       }
 
-      await publishAgvScreenShare(room);
+      const published = await publishAgvScreenShare(room);
+
+      const screenVideoTrack =
+        published?.videoTrack ||
+        published?.screenVideoTrack ||
+        published?.track ||
+        published?.screenTrack ||
+        null;
+
+      if (screenVideoTrack) {
+        localTracksRef.current.push(screenVideoTrack);
+        showStageTrack(screenVideoTrack, "Screen share is live");
+      } else {
+        setStatus("Screen share is live. Waiting for screen track preview...");
+      }
+
       setScreenOn(true);
-      setStatus("Screen share is live");
     } catch {
       setStatus("Screen share failed or was canceled.");
     }
