@@ -347,6 +347,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [cameraOn, setCameraOn] = useState(false);
   const [screenOn, setScreenOn] = useState(false);
 
+  // PASS_BCAST5_HOST_BROADCAST_CONTROLS
+  const [broadcastWorking, setBroadcastWorking] = useState(false);
+  const [broadcastStatus, setBroadcastStatus] = useState("Broadcast standby.");
+  const [broadcastLive, setBroadcastLive] = useState(false);
+  const [broadcastEgressId, setBroadcastEgressId] = useState("");
+  const [broadcastLastEgressId, setBroadcastLastEgressId] = useState("");
+
   const [messagesByRoom, setMessagesByRoom] = useState({});
   const [chatInput, setChatInput] = useState("");
 
@@ -1612,6 +1619,118 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setStatus("Viewer link ready to copy.");
     }
   }
+
+  // PASS_BCAST5_HOST_BROADCAST_CONTROLS
+  async function refreshBroadcastStatus() {
+    try {
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/health`);
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        setBroadcastStatus(data?.error || "Broadcast status check failed.");
+        return null;
+      }
+
+      const isLive = data.broadcastStatus === "live" || data.viewerMode === "broadcast";
+      setBroadcastLive(Boolean(isLive));
+      setBroadcastEgressId(data.egressId || "");
+      setBroadcastLastEgressId(data.lastEgressId || "");
+      setBroadcastStatus(
+        isLive
+          ? `Broadcast live${data.egressId ? `: ${data.egressId}` : "."}`
+          : `Broadcast off${data.egressStatus ? `: ${data.egressStatus}` : "."}`
+      );
+
+      return data;
+    } catch (error) {
+      setBroadcastStatus(`Broadcast status error: ${error?.message || "unknown error"}`);
+      return null;
+    }
+  }
+
+  async function startCloudflareBroadcast() {
+    if (!isHost) {
+      setBroadcastStatus("Only host/admin can start broadcast.");
+      return;
+    }
+
+    setBroadcastWorking(true);
+    setBroadcastStatus("Starting Cloudflare broadcast...");
+
+    try {
+      if (!cameraOn) {
+        setBroadcastStatus("Start Host Camera first, then start Cloudflare broadcast.");
+        setBroadcastWorking(false);
+        return;
+      }
+
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/start`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomId: selectedRoomId || "main-hall",
+          title: "AGV Live Broadcast",
+          message: "LiveKit is sending the AGV stage to Cloudflare.",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        const msg = data?.error || data?.message || "Cloudflare broadcast could not start.";
+        setBroadcastStatus(`Broadcast start failed: ${msg}`);
+        return;
+      }
+
+      const egressId = data?.state?.egressId || data?.egress?.egressId || "";
+      setBroadcastLive(true);
+      setBroadcastEgressId(egressId);
+      setBroadcastStatus(egressId ? `Broadcast live: ${egressId}` : "Broadcast live.");
+    } catch (error) {
+      setBroadcastStatus(`Broadcast start error: ${error?.message || "unknown error"}`);
+    } finally {
+      setBroadcastWorking(false);
+    }
+  }
+
+  async function stopCloudflareBroadcast() {
+    if (!isHost) {
+      setBroadcastStatus("Only host/admin can stop broadcast.");
+      return;
+    }
+
+    setBroadcastWorking(true);
+    setBroadcastStatus("Stopping Cloudflare broadcast...");
+
+    try {
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/stop`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "LiveKit egress to Cloudflare is off.",
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        const msg = data?.error || data?.message || "Cloudflare broadcast could not stop.";
+        setBroadcastStatus(`Broadcast stop failed: ${msg}`);
+        return;
+      }
+
+      const lastId = data?.state?.lastEgressId || broadcastEgressId || "";
+      setBroadcastLive(false);
+      setBroadcastLastEgressId(lastId);
+      setBroadcastEgressId("");
+      setBroadcastStatus(lastId ? `Broadcast stopped. Last egress: ${lastId}` : "Broadcast stopped.");
+    } catch (error) {
+      setBroadcastStatus(`Broadcast stop error: ${error?.message || "unknown error"}`);
+    } finally {
+      setBroadcastWorking(false);
+    }
+  }
+
 
   async function joinAsViewer() {
     const usedBroadcastMode = await tryJoinBroadcastViewer(selectedRoomId);
@@ -2949,6 +3068,47 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 <button style={screenOn ? styles.activeButton : styles.secondaryButton} onClick={toggleScreenShare}>
                   {screenOn ? "Stop Share" : "Share Screen"}
                 </button>
+
+                {/* PASS_BCAST5_HOST_BROADCAST_CONTROLS */}
+                <button
+                  style={broadcastLive ? styles.activeButton : styles.primaryButton}
+                  onClick={startCloudflareBroadcast}
+                  disabled={broadcastWorking}
+                >
+                  {broadcastWorking && !broadcastLive ? "Starting..." : broadcastLive ? "Broadcast Live" : "Start Cloudflare Broadcast"}
+                </button>
+
+                <button
+                  style={styles.secondaryButton}
+                  onClick={stopCloudflareBroadcast}
+                  disabled={broadcastWorking}
+                >
+                  {broadcastWorking && broadcastLive ? "Stopping..." : "Stop Broadcast"}
+                </button>
+
+                <button
+                  style={styles.secondaryButton}
+                  onClick={refreshBroadcastStatus}
+                  disabled={broadcastWorking}
+                >
+                  Check Broadcast
+                </button>
+
+                <div style={styles.broadcastStatusBox || {
+                  width: "100%",
+                  padding: "10px 12px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(245, 158, 11, 0.35)",
+                  background: "rgba(15, 23, 42, 0.82)",
+                  color: "#f9fafb",
+                  fontSize: "13px",
+                  lineHeight: "1.4"
+                }}>
+                  <strong>Broadcast Status:</strong> {broadcastStatus}
+                  {broadcastEgressId ? <div>Active Egress: {broadcastEgressId}</div> : null}
+                  {broadcastLastEgressId ? <div>Last Egress: {broadcastLastEgressId}</div> : null}
+                  {!cameraOn ? <div>Start Host Camera before starting Cloudflare broadcast.</div> : null}
+                </div>
 
 
                 {/* PASS31V_B_SWAP_DRIVE_CONNECT_HOST */}
