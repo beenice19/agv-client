@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import AppCore from "./AppCore.jsx";
+import { createAgvLiveKitRoom, disconnectAgvLiveKitRoom } from "./agvLiveKitBridge.js";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
 
 // PASS34D_CLIENT_CONFIG_CLEANUP
@@ -211,6 +212,15 @@ function normalizeTicketResponse(data) {
 }
 
 export default function App() {
+  // PASS_BCAST6_AGV_BROADCAST_LAYOUT_PAGE
+  // Hidden broadcast layout URL:
+  // https://agv-client.vercel.app/?agvBroadcastLayout=1&roomId=main-hall
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("agvBroadcastLayout") === "1") {
+      return <AgvBroadcastLayoutPage />;
+    }
+  } catch {}
   const [entryMode, setEntryMode] = useState("");
   const [directViewerEntry, setDirectViewerEntry] = useState(false);
   const [ticketApproved, setTicketApproved] = useState(false);
@@ -718,6 +728,297 @@ function FreeSignupGate({ currentPlan, onApproved, onBack }) {
     </div>
   );
 }
+
+
+// PASS_BCAST6_AGV_BROADCAST_LAYOUT_PAGE
+function AgvBroadcastLayoutPage() {
+  const [status, setStatus] = useState("Connecting AGV broadcast layout...");
+  const [screenReady, setScreenReady] = useState(false);
+  const [hostReady, setHostReady] = useState(false);
+
+  useEffect(() => {
+    let activeRoom = null;
+    let disposed = false;
+    const attachedElements = [];
+
+    const params = new URLSearchParams(window.location.search);
+    const roomId = normalizeRoomId(params.get("roomId") || params.get("room") || "main-hall");
+
+    function getLayer(id) {
+      return document.getElementById(id);
+    }
+
+    function clearLayer(id) {
+      const layer = getLayer(id);
+      if (layer) layer.innerHTML = "";
+    }
+
+    function prepareVideoElement(element, mode) {
+      element.autoplay = true;
+      element.playsInline = true;
+      element.muted = true;
+      element.style.display = "block";
+      element.style.background = "#000";
+      element.style.objectFit = "contain";
+
+      if (mode === "screen") {
+        element.style.width = "100%";
+        element.style.height = "100%";
+        element.style.maxWidth = "100%";
+        element.style.maxHeight = "100%";
+      }
+
+      if (mode === "host") {
+        element.style.width = "100%";
+        element.style.height = "100%";
+        element.style.objectFit = "cover";
+        element.style.borderRadius = "18px";
+      }
+    }
+
+    function attachAudioTrack(track) {
+      if (!track || typeof track.attach !== "function") return;
+
+      try {
+        const audio = track.attach();
+        audio.autoplay = true;
+        audio.hidden = true;
+        audio.style.display = "none";
+        document.body.appendChild(audio);
+        attachedElements.push(audio);
+      } catch {}
+    }
+
+    function attachVideoTrack(track, publication, participant) {
+      if (!track || typeof track.attach !== "function") return;
+
+      const trackName = String(publication?.trackName || track?.name || "").toLowerCase();
+      const identity = String(participant?.identity || "").toLowerCase();
+      const source = String(publication?.source || track?.source || "").toLowerCase();
+
+      const isScreen =
+        trackName.includes("screen") ||
+        trackName.includes("share") ||
+        source.includes("screen") ||
+        source.includes("share");
+
+      const isHost =
+        trackName.includes("host") ||
+        trackName.includes("camera") ||
+        identity.includes("host") ||
+        identity.includes("admin");
+
+      try {
+        const element = track.attach();
+
+        if (isScreen) {
+          clearLayer("agv-broadcast-screen-layer");
+          prepareVideoElement(element, "screen");
+          getLayer("agv-broadcast-screen-layer")?.appendChild(element);
+          attachedElements.push(element);
+          setScreenReady(true);
+          setStatus("Screen share is full-screen.");
+          return;
+        }
+
+        if (isHost) {
+          clearLayer("agv-broadcast-host-layer");
+          prepareVideoElement(element, "host");
+          getLayer("agv-broadcast-host-layer")?.appendChild(element);
+          attachedElements.push(element);
+          setHostReady(true);
+          return;
+        }
+
+        if (!screenReady) {
+          clearLayer("agv-broadcast-screen-layer");
+          prepareVideoElement(element, "screen");
+          getLayer("agv-broadcast-screen-layer")?.appendChild(element);
+          attachedElements.push(element);
+          setScreenReady(true);
+        }
+      } catch {}
+    }
+
+    function handleTrack(track, publication, participant) {
+      if (!track) return;
+
+      if (track.kind === "audio") {
+        attachAudioTrack(track);
+        return;
+      }
+
+      if (track.kind === "video") {
+        attachVideoTrack(track, publication, participant);
+      }
+    }
+
+    function attachExistingTracks(room) {
+      try {
+        Array.from(room?.remoteParticipants?.values?.() || []).forEach((participant) => {
+          Array.from(participant?.trackPublications?.values?.() || []).forEach((publication) => {
+            const track = publication?.track;
+            if (track) handleTrack(track, publication, participant);
+          });
+        });
+      } catch {}
+    }
+
+    async function connectBroadcastLayout() {
+      setStatus(`Connecting broadcast layout to ${roomId}...`);
+
+      const result = await createAgvLiveKitRoom({
+        roomName: roomId,
+        identity: `agv-broadcast-layout-${Date.now()}`,
+        name: "AGV Broadcast Layout",
+        role: "viewer",
+        onConnected: (room) => {
+          activeRoom = room;
+          setStatus(`AGV broadcast layout connected to ${roomId}.`);
+          setTimeout(() => attachExistingTracks(room), 800);
+          setTimeout(() => attachExistingTracks(room), 1800);
+        },
+        onDisconnected: () => {
+          if (!disposed) setStatus("AGV broadcast layout disconnected.");
+        },
+        onTrackSubscribed: (track, publication, participant) => {
+          handleTrack(track, publication, participant);
+        },
+        onParticipantConnected: () => {
+          setTimeout(() => attachExistingTracks(activeRoom), 500);
+        },
+        onError: (error) => {
+          setStatus(error?.message || "AGV broadcast layout connection failed.");
+        },
+      });
+
+      if (!result?.ok) {
+        setStatus(result?.error || "AGV broadcast layout could not connect.");
+        return;
+      }
+
+      activeRoom = result.room;
+    }
+
+    connectBroadcastLayout();
+
+    return () => {
+      disposed = true;
+
+      attachedElements.forEach((element) => {
+        try {
+          element.remove();
+        } catch {}
+      });
+
+      try {
+        disconnectAgvLiveKitRoom(activeRoom);
+      } catch {}
+    };
+  }, []);
+
+  return (
+    <div style={{
+      width: "100vw",
+      height: "100vh",
+      background: "#020617",
+      color: "#f8fafc",
+      overflow: "hidden",
+      position: "relative",
+      fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif"
+    }}>
+      <div id="agv-broadcast-screen-layer" style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#000",
+        overflow: "hidden"
+      }}>
+        {!screenReady ? (
+          <div style={{
+            textAlign: "center",
+            padding: 40,
+            maxWidth: 900
+          }}>
+            <div style={{
+              fontSize: 16,
+              letterSpacing: 4,
+              color: "#f59e0b",
+              fontWeight: 900,
+              marginBottom: 20
+            }}>
+              AVANT GLOBAL VISION
+            </div>
+            <div style={{
+              fontSize: 46,
+              lineHeight: 1.05,
+              fontWeight: 900,
+              marginBottom: 18
+            }}>
+              AGV Broadcast Stage
+            </div>
+            <div style={{
+              fontSize: 20,
+              color: "#cbd5e1"
+            }}>
+              Waiting for screen share...
+            </div>
+          </div>
+        ) : null}
+      </div>
+
+      <div id="agv-broadcast-host-layer" style={{
+        position: "absolute",
+        right: 34,
+        bottom: 34,
+        width: "22vw",
+        minWidth: 260,
+        maxWidth: 420,
+        aspectRatio: "16 / 9",
+        borderRadius: 22,
+        overflow: "hidden",
+        background: "#111827",
+        border: "3px solid rgba(245, 158, 11, 0.85)",
+        boxShadow: "0 24px 80px rgba(0,0,0,0.55)",
+        display: hostReady ? "block" : "none"
+      }} />
+
+      <div style={{
+        position: "absolute",
+        left: 28,
+        top: 24,
+        padding: "10px 16px",
+        borderRadius: 999,
+        background: "rgba(2, 6, 23, 0.72)",
+        border: "1px solid rgba(245, 158, 11, 0.45)",
+        color: "#facc15",
+        fontSize: 14,
+        fontWeight: 900,
+        letterSpacing: 2,
+        textTransform: "uppercase"
+      }}>
+        AGV Live Broadcast
+      </div>
+
+      <div style={{
+        position: "absolute",
+        left: 28,
+        bottom: 24,
+        padding: "10px 14px",
+        borderRadius: 14,
+        background: "rgba(2, 6, 23, 0.68)",
+        color: "#e5e7eb",
+        fontSize: 14,
+        maxWidth: "70vw"
+      }}>
+        {status}
+      </div>
+    </div>
+  );
+}
+
 
 function HostPinGate({ onApproved, onBack }) {
   const [pin, setPin] = useState("");
