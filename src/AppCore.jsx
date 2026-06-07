@@ -3104,46 +3104,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   {screenOn ? "Stop Share" : "Share Screen"}
                 </button>
 
-                {/* PASS_BCAST5_HOST_BROADCAST_CONTROLS */}
-                <button
-                  style={broadcastLive ? styles.activeButton : styles.primaryButton}
-                  onClick={startCloudflareBroadcast}
-                  disabled={broadcastWorking}
-                >
-                  {broadcastWorking && !broadcastLive ? "Starting..." : broadcastLive ? "Broadcast Live" : "Start Direct Broadcast"}
-                </button>
-
-                <button
-                  style={styles.secondaryButton}
-                  onClick={stopCloudflareBroadcast}
-                  disabled={broadcastWorking}
-                >
-                  {broadcastWorking && broadcastLive ? "Stopping..." : "Stop Direct Broadcast"}
-                </button>
-
-                <button
-                  style={styles.secondaryButton}
-                  onClick={refreshBroadcastStatus}
-                  disabled={broadcastWorking}
-                >
-                  Check Direct Broadcast
-                </button>
-
-                <div style={styles.broadcastStatusBox || {
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(245, 158, 11, 0.35)",
-                  background: "rgba(15, 23, 42, 0.82)",
-                  color: "#f9fafb",
-                  fontSize: "13px",
-                  lineHeight: "1.4"
-                }}>
-                  <strong>Broadcast Status:</strong> {broadcastStatus}
-                  {broadcastEgressId ? <div>Active Egress: {broadcastEgressId}</div> : null}
-                  {broadcastLastEgressId ? <div>Last Egress: {broadcastLastEgressId}</div> : null}
-                  <div>Use OBS / AGV Broadcast Studio to send the final video feed directly to Cloudflare RTMPS.</div>
-                </div>
+                {/* PASS_BCAST_SAFE1_HIDE_BROADCAST_BUTTONS */}
+                {/* Broadcast controls hidden for stability.
+                    Normal AGV LiveKit host camera, screen share, tickets, chat, rooms, and viewer mode remain active.
+                    Direct Cloudflare broadcast server routes are preserved but not shown in the host UI. */}
 
 
                 {/* PASS31V_B_SWAP_DRIVE_CONNECT_HOST */}
