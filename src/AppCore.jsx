@@ -1210,16 +1210,107 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     let player;
 
     if (isHls) {
-      player = document.createElement("video");
-      player.src = playbackUrl;
-      player.controls = true;
-      player.autoplay = true;
-      player.playsInline = true;
-      player.style.background = "#000";
-      player.style.width = "100%";
-      player.style.height = "100%";
-      player.style.flex = "1";
-      player.style.objectFit = "contain";
+      // PASS_SCALE6_BROADCAST_WAITING_SCREEN
+      // CLIENT — professional waiting screen while Cloudflare HLS is not playing yet.
+      const frame = document.createElement("div");
+      frame.style.position = "relative";
+      frame.style.width = "100%";
+      frame.style.height = "100%";
+      frame.style.flex = "1";
+      frame.style.minHeight = "360px";
+      frame.style.background =
+        "radial-gradient(circle at top, rgba(245,158,11,0.14), rgba(15,23,42,0.98) 45%, #020617 100%)";
+      frame.style.display = "flex";
+      frame.style.alignItems = "center";
+      frame.style.justifyContent = "center";
+      frame.style.overflow = "hidden";
+
+      const video = document.createElement("video");
+      video.src = playbackUrl;
+      video.controls = true;
+      video.autoplay = true;
+      video.playsInline = true;
+      video.style.background = "transparent";
+      video.style.width = "100%";
+      video.style.height = "100%";
+      video.style.flex = "1";
+      video.style.objectFit = "contain";
+
+      const waiting = document.createElement("div");
+      waiting.style.position = "absolute";
+      waiting.style.inset = "0";
+      waiting.style.display = "flex";
+      waiting.style.flexDirection = "column";
+      waiting.style.alignItems = "center";
+      waiting.style.justifyContent = "center";
+      waiting.style.textAlign = "center";
+      waiting.style.padding = "28px";
+      waiting.style.color = "#f9fafb";
+      waiting.style.background =
+        "linear-gradient(180deg, rgba(15,23,42,0.86), rgba(2,6,23,0.94))";
+      waiting.style.pointerEvents = "none";
+
+      const badge = document.createElement("div");
+      badge.textContent = "AGV";
+      badge.style.width = "66px";
+      badge.style.height = "66px";
+      badge.style.borderRadius = "20px";
+      badge.style.display = "flex";
+      badge.style.alignItems = "center";
+      badge.style.justifyContent = "center";
+      badge.style.marginBottom = "18px";
+      badge.style.background = "linear-gradient(135deg, #facc15, #a16207)";
+      badge.style.color = "#111827";
+      badge.style.fontWeight = "950";
+      badge.style.fontSize = "24px";
+      badge.style.boxShadow = "0 20px 50px rgba(0,0,0,0.35)";
+
+      const titleWait = document.createElement("div");
+      titleWait.textContent = "AGV Broadcast is preparing.";
+      titleWait.style.fontSize = "28px";
+      titleWait.style.fontWeight = "950";
+      titleWait.style.marginBottom = "10px";
+
+      const bodyWait = document.createElement("div");
+      bodyWait.textContent =
+        "The event will begin shortly. Scale delivery powered by Cloudflare.";
+      bodyWait.style.fontSize = "16px";
+      bodyWait.style.maxWidth = "620px";
+      bodyWait.style.opacity = "0.86";
+      bodyWait.style.lineHeight = "1.5";
+
+      const subWait = document.createElement("div");
+      subWait.textContent =
+        "If you are the host, make sure the registered broadcast source is feeding Cloudflare RTMPS.";
+      subWait.style.fontSize = "13px";
+      subWait.style.maxWidth = "680px";
+      subWait.style.opacity = "0.62";
+      subWait.style.marginTop = "12px";
+      subWait.style.lineHeight = "1.5";
+
+      waiting.appendChild(badge);
+      waiting.appendChild(titleWait);
+      waiting.appendChild(bodyWait);
+      waiting.appendChild(subWait);
+
+      const hideWaiting = () => {
+        waiting.style.display = "none";
+      };
+
+      const showWaiting = () => {
+        waiting.style.display = "flex";
+      };
+
+      video.addEventListener("playing", hideWaiting);
+      video.addEventListener("canplay", hideWaiting);
+      video.addEventListener("loadeddata", hideWaiting);
+      video.addEventListener("waiting", showWaiting);
+      video.addEventListener("stalled", showWaiting);
+      video.addEventListener("error", showWaiting);
+
+      frame.appendChild(video);
+      frame.appendChild(waiting);
+      player = frame;
     } else {
       player = document.createElement("iframe");
       player.src = playbackUrl;
