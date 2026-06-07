@@ -3337,6 +3337,54 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     >
                       {broadcastWorking ? "Checking Scale Status..." : "Scale Status"}
                     </button>
+
+                    {/* PASS_SCALE8B_B_PLAYBACK_VERIFY_BUTTON */}
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Verifying Cloudflare playback URL...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/playback/verify?roomId=main-hall");
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Playback verification failed.");
+                          }
+
+                          const ready = Boolean(data.playbackReady);
+                          const urls = data.urls || {};
+                          const hlsConfigured = urls.hlsConfigured ? "configured" : "missing";
+                          const embedConfigured = urls.embedConfigured ? "configured" : "missing";
+                          const playerType = urls.embedConfigured ? "Cloudflare iframe" : "HLS fallback";
+
+                          setBroadcastLive(data.viewerMode === "broadcast" || data.broadcastStatus === "live");
+
+                          setBroadcastStatus(
+                            "Playback Ready: " +
+                              (ready ? "Yes" : "No") +
+                              " | Player: " +
+                              playerType +
+                              " | HLS: " +
+                              hlsConfigured +
+                              " | Embed: " +
+                              embedConfigured +
+                              " | Viewer Mode: " +
+                              (data.viewerMode || "unknown") +
+                              " | Source Status: " +
+                              (data.sourceStatus || "unknown")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Playback verify error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Verifying Playback..." : "Verify Playback"}
+                    </button>
                   </div>
 
                   <div
