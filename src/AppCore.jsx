@@ -1169,8 +1169,42 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     showStageElement(box);
   }
 
+  // PASS_SCALE8_CLOUDFLARE_STREAM_PLAYER_EMBED
+  // CLIENT — Prefer Cloudflare Stream iframe player when AGV only has a Cloudflare HLS URL.
+  function agvCloudflareEmbedFromHlsUrl(url) {
+    const raw = url == null ? "" : String(url).trim();
+
+    if (!raw) return "";
+
+    try {
+      const parsed = new URL(raw);
+      const parts = parsed.pathname.split("/").filter(Boolean);
+
+      // Expected Cloudflare Stream Live HLS path:
+      // /<video-or-live-input-id>/manifest/video.m3u8
+      if (
+        parsed.hostname.includes("cloudflarestream.com") &&
+        parts.length >= 3 &&
+        parts[1] === "manifest" &&
+        parts[2] === "video.m3u8"
+      ) {
+        return parsed.origin + "/" + parts[0] + "/iframe";
+      }
+    } catch {}
+
+    return "";
+  }
+
   function showAgvBroadcastPlayer(state) {
-    const playbackUrl = state?.embedUrl || state?.playbackUrl || state?.hlsUrl || "";
+    const rawPlaybackUrl = state?.embedUrl || state?.playbackUrl || state?.hlsUrl || "";
+    const cloudflareEmbedUrl =
+      state?.embedUrl || agvCloudflareEmbedFromHlsUrl(state?.hlsUrl || state?.playbackUrl || "");
+    const playbackUrl = cloudflareEmbedUrl || rawPlaybackUrl;
+    const playbackMode = cloudflareEmbedUrl
+      ? "cloudflare-embed"
+      : playbackUrl.toLowerCase().includes(".m3u8")
+        ? "hls"
+        : "iframe";
 
     if (!playbackUrl) {
       showBroadcastPlaceholder(state);
@@ -1201,11 +1235,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     sub.style.fontWeight = "500";
     sub.style.opacity = "0.75";
     sub.style.marginTop = "3px";
-    sub.textContent = state?.message || "Broadcast mode is live.";
+    sub.textContent = isCloudflareEmbed
+      ? (state?.message || "Broadcast mode is live.") + " Cloudflare Stream player is active."
+      : state?.message || "Broadcast mode is live.";
 
     header.appendChild(sub);
 
-    const isHls = playbackUrl.toLowerCase().includes(".m3u8");
+    const isHls = playbackMode === "hls";
+    const isCloudflareEmbed = playbackMode === "cloudflare-embed";
 
     let player;
 
@@ -1322,6 +1359,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       player.style.height = "100%";
       player.style.flex = "1";
       player.style.background = "#000";
+
+      if (isCloudflareEmbed) {
+        player.title = "AGV Cloudflare Stream Player";
+        player.style.minHeight = "420px";
+      }
     }
 
     wrap.appendChild(header);
