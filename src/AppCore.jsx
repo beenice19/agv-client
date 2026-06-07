@@ -1698,7 +1698,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     setBroadcastWorking(true);
-    setBroadcastStatus("Starting direct Cloudflare broadcast...");
+    setBroadcastStatus("Starting scale broadcast through Supabase / Cloudflare...");
 
     try {
       const response = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/start`, {
@@ -1706,8 +1706,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roomId: selectedRoomId || "main-hall",
-          title: "AGV Direct Cloudflare Broadcast",
-          message: "AGV is watching the direct Cloudflare broadcast feed.",
+          title: "AGV Main Hall Supabase Scale Broadcast",
+          message: "AGV is using Supabase as the source registry for main-hall.",
         }),
       });
 
@@ -1721,7 +1721,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       setBroadcastLive(true);
       setBroadcastEgressId("");
-      setBroadcastStatus("Direct Cloudflare broadcast is live. OBS/encoder should be sending to Cloudflare.");
+      setBroadcastStatus("Scale broadcast is live. Cloudflare is the mass delivery path.");
     } catch (error) {
       setBroadcastStatus(`Direct broadcast start error: ${error?.message || "unknown error"}`);
     } finally {
@@ -1736,14 +1736,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     setBroadcastWorking(true);
-    setBroadcastStatus("Stopping direct Cloudflare broadcast...");
+    setBroadcastStatus("Stopping scale broadcast...");
 
     try {
       const response = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/stop`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: "Direct Cloudflare broadcast mode is off.",
+          message: "Main Hall Supabase scale broadcast stopped.",
         }),
       });
 
@@ -1758,7 +1758,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setBroadcastLive(false);
       setBroadcastLastEgressId("");
       setBroadcastEgressId("");
-      setBroadcastStatus("Direct Cloudflare broadcast stopped. Viewer mode returned to LiveKit.");
+      setBroadcastStatus("Scale broadcast stopped. Viewer mode returned to LiveKit.");
     } catch (error) {
       setBroadcastStatus(`Direct broadcast stop error: ${error?.message || "unknown error"}`);
     } finally {
@@ -3129,12 +3129,43 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     AGV Scale Status
                   </div>
 
-                  <button
-                    style={styles.secondaryButton}
-                    disabled={broadcastWorking}
-                    onClick={async () => {
-                      setBroadcastWorking(true);
-                      setBroadcastStatus("Checking Supabase / Cloudflare scale status...");
+                  {/* PASS_SCALE5C_SAFE_START_STOP_SCALE_BUTTONS */}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "8px",
+                      flexWrap: "wrap",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    <button
+                      style={broadcastLive ? styles.activeButton : styles.primaryButton}
+                      disabled={broadcastWorking}
+                      onClick={startCloudflareBroadcast}
+                    >
+                      {broadcastWorking && !broadcastLive
+                        ? "Starting Scale..."
+                        : broadcastLive
+                          ? "Scale Live"
+                          : "Start Scale Broadcast"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={stopCloudflareBroadcast}
+                    >
+                      {broadcastWorking && broadcastLive
+                        ? "Stopping Scale..."
+                        : "Stop Scale Broadcast"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Checking Supabase / Cloudflare scale status...");
 
                       try {
                         const sourceRes = await fetch("https://agv-server.onrender.com/api/broadcast/sources-db/main-hall");
@@ -3170,9 +3201,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastWorking(false);
                       }
                     }}
-                  >
-                    {broadcastWorking ? "Checking Scale Status..." : "Scale Status"}
-                  </button>
+                    >
+                      {broadcastWorking ? "Checking Scale Status..." : "Scale Status"}
+                    </button>
+                  </div>
 
                   <div
                     style={{
