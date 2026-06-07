@@ -348,6 +348,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [screenOn, setScreenOn] = useState(false);
 
   // PASS_BCAST5_HOST_BROADCAST_CONTROLS
+  // PASS_BCAST_DIRECT2_HOST_DIRECT_BROADCAST_BUTTONS
   const [broadcastWorking, setBroadcastWorking] = useState(false);
   const [broadcastStatus, setBroadcastStatus] = useState("Broadcast standby.");
   const [broadcastLive, setBroadcastLive] = useState(false);
@@ -1665,7 +1666,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   // PASS_BCAST5_HOST_BROADCAST_CONTROLS
   async function refreshBroadcastStatus() {
     try {
-      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/health`);
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/health`);
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data?.ok) {
@@ -1675,17 +1676,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       const isLive = data.broadcastStatus === "live" || data.viewerMode === "broadcast";
       setBroadcastLive(Boolean(isLive));
-      setBroadcastEgressId(data.egressId || "");
-      setBroadcastLastEgressId(data.lastEgressId || "");
+      setBroadcastEgressId("");
+      setBroadcastLastEgressId("");
       setBroadcastStatus(
         isLive
-          ? `Broadcast live${data.egressId ? `: ${data.egressId}` : "."}`
-          : `Broadcast off${data.egressStatus ? `: ${data.egressStatus}` : "."}`
+          ? "Direct Cloudflare broadcast is live."
+          : "Direct Cloudflare broadcast is off."
       );
 
       return data;
     } catch (error) {
-      setBroadcastStatus(`Broadcast status error: ${error?.message || "unknown error"}`);
+      setBroadcastStatus(`Direct broadcast status error: ${error?.message || "unknown error"}`);
       return null;
     }
   }
@@ -1697,39 +1698,32 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     setBroadcastWorking(true);
-    setBroadcastStatus("Starting Cloudflare broadcast...");
+    setBroadcastStatus("Starting direct Cloudflare broadcast...");
 
     try {
-      if (!cameraOn) {
-        setBroadcastStatus("Start Host Camera first, then start Cloudflare broadcast.");
-        setBroadcastWorking(false);
-        return;
-      }
-
-      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/start`, {
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/start`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           roomId: selectedRoomId || "main-hall",
-          title: "AGV Live Broadcast",
-          message: "LiveKit is sending the AGV stage to Cloudflare.",
+          title: "AGV Direct Cloudflare Broadcast",
+          message: "AGV is watching the direct Cloudflare broadcast feed.",
         }),
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data?.ok) {
-        const msg = data?.error || data?.message || "Cloudflare broadcast could not start.";
-        setBroadcastStatus(`Broadcast start failed: ${msg}`);
+        const msg = data?.error || data?.message || "Direct Cloudflare broadcast could not start.";
+        setBroadcastStatus(`Direct broadcast start failed: ${msg}`);
         return;
       }
 
-      const egressId = data?.state?.egressId || data?.egress?.egressId || "";
       setBroadcastLive(true);
-      setBroadcastEgressId(egressId);
-      setBroadcastStatus(egressId ? `Broadcast live: ${egressId}` : "Broadcast live.");
+      setBroadcastEgressId("");
+      setBroadcastStatus("Direct Cloudflare broadcast is live. OBS/encoder should be sending to Cloudflare.");
     } catch (error) {
-      setBroadcastStatus(`Broadcast start error: ${error?.message || "unknown error"}`);
+      setBroadcastStatus(`Direct broadcast start error: ${error?.message || "unknown error"}`);
     } finally {
       setBroadcastWorking(false);
     }
@@ -1742,32 +1736,31 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     setBroadcastWorking(true);
-    setBroadcastStatus("Stopping Cloudflare broadcast...");
+    setBroadcastStatus("Stopping direct Cloudflare broadcast...");
 
     try {
-      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/stop`, {
+      const response = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/stop`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: "LiveKit egress to Cloudflare is off.",
+          message: "Direct Cloudflare broadcast mode is off.",
         }),
       });
 
       const data = await response.json().catch(() => null);
 
       if (!response.ok || !data?.ok) {
-        const msg = data?.error || data?.message || "Cloudflare broadcast could not stop.";
-        setBroadcastStatus(`Broadcast stop failed: ${msg}`);
+        const msg = data?.error || data?.message || "Direct Cloudflare broadcast could not stop.";
+        setBroadcastStatus(`Direct broadcast stop failed: ${msg}`);
         return;
       }
 
-      const lastId = data?.state?.lastEgressId || broadcastEgressId || "";
       setBroadcastLive(false);
-      setBroadcastLastEgressId(lastId);
+      setBroadcastLastEgressId("");
       setBroadcastEgressId("");
-      setBroadcastStatus(lastId ? `Broadcast stopped. Last egress: ${lastId}` : "Broadcast stopped.");
+      setBroadcastStatus("Direct Cloudflare broadcast stopped. Viewer mode returned to LiveKit.");
     } catch (error) {
-      setBroadcastStatus(`Broadcast stop error: ${error?.message || "unknown error"}`);
+      setBroadcastStatus(`Direct broadcast stop error: ${error?.message || "unknown error"}`);
     } finally {
       setBroadcastWorking(false);
     }
@@ -3117,7 +3110,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   onClick={startCloudflareBroadcast}
                   disabled={broadcastWorking}
                 >
-                  {broadcastWorking && !broadcastLive ? "Starting..." : broadcastLive ? "Broadcast Live" : "Start Cloudflare Broadcast"}
+                  {broadcastWorking && !broadcastLive ? "Starting..." : broadcastLive ? "Broadcast Live" : "Start Direct Broadcast"}
                 </button>
 
                 <button
@@ -3125,7 +3118,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   onClick={stopCloudflareBroadcast}
                   disabled={broadcastWorking}
                 >
-                  {broadcastWorking && broadcastLive ? "Stopping..." : "Stop Broadcast"}
+                  {broadcastWorking && broadcastLive ? "Stopping..." : "Stop Direct Broadcast"}
                 </button>
 
                 <button
@@ -3133,7 +3126,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   onClick={refreshBroadcastStatus}
                   disabled={broadcastWorking}
                 >
-                  Check Broadcast
+                  Check Direct Broadcast
                 </button>
 
                 <div style={styles.broadcastStatusBox || {
@@ -3149,7 +3142,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <strong>Broadcast Status:</strong> {broadcastStatus}
                   {broadcastEgressId ? <div>Active Egress: {broadcastEgressId}</div> : null}
                   {broadcastLastEgressId ? <div>Last Egress: {broadcastLastEgressId}</div> : null}
-                  {!cameraOn ? <div>Start Host Camera before starting Cloudflare broadcast.</div> : null}
+                  <div>Use OBS / AGV Broadcast Studio to send the final video feed directly to Cloudflare RTMPS.</div>
                 </div>
 
 
