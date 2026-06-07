@@ -3104,10 +3104,93 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   {screenOn ? "Stop Share" : "Share Screen"}
                 </button>
 
-                {/* PASS_BCAST_SAFE1_HIDE_BROADCAST_BUTTONS */}
-                {/* Broadcast controls hidden for stability.
-                    Normal AGV LiveKit host camera, screen share, tickets, chat, rooms, and viewer mode remain active.
-                    Direct Cloudflare broadcast server routes are preserved but not shown in the host UI. */}
+                {/* PASS_SCALE5B_SAFE_SCALE_STATUS_BUTTON */}
+                <div
+                  style={{
+                    width: "100%",
+                    marginTop: "10px",
+                    padding: "12px",
+                    borderRadius: "14px",
+                    border: "1px solid rgba(245, 158, 11, 0.35)",
+                    background: "rgba(15, 23, 42, 0.72)",
+                    color: "#f9fafb",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                      color: "#fbbf24",
+                      fontWeight: 900,
+                      marginBottom: "8px",
+                    }}
+                  >
+                    AGV Scale Status
+                  </div>
+
+                  <button
+                    style={styles.secondaryButton}
+                    disabled={broadcastWorking}
+                    onClick={async () => {
+                      setBroadcastWorking(true);
+                      setBroadcastStatus("Checking Supabase / Cloudflare scale status...");
+
+                      try {
+                        const sourceRes = await fetch("https://agv-server.onrender.com/api/broadcast/sources-db/main-hall");
+                        const healthRes = await fetch("https://agv-server.onrender.com/api/broadcast/direct/health");
+
+                        const sourceData = await sourceRes.json();
+                        const healthData = await healthRes.json();
+
+                        if (!sourceRes.ok || !healthRes.ok) {
+                          throw new Error(sourceData?.error || healthData?.error || "Scale status check failed.");
+                        }
+
+                        const source = sourceData?.source || {};
+                        const isLive =
+                          healthData?.broadcastStatus === "live" ||
+                          healthData?.viewerMode === "broadcast";
+
+                        setBroadcastLive(Boolean(isLive));
+                        setBroadcastStatus(
+                          "Registry: Supabase | Delivery: Cloudflare | Source: " +
+                            (source.sourceName || "AGV Main Cloudflare Broadcast Source") +
+                            " | Source Status: " +
+                            (source.status || "unknown") +
+                            " | Viewer Mode: " +
+                            (healthData.viewerMode || "unknown") +
+                            " | Direct Mode: " +
+                            (healthData.directMode ? "on" : "off") +
+                            " | Egress: not used"
+                        );
+                      } catch (error) {
+                        setBroadcastStatus("Scale status error: " + (error?.message || String(error)));
+                      } finally {
+                        setBroadcastWorking(false);
+                      }
+                    }}
+                  >
+                    {broadcastWorking ? "Checking Scale Status..." : "Scale Status"}
+                  </button>
+
+                  <div
+                    style={{
+                      marginTop: "10px",
+                      padding: "10px",
+                      borderRadius: "10px",
+                      background: "rgba(2, 6, 23, 0.55)",
+                      border: "1px solid rgba(148, 163, 184, 0.22)",
+                      fontSize: "13px",
+                      lineHeight: "1.45",
+                    }}
+                  >
+                    <strong>Status:</strong> {broadcastStatus || "Scale backend ready. Click Scale Status."}
+                    <div style={{ color: "rgba(255,255,255,0.68)", marginTop: "4px" }}>
+                      Scale path: Supabase registry → Cloudflare delivery → AGV viewer. LiveKit egress is not used.
+                    </div>
+                  </div>
+                </div>
 
 
                 {/* PASS31V_B_SWAP_DRIVE_CONNECT_HOST */}
