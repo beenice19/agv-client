@@ -3271,6 +3271,151 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       marginBottom: "10px",
                     }}
                   >
+                    {/* PASS_SCALE10B_ONE_BUTTON_CLOUDFLARE_BROADCAST_UI */}
+                    <button
+                      style={broadcastLive ? styles.activeButton : styles.primaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Starting AGV Cloudflare Exchange...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/exchange/start", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              roomId: selectedRoomId || "main-hall",
+                              title: "AGV Cloudflare Live Exchange",
+                              layout: "speaker-dark",
+                              message: "AGV is live through the LiveKit to Cloudflare exchange.",
+                            }),
+                          });
+
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            const preflight = data?.trackPreflight;
+                            const detail = preflight
+                              ? " Participants: " +
+                                (preflight.participantCount ?? "unknown") +
+                                " | Video Tracks: " +
+                                (preflight.videoTrackCount ?? "unknown") +
+                                " | Active Video: " +
+                                (preflight.activeVideoTrackCount ?? "unknown")
+                              : "";
+                            throw new Error((data?.error || "Cloudflare Exchange start failed.") + detail);
+                          }
+
+                          setBroadcastLive(true);
+
+                          setBroadcastStatus(
+                            "Cloudflare Exchange Live | Player: " +
+                              (data.playback?.player || "Cloudflare iframe") +
+                              " | Egress: " +
+                              (data.egressId || data.state?.egressId || data.egress?.egressId || "started") +
+                              " | Participants: " +
+                              (data.trackPreflight?.participantCount ?? "unknown") +
+                              " | Active Video: " +
+                              (data.trackPreflight?.activeVideoTrackCount ?? "unknown") +
+                              " | Viewer Mode: " +
+                              (data.state?.viewerMode || "broadcast")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Cloudflare Exchange start error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Going Live..." : "Go Live to Cloudflare"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Ending AGV Cloudflare Exchange...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/exchange/stop", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              roomId: selectedRoomId || "main-hall",
+                              message: "AGV Cloudflare Exchange stopped from one-button UI.",
+                            }),
+                          });
+
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Cloudflare Exchange stop failed.");
+                          }
+
+                          setBroadcastLive(false);
+
+                          setBroadcastStatus(
+                            "Cloudflare Exchange Ended | Viewer Mode: " +
+                              (data.state?.viewerMode || "livekit") +
+                              " | Source: " +
+                              (data.source?.status || "standby") +
+                              " | Egress: " +
+                              (data.state?.egressStatus || "state-reset")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Cloudflare Exchange stop error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Ending Broadcast..." : "End Cloudflare Broadcast"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Checking AGV Cloudflare Exchange status...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/exchange/status?roomId=main-hall");
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Cloudflare Exchange status failed.");
+                          }
+
+                          setBroadcastLive(data.viewerMode === "broadcast" || data.broadcastStatus === "live");
+
+                          setBroadcastStatus(
+                            "Exchange Status | Ready: " +
+                              (data.exchangeReady ? "Yes" : "No") +
+                              " | Live: " +
+                              (data.exchangeLive ? "Yes" : "No") +
+                              " | Player: " +
+                              (data.player || "unknown") +
+                              " | Source: " +
+                              (data.sourceStatus || "unknown") +
+                              " | Viewer: " +
+                              (data.viewerMode || "unknown") +
+                              " | Broadcast: " +
+                              (data.broadcastStatus || "unknown") +
+                              " | Egress: " +
+                              (data.egress?.active ? "active" : data.egress?.found ? "found/not active" : "none")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Cloudflare Exchange status error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Checking Exchange..." : "Exchange Status"}
+                    </button>
+
                     <button
                       style={broadcastLive ? styles.activeButton : styles.primaryButton}
                       disabled={broadcastWorking}
