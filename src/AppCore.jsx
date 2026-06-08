@@ -3400,7 +3400,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   >
                     <strong>Status:</strong> {broadcastStatus || "Scale backend ready. Click Scale Status."}
                     <div style={{ color: "rgba(255,255,255,0.68)", marginTop: "4px" }}>
-                      Scale path: Supabase registry → Cloudflare delivery → AGV viewer. LiveKit egress is not used.
+                      {/* PASS_SCALE8C_DUAL_BROADCAST_PATH_HELPER_TEXT */}
+                      Scale paths: Supabase registry → Cloudflare delivery → AGV viewer. Direct Cloudflare source and LiveKit → Cloudflare bridge are supported.
                     </div>
                   </div>
                 </div>
