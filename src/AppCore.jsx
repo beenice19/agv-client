@@ -3385,6 +3385,200 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     >
                       {broadcastWorking ? "Verifying Playback..." : "Verify Playback"}
                     </button>
+                    
+                    {/* PASS_SCALE9_SAFE_LIVEKIT_BRIDGE_BUTTONS */}
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Checking LiveKit → Cloudflare bridge health...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/health");
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Bridge health check failed.");
+                          }
+
+                          setBroadcastLive(data.viewerMode === "broadcast" || data.broadcastStatus === "live");
+
+                          setBroadcastStatus(
+                            "Bridge Health: " +
+                              (data.bridgeReady ? "Ready" : "Not Ready") +
+                              " | Viewer Mode: " +
+                              (data.viewerMode || "unknown") +
+                              " | Broadcast: " +
+                              (data.broadcastStatus || "unknown") +
+                              " | Egress: " +
+                              (data.egressId || "none") +
+                              " | LiveKit: " +
+                              (data.config?.livekitConfigured ? "configured" : "missing") +
+                              " | Cloudflare RTMPS: " +
+                              (data.config?.cloudflareRtmpConfigured ? "configured" : "missing")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Bridge health error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Checking Bridge..." : "Bridge Health"}
+                    </button>
+
+                    <button
+                      style={broadcastLive ? styles.activeButton : styles.primaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Starting LiveKit → Cloudflare bridge...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/start", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              roomId: selectedRoomId || "main-hall",
+                              title: "AGV LiveKit to Cloudflare Bridge",
+                              layout: "speaker-dark",
+                              message: "AGV is bridging the LiveKit room to Cloudflare.",
+                            }),
+                          });
+
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            const preflight = data?.trackPreflight;
+                            const detail = preflight
+                              ? " Participants: " +
+                                (preflight.participantCount ?? "unknown") +
+                                " | Video Tracks: " +
+                                (preflight.videoTrackCount ?? "unknown") +
+                                " | Active Video: " +
+                                (preflight.activeVideoTrackCount ?? "unknown")
+                              : "";
+                            throw new Error((data?.error || "Bridge start failed.") + detail);
+                          }
+
+                          setBroadcastLive(true);
+
+                          setBroadcastStatus(
+                            "LiveKit Bridge Live | Egress: " +
+                              (data.state?.egressId || data.egress?.egressId || "started") +
+                              " | Participants: " +
+                              (data.trackPreflight?.participantCount ?? "unknown") +
+                              " | Active Video: " +
+                              (data.trackPreflight?.activeVideoTrackCount ?? "unknown") +
+                              " | Viewer Mode: " +
+                              (data.state?.viewerMode || "broadcast")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Bridge start error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Starting Bridge..." : "Start LiveKit Bridge"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Stopping LiveKit → Cloudflare bridge...");
+
+                        try {
+                          let currentEgressId = "";
+
+                          try {
+                            const currentRes = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/egress/current");
+                            const currentData = await currentRes.json().catch(() => null);
+                            currentEgressId =
+                              currentData?.egressId ||
+                              currentData?.egress?.egressId ||
+                              currentData?.state?.lastEgressId ||
+                              "";
+                          } catch {}
+
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/stop", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              roomId: selectedRoomId || "main-hall",
+                              egressId: currentEgressId,
+                              message: "LiveKit to Cloudflare bridge stopped from AGV client.",
+                            }),
+                          });
+
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Bridge stop failed.");
+                          }
+
+                          setBroadcastLive(false);
+
+                          setBroadcastStatus(
+                            "LiveKit Bridge Stopped | Viewer Mode: " +
+                              (data.state?.viewerMode || "livekit") +
+                              " | Source: " +
+                              (data.source?.status || "standby") +
+                              " | Stopped: " +
+                              (data.stopped ? "Yes" : data.stopError ? "Warning" : "State Reset")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Bridge stop error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Stopping Bridge..." : "Stop LiveKit Bridge"}
+                    </button>
+
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Checking bridge egress status...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/egress/current");
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Bridge egress status check failed.");
+                          }
+
+                          const egress = data.egress || {};
+                          const found = Boolean(data.found);
+
+                          setBroadcastLive(data.state?.viewerMode === "broadcast" || data.state?.broadcastStatus === "live");
+
+                          setBroadcastStatus(
+                            "Bridge Egress: " +
+                              (found ? (egress.egressId || data.egressId || "found") : "none") +
+                              " | Status: " +
+                              (egress.status || data.state?.egressStatus || "none") +
+                              " | Error: " +
+                              (egress.error || data.state?.egressError || "none") +
+                              " | Viewer Mode: " +
+                              (data.state?.viewerMode || "unknown")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Bridge egress status error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Checking Egress..." : "Bridge Egress Status"}
+                    </button>
                   </div>
 
                   <div
