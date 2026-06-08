@@ -4807,3 +4807,78 @@ const styles = {
   chatInput: { borderRadius: 14, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.07)", color: "#f8fafc", padding: "12px 13px", outline: "none" },
   emptyText: { color: "rgba(248,250,252,0.52)", fontSize: 13, padding: 10 },
 };
+
+// PASS_CLEAN_SCALE1_HIDE_ENGINEERING_BROADCAST_CONTROLS
+// CLIENT — Hide engineering broadcast controls from the visible AGV host panel.
+// Keeps product controls visible: Go Live to Cloudflare, End Cloudflare Broadcast,
+// screenshot controls, play/camera/screen-share controls, and Google Drive.
+if (typeof window !== "undefined" && !window.__AGV_CLEAN_SCALE1_HIDE_ENGINEERING_CONTROLS__) {
+  window.__AGV_CLEAN_SCALE1_HIDE_ENGINEERING_CONTROLS__ = true;
+
+  const agvEngineeringButtonLabels = new Set([
+    "Scale Status",
+    "Checking Scale Status...",
+    "Verify Playback",
+    "Verifying Playback...",
+    "Bridge Health",
+    "Checking Bridge...",
+    "Start LiveKit Bridge",
+    "Starting Bridge...",
+    "Stop LiveKit Bridge",
+    "Stopping Bridge...",
+    "Bridge Egress Status",
+    "Checking Egress...",
+    "Debug Playback",
+    "Debugging Playback...",
+    "Exchange Status",
+    "Checking Exchange...",
+    "Start Scale Broadcast",
+    "Starting Scale Broadcast...",
+    "Stop Scale Broadcast",
+    "Stopping Scale Broadcast..."
+  ]);
+
+  const agvShouldHideEngineeringControl = (element) => {
+    const text = (element?.textContent || "").replace(/\s+/g, " ").trim();
+    return agvEngineeringButtonLabels.has(text);
+  };
+
+  const agvHideEngineeringControls = () => {
+    try {
+      const controls = document.querySelectorAll("button, a");
+      controls.forEach((control) => {
+        if (agvShouldHideEngineeringControl(control)) {
+          control.style.display = "none";
+          control.setAttribute("data-agv-hidden-engineering-control", "true");
+          control.setAttribute("aria-hidden", "true");
+          control.setAttribute("tabindex", "-1");
+        }
+      });
+    } catch {}
+  };
+
+  const agvStartEngineeringControlCleaner = () => {
+    agvHideEngineeringControls();
+
+    try {
+      const observer = new MutationObserver(() => agvHideEngineeringControls());
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+      window.__AGV_CLEAN_SCALE1_OBSERVER__ = observer;
+    } catch {}
+
+    setTimeout(agvHideEngineeringControls, 250);
+    setTimeout(agvHideEngineeringControls, 1000);
+    setTimeout(agvHideEngineeringControls, 2500);
+  };
+
+  if (document.readyState === "loading") {
+    window.addEventListener("DOMContentLoaded", agvStartEngineeringControlCleaner, { once: true });
+  } else {
+    agvStartEngineeringControlCleaner();
+  }
+}
+
