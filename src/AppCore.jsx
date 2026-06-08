@@ -3579,6 +3579,62 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     >
                       {broadcastWorking ? "Checking Egress..." : "Bridge Egress Status"}
                     </button>
+                    
+                    {/* PASS_SCALE8D_B_LIVE_PLAYBACK_DEBUG_BUTTON */}
+                    <button
+                      style={styles.secondaryButton}
+                      disabled={broadcastWorking}
+                      onClick={async () => {
+                        setBroadcastWorking(true);
+                        setBroadcastStatus("Running Cloudflare live playback debug...");
+
+                        try {
+                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/playback/debug?roomId=main-hall");
+                          const data = await response.json().catch(() => null);
+
+                          if (!response.ok || !data?.ok) {
+                            throw new Error(data?.error || "Playback debug failed.");
+                          }
+
+                          const summary = data.summary || {};
+                          const interpretation = data.interpretation || {};
+                          const blockers = Array.isArray(interpretation.blockers)
+                            ? interpretation.blockers
+                            : [];
+
+                          setBroadcastLive(
+                            summary.viewerMode === "broadcast" ||
+                              summary.broadcastStatus === "live"
+                          );
+
+                          setBroadcastStatus(
+                            "Debug Playback | URL Ready: " +
+                              (summary.playbackReady ? "Yes" : "No") +
+                              " | Player: " +
+                              (summary.player || "unknown") +
+                              " | Source: " +
+                              (summary.sourceStatus || "unknown") +
+                              " | Viewer: " +
+                              (summary.viewerMode || "unknown") +
+                              " | Broadcast: " +
+                              (summary.broadcastStatus || "unknown") +
+                              " | Egress: " +
+                              (summary.egressActive ? "active" : summary.egressFound ? "found/not active" : "none") +
+                              " | Server Chain: " +
+                              (summary.serverChainReady ? "ready" : "not ready") +
+                              " | Browser Video: " +
+                              (summary.browserVideoConfirmed ? "confirmed" : "not confirmed by server") +
+                              (blockers.length ? " | Blockers: " + blockers.join(" / ") : "")
+                          );
+                        } catch (error) {
+                          setBroadcastStatus("Playback debug error: " + (error?.message || String(error)));
+                        } finally {
+                          setBroadcastWorking(false);
+                        }
+                      }}
+                    >
+                      {broadcastWorking ? "Debugging Playback..." : "Debug Playback"}
+                    </button>
                   </div>
 
                   <div
