@@ -1196,15 +1196,36 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   function showAgvBroadcastPlayer(state) {
-    const rawPlaybackUrl = state?.embedUrl || state?.playbackUrl || state?.hlsUrl || "";
+    // PASS_BCAST6_CLOUDFLARE_VIEWER_PLAYER_FIX
+    // CLIENT — Do not treat a Cloudflare .m3u8 HLS manifest as an iframe.
+    // If the server gives AGV only HLS, convert it into the Cloudflare Stream iframe player.
+    const rawEmbedUrl = state?.embedUrl ? String(state.embedUrl).trim() : "";
+    const rawPlaybackUrl =
+      rawEmbedUrl ||
+      (state?.playbackUrl ? String(state.playbackUrl).trim() : "") ||
+      (state?.hlsUrl ? String(state.hlsUrl).trim() : "");
+
+    const embedIsHls = rawEmbedUrl.toLowerCase().includes(".m3u8");
+    const directIframeEmbedUrl = rawEmbedUrl && !embedIsHls ? rawEmbedUrl : "";
+
+    const hlsCandidate =
+      (state?.hlsUrl ? String(state.hlsUrl).trim() : "") ||
+      (state?.playbackUrl ? String(state.playbackUrl).trim() : "") ||
+      (embedIsHls ? rawEmbedUrl : "");
+
     const cloudflareEmbedUrl =
-      state?.embedUrl || agvCloudflareEmbedFromHlsUrl(state?.hlsUrl || state?.playbackUrl || "");
+      directIframeEmbedUrl ||
+      agvCloudflareEmbedFromHlsUrl(hlsCandidate);
+
     const playbackUrl = cloudflareEmbedUrl || rawPlaybackUrl;
     const playbackMode = cloudflareEmbedUrl
       ? "cloudflare-embed"
       : playbackUrl.toLowerCase().includes(".m3u8")
         ? "hls"
         : "iframe";
+
+    const isHls = playbackMode === "hls";
+    const isCloudflareEmbed = playbackMode === "cloudflare-embed";
 
     if (!playbackUrl) {
       showBroadcastPlaceholder(state);
@@ -1241,8 +1262,16 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
     header.appendChild(sub);
 
-    const isHls = playbackMode === "hls";
-    const isCloudflareEmbed = playbackMode === "cloudflare-embed";
+    
+    
+
+    // PASS_BCAST6B_SECOND_HLS_CONSTS_REMOVED
+
+    
+
+    // CLIENT — duplicate playback mode declarations removed.
+
+    
 
     let player;
 
