@@ -3315,9 +3315,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
                               roomId: selectedRoomId || "main-hall",
-                              title: "AGV LiveKit to Cloudflare Broadcast",
-                              layout: "speaker-dark",
-                              message: "AGV is live through LiveKit egress to Cloudflare Stream.",
+                              title: "AGV LiveKit to Cloudflare Teaching Broadcast",
+                              // PASS_BCAST7B_CLIENT_TEACHING_SCREENSHARE_LAYOUT
+                              // CLIENT SECOND — request screen-share-first teaching layout for Cloudflare viewers.
+                              layout: "screen-share",
+                              broadcastLayout: "teaching-screen-share",
+                              message: "AGV is live through LiveKit egress to Cloudflare Stream. Teaching screen-share layout is enabled.",
                             }),
                           });
 
