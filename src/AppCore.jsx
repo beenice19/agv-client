@@ -4054,7 +4054,63 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} • Ticket-Only Rooms:{" "}
                   {currentPlanLimits.allowTicketOnly ? "Allowed" : "Upgrade required"}
                 </div>
-                <button style={styles.secondaryButton} onClick={syncPlanFromSubscriptionServer}>
+                
+                {/* PASS_PRICING_2_CLIENT_FEE_POLICY_DISPLAY */}
+                <div
+                  style={{
+                    marginTop: 10,
+                    marginBottom: 10,
+                    padding: "12px 14px",
+                    borderRadius: 14,
+                    border: "1px solid rgba(250,204,21,0.35)",
+                    background:
+                      "linear-gradient(135deg, rgba(120,53,15,0.42), rgba(15,23,42,0.84))",
+                    boxShadow: "0 14px 34px rgba(0,0,0,0.22)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 950,
+                      color: "#fde68a",
+                      fontSize: 13,
+                      letterSpacing: 0.35,
+                      marginBottom: 6,
+                    }}
+                  >
+                    AGV Pricing & Broadcast Fee Policy
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "rgba(255,255,255,0.86)",
+                      lineHeight: 1.55,
+                    }}
+                  >
+                    Monthly subscriptions provide platform access. Paid ticketed events include a
+                    <strong> 7% AGV ticket platform fee</strong>. Broadcast delivery fees are billed
+                    separately to cover Cloudflare and streaming usage. Payment processing fees are
+                    passed through separately. Large audience broadcasts, conventions, international
+                    events, and high-viewer programs may require a custom quote before going live.
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 6,
+                      marginTop: 10,
+                    }}
+                  >
+                    <span style={styles.chip}>Subscription = Platform Access</span>
+                    <span style={styles.chip}>AGV Ticket Fee = 7%</span>
+                    <span style={styles.chip}>Broadcast Delivery = Separate</span>
+                    <span style={styles.chip}>Processing = Pass Through</span>
+                    <span style={styles.chip}>Large Event = Custom Quote</span>
+                  </div>
+                </div>
+
+<button style={styles.secondaryButton} onClick={syncPlanFromSubscriptionServer}>
                   Refresh Plan From AGV subscription service
                 </button>
               </div>
