@@ -665,7 +665,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       if (!quiet) setStatus("Event system loaded.");
     } catch {
-      if (!quiet) setStatus("Event server offline. Start SERVER 8786.");
+      if (!quiet) setStatus("Event server offline. Start EVENT SERVER 8786.");
     }
   }
 
@@ -4567,7 +4567,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 <div style={styles.controlTitle}>Event Creation System</div>
 
                 <div style={styles.helperText}>
-                  Create AGV events tied to the current room. Events are stored on SERVER 8786.
+                  Create AGV events tied to the current room. Events are stored on EVENT SERVER 8786.
                 </div>
 
                 <div style={styles.ownerSyncBox}>
