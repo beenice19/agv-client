@@ -11,7 +11,7 @@ import {
 // No old localhost, old ticket server, or separate token-server fallback is used.
 
 const MAIN_API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://agv-server.onrender.com";
+  import.meta.env.VITE_AGV_LIVEKIT_API_URL || "http://127.0.0.1:8790";
 
 const TOKEN_URL =
   import.meta.env.VITE_AGV_LIVEKIT_TOKEN_URL ||

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -8,5 +8,498 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-  </body>
+<!-- AGV CONVENTION CUSTOM BINGO GATE START -->
+<style id="agv-convention-custom-bingo-gate-style">
+  /*
+    AGV CLIENT:
+    Hide any older public/floating fundraiser Bingo launcher.
+    The add-on should only appear inside Convention custom options.
+  */
+  a[href*="agv-fundraiser-bingo"],
+  a[href*="8794"],
+  button[data-agv-bingo-public],
+  .agv-public-bingo-button,
+  #agv-public-bingo-button,
+  #agv-fundraiser-bingo-public-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #agv-convention-custom-options {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 999999;
+    max-width: 230px;
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(212,175,55,0.48);
+    background: linear-gradient(180deg, rgba(15,23,42,0.97), rgba(2,6,23,0.97));
+    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
+    color: #f8fafc;
+    font-family: Arial, sans-serif;
+  }
+
+  #agv-convention-custom-options .agv-custom-badge {
+    display: inline-block;
+    margin-bottom: 5px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(250,204,21,0.14);
+    border: 1px solid rgba(250,204,21,0.35);
+    color: #facc15;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+  }
+
+  #agv-convention-custom-options .agv-custom-title {
+    color: #facc15;
+    font-weight: 950;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+
+  #agv-convention-custom-options .agv-custom-text {
+    color: rgba(248,250,252,0.78);
+    font-size: 10px;
+    line-height: 1.45;
+    margin-bottom: 7px;
+  }
+
+  #agv-convention-custom-options .agv-custom-small {
+    color: rgba(248,250,252,0.58);
+    font-size: 10px;
+    line-height: 1.35;
+    margin-top: 9px;
+  }
+
+  #agv-convention-custom-options button {
+    width: 100%;
+    border: 0;
+    border-radius: 14px;
+    padding: 8px 9px;
+    font-weight: 950;
+    cursor: pointer;
+    color: #020617;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    margin-top: 7px;
+  }
+
+  #agv-convention-custom-options button.agv-secondary-addon-button {
+    color: #f8fafc;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+  }
+</style>
+
+<script id="agv-convention-custom-bingo-gate">
+(function () {
+  /*
+    AGV CLIENT:
+    Convention tier gets a private custom add-on purchase option.
+    Regular users do not see the Bingo launcher.
+  */
+
+  const ADDON_REQUEST_KEY = "agv_bingo_addon_purchase_requested";
+  const ADDON_ACTIVE_KEY = "agv_bingo_addon_active";
+
+  function normalizePlan(value) {
+    return String(value || "FREE").trim().toUpperCase();
+  }
+
+  function getStoredPlan() {
+    try {
+      return normalizePlan(
+        localStorage.getItem("agv_current_plan") ||
+        localStorage.getItem("agv_viewer_plan") ||
+        "FREE"
+      );
+    } catch (e) {
+      return "FREE";
+    }
+  }
+
+  function pageLooksConventionTier() {
+    const bodyText = String(document.body && document.body.innerText || "").toUpperCase();
+    return (
+      bodyText.includes("CONVENTION PLAN ACTIVE") ||
+      bodyText.includes("CONVENTION HOST") ||
+      bodyText.includes("CURRENT PLAN: CONVENTION") ||
+      bodyText.includes("ACTIVE PLAN: CONVENTION")
+    );
+  }
+
+  function isConventionTier() {
+    return getStoredPlan() === "CONVENTION" || pageLooksConventionTier();
+  }
+
+  function hideOldBingoLaunchers() {
+    const nodes = Array.from(document.querySelectorAll("a, button, div"));
+    nodes.forEach(function (node) {
+      const text = String(node.textContent || "").toLowerCase();
+      const href = String(node.getAttribute && node.getAttribute("href") || "").toLowerCase();
+
+      const looksLikePublicBingo =
+        text.includes("fundraiser bingo") ||
+        text.includes("enter fundraiser bingo") ||
+        text.includes("join fundraiser bingo") ||
+        href.includes("agv-fundraiser-bingo") ||
+        href.includes("127.0.0.1:8794") ||
+        href.includes("localhost:8794");
+
+      const isConventionCustom = node.closest && node.closest("#agv-convention-custom-options");
+
+      if (looksLikePublicBingo && !isConventionCustom) {
+        node.style.display = "none";
+        node.style.visibility = "hidden";
+        node.style.pointerEvents = "none";
+      }
+    });
+  }
+
+  function removeCustomOptions() {
+    const existing = document.getElementById("agv-convention-custom-options");
+    if (existing) existing.remove();
+  }
+
+  function addonRequested() {
+    try {
+      return localStorage.getItem(ADDON_REQUEST_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function addonActive() {
+    try {
+      return localStorage.getItem(ADDON_ACTIVE_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function openBingo() {
+    window.open(
+      "http://127.0.0.1:8794/agv-fundraiser-bingo.html?fundraiserId=fundraiser_8655ab17bbd6e7bf&roomId=main-hall&eventId=agv-fundraiser-bingo&cards=4",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  function renderConventionCustomOptions() {
+    hideOldBingoLaunchers();
+
+    if (!isConventionTier()) {
+      removeCustomOptions();
+      return;
+    }
+
+    const active = addonActive();
+    const requested = addonRequested();
+
+    let box = document.getElementById("agv-convention-custom-options");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "agv-convention-custom-options";
+      box.setAttribute("data-agv-convention-custom", "true"); box.classList.add("agv-addon-collapsed");
+      document.body.appendChild(box);
+    }
+
+    box.innerHTML = `
+      <button type="button" id="agv-toggle-convention-addon">Bingo Add-On</button><div class="agv-custom-badge">CONVENTION CUSTOM OPTION</div><div class="agv-custom-title">Fundraiser Bingo Add-On</div>
+      <div class="agv-custom-text">
+        Fundraiser Bingo is a Convention-tier custom add-on for ticketed fundraising, paid cards,
+        caller mode, prize tracking, and controlled event play.
+      </div>
+
+      ${
+        active
+          ? `
+            <button type="button" id="agv-open-convention-bingo">
+              Open Fundraiser Bingo Add-On
+            </button>
+            <div class="agv-custom-small">
+              Status: Add-On Active
+            </div>
+          `
+          : requested
+          ? `
+            <button type="button" id="agv-open-convention-bingo-test">
+              Open Local Add-On Preview
+            </button>
+            <div class="agv-custom-small">
+              Status: Purchase request saved locally. Stripe checkout can be connected after a Bingo Add-On price ID is added.
+            </div>
+          `
+          : `
+            <button type="button" id="agv-purchase-convention-bingo">
+              Purchase Bingo Add-On
+            </button>
+            <div class="agv-custom-small">
+              This is hidden from regular users and only appears for Convention-tier accounts.
+            </div>
+          `
+      }
+
+      <button type="button" class="agv-secondary-addon-button" id="agv-refresh-convention-addon">
+        Refresh Custom Options
+      </button>
+    `;
+
+    const purchaseButton = document.getElementById("agv-purchase-convention-bingo");
+    if (purchaseButton) {
+      purchaseButton.addEventListener("click", function () {
+        try {
+          localStorage.setItem(ADDON_REQUEST_KEY, "true");
+        } catch (e) {}
+
+        alert(
+          "Bingo Add-On purchase request saved. Next step is to connect this button to a real Stripe Bingo Add-On price ID."
+        );
+
+        renderConventionCustomOptions();
+      });
+    }
+
+    const openButton = document.getElementById("agv-open-convention-bingo");
+    if (openButton) {
+      openButton.addEventListener("click", openBingo);
+    }
+
+    const previewButton = document.getElementById("agv-open-convention-bingo-test");
+    if (previewButton) {
+      previewButton.addEventListener("click", openBingo);
+    }
+
+    const refreshButton = document.getElementById("agv-refresh-convention-addon");
+    if (refreshButton) {
+      refreshButton.addEventListener("click", renderConventionCustomOptions);
+    }
+  }
+
+  renderConventionCustomOptions();
+  setInterval(renderConventionCustomOptions, 1200);
+})();
+</script>
+<!-- AGV CONVENTION CUSTOM BINGO GATE END -->
+<!-- AGV COMPACT CONTROL CENTER START -->
+<style id="agv-compact-control-center-style">
+  /*
+    AGV CLIENT:
+    Compact the Control Center — Host Tools area without removing tools.
+  */
+
+  .agv-control-center-compact-card {
+    max-height: calc(100vh - 185px) !important;
+    overflow-y: auto !important;
+    padding-right: 8px !important;
+    scroll-behavior: smooth;
+  }
+
+  .agv-control-center-compact-card::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .agv-control-center-compact-card::-webkit-scrollbar-thumb {
+    background: rgba(250,204,21,0.35);
+    border-radius: 999px;
+  }
+
+  .agv-control-center-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 8px 0 12px 0;
+    padding: 8px 10px;
+    border-radius: 14px;
+    border: 1px solid rgba(250,204,21,0.24);
+    background: rgba(2,6,23,0.94);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.24);
+  }
+
+  .agv-control-center-toolbar-title {
+    color: #facc15;
+    font-size: 12px;
+    font-weight: 950;
+    letter-spacing: 0.35px;
+  }
+
+  .agv-control-center-toolbar button {
+    border: 1px solid rgba(250,204,21,0.32);
+    background: rgba(250,204,21,0.12);
+    color: #fef3c7;
+    border-radius: 999px;
+    padding: 6px 9px;
+    font-size: 11px;
+    font-weight: 900;
+    cursor: pointer;
+  }
+
+  .agv-control-center-compact-card.agv-control-details-hidden .agv-control-long-helper {
+    display: none !important;
+  }
+</style>
+
+<script id="agv-compact-control-center-script">
+(function () {
+  /*
+    AGV CLIENT:
+    Finds the current Control Center — Host Tools card and keeps it compact.
+  */
+
+  const STORAGE_KEY = "agv_control_center_show_details_v1";
+
+  function getShowDetails() {
+    try {
+      return localStorage.getItem(STORAGE_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function setShowDetails(value) {
+    try {
+      localStorage.setItem(STORAGE_KEY, value ? "true" : "false");
+    } catch (e) {}
+  }
+
+  function directText(node) {
+    if (!node) return "";
+    return Array.from(node.childNodes || [])
+      .filter(function (child) { return child.nodeType === Node.TEXT_NODE; })
+      .map(function (child) { return String(child.textContent || "").trim(); })
+      .filter(Boolean)
+      .join(" ")
+      .trim();
+  }
+
+  function findControlCenterCard() {
+    const title = Array.from(document.querySelectorAll("div"))
+      .find(function (node) {
+        return String(node.textContent || "").trim() === "Control Center — Host Tools";
+      });
+
+    if (!title) return null;
+
+    let node = title.parentElement;
+
+    while (node && node !== document.body) {
+      const text = String(node.textContent || "");
+      if (
+        text.includes("Plan & Authority") &&
+        text.includes("Tickets & Revenue") &&
+        text.includes("Vendor Financial Hub")
+      ) {
+        return node;
+      }
+      node = node.parentElement;
+    }
+
+    return title.parentElement || null;
+  }
+
+  function installToolbar(card) {
+    if (!card || card.querySelector(".agv-control-center-toolbar")) return;
+
+    const toolbar = document.createElement("div");
+    toolbar.className = "agv-control-center-toolbar";
+    toolbar.innerHTML = `
+      <div class="agv-control-center-toolbar-title">Compact Host Tools</div>
+      <button type="button" id="agv-toggle-control-center-details">Show Details</button>
+    `;
+
+    const title = Array.from(card.querySelectorAll("div"))
+      .find(function (node) {
+        return String(node.textContent || "").trim() === "Control Center — Host Tools";
+      });
+
+    if (title && title.parentElement) {
+      title.parentElement.insertBefore(toolbar, title.nextSibling);
+    } else {
+      card.insertBefore(toolbar, card.firstChild);
+    }
+
+    const button = toolbar.querySelector("#agv-toggle-control-center-details");
+    if (button) {
+      button.addEventListener("click", function () {
+        const next = !getShowDetails();
+        setShowDetails(next);
+        applyCompactControlCenter();
+      });
+    }
+  }
+
+  function markLongHelperText(card) {
+    if (!card) return;
+
+    const nodes = Array.from(card.querySelectorAll("div, p"));
+
+    nodes.forEach(function (node) {
+      if (node.closest(".agv-control-center-toolbar")) return;
+
+      const hasFormControl = node.querySelector("button, input, textarea, select");
+      if (hasFormControl) return;
+
+      const ownText = directText(node);
+      const fullText = String(node.textContent || "").trim();
+
+      const isLongLeafText =
+        ownText.length > 90 ||
+        (
+          node.children.length === 0 &&
+          fullText.length > 110
+        );
+
+      const isKeepVisible =
+        fullText.includes("Current Plan:") ||
+        fullText.includes("Room Limit:") ||
+        fullText.includes("Private Rooms:") ||
+        fullText.includes("AGV Host/Vendor Agreement Required");
+
+      if (isLongLeafText && !isKeepVisible) {
+        node.classList.add("agv-control-long-helper");
+      }
+    });
+  }
+
+  function applyCompactControlCenter() {
+    const card = findControlCenterCard();
+    if (!card) return;
+
+    card.classList.add("agv-control-center-compact-card");
+
+    installToolbar(card);
+    markLongHelperText(card);
+
+    const showDetails = getShowDetails();
+
+    if (showDetails) {
+      card.classList.remove("agv-control-details-hidden");
+    } else {
+      card.classList.add("agv-control-details-hidden");
+    }
+
+    const button = card.querySelector("#agv-toggle-control-center-details");
+    if (button) {
+      button.textContent = showDetails ? "Hide Details" : "Show Details";
+    }
+  }
+
+  applyCompactControlCenter();
+  setInterval(applyCompactControlCenter, 1200);
+})();
+</script>
+<!-- AGV COMPACT CONTROL CENTER END -->
+</body>
 </html>
+
+
+
+
+

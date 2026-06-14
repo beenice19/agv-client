@@ -32,9 +32,7 @@ const SUBSCRIPTION_API_BASE =
   import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
 // PASS34C_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
-  import.meta.env.VITE_AGV_TICKET_API_URL ||
-  import.meta.env.VITE_API_BASE_URL ||
-  "https://agv-server.onrender.com";
+  import.meta.env.VITE_AGV_TICKET_API_URL || "http://127.0.0.1:8786";
 
 const TICKET_STORAGE_KEY = "agv_ticket_code";
 
@@ -3310,7 +3308,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Starting AGV LiveKit → Cloudflare broadcast...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/egress/start", {
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/start`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -3371,7 +3369,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Ending AGV LiveKit → Cloudflare broadcast...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/egress/stop", {
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/stop`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -3414,7 +3412,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Checking AGV LiveKit → Cloudflare broadcast status...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/egress/health");
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/health`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
@@ -3479,8 +3477,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Checking Supabase / Cloudflare scale status...");
 
                       try {
-                        const sourceRes = await fetch("https://agv-server.onrender.com/api/broadcast/sources-db/main-hall");
-                        const healthRes = await fetch("https://agv-server.onrender.com/api/broadcast/direct/health");
+                        const sourceRes = await fetch(`${ROOM_API_BASE}/api/broadcast/sources-db/main-hall`);
+                        const healthRes = await fetch(`${ROOM_API_BASE}/api/broadcast/direct/health`);
 
                         const sourceData = await sourceRes.json();
                         const healthData = await healthRes.json();
@@ -3525,7 +3523,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Verifying Cloudflare playback URL...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/playback/verify?roomId=main-hall");
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/playback/verify?roomId=main-hall`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
@@ -3573,7 +3571,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Checking LiveKit → Cloudflare bridge health...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/health");
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/health`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
@@ -3614,7 +3612,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Starting LiveKit → Cloudflare bridge...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/start", {
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/start`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -3673,7 +3671,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           let currentEgressId = "";
 
                           try {
-                            const currentRes = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/egress/current");
+                            const currentRes = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/egress/current`);
                             const currentData = await currentRes.json().catch(() => null);
                             currentEgressId =
                               currentData?.egressId ||
@@ -3682,7 +3680,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               "";
                           } catch {}
 
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/stop", {
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/stop`, {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
@@ -3726,7 +3724,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Checking bridge egress status...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/bridge/egress/current");
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/egress/current`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
@@ -3767,7 +3765,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         setBroadcastStatus("Running Cloudflare live playback debug...");
 
                         try {
-                          const response = await fetch("https://agv-server.onrender.com/api/broadcast/playback/debug?roomId=main-hall");
+                          const response = await fetch(`${ROOM_API_BASE}/api/broadcast/playback/debug?roomId=main-hall`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
