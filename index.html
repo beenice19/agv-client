@@ -8,282 +8,6 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-<!-- AGV CONVENTION CUSTOM BINGO GATE START -->
-<style id="agv-convention-custom-bingo-gate-style">
-  /*
-    AGV CLIENT:
-    Hide any older public/floating fundraiser Bingo launcher.
-    The add-on should only appear inside Convention custom options.
-  */
-  a[href*="agv-fundraiser-bingo"],
-  a[href*="8794"],
-  button[data-agv-bingo-public],
-  .agv-public-bingo-button,
-  #agv-public-bingo-button,
-  #agv-fundraiser-bingo-public-button {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
-
-  #agv-convention-custom-options {
-    position: fixed;
-    right: 12px;
-    bottom: 12px;
-    z-index: 999999;
-    max-width: 230px;
-    padding: 10px;
-    border-radius: 14px;
-    border: 1px solid rgba(212,175,55,0.48);
-    background: linear-gradient(180deg, rgba(15,23,42,0.97), rgba(2,6,23,0.97));
-    box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-    color: #f8fafc;
-    font-family: Arial, sans-serif;
-  }
-
-  #agv-convention-custom-options .agv-custom-badge {
-    display: inline-block;
-    margin-bottom: 5px;
-    padding: 4px 8px;
-    border-radius: 999px;
-    background: rgba(250,204,21,0.14);
-    border: 1px solid rgba(250,204,21,0.35);
-    color: #facc15;
-    font-size: 10px;
-    font-weight: 900;
-    letter-spacing: 0.4px;
-  }
-
-  #agv-convention-custom-options .agv-custom-title {
-    color: #facc15;
-    font-weight: 950;
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-
-  #agv-convention-custom-options .agv-custom-text {
-    color: rgba(248,250,252,0.78);
-    font-size: 10px;
-    line-height: 1.45;
-    margin-bottom: 7px;
-  }
-
-  #agv-convention-custom-options .agv-custom-small {
-    color: rgba(248,250,252,0.58);
-    font-size: 10px;
-    line-height: 1.35;
-    margin-top: 9px;
-  }
-
-  #agv-convention-custom-options button {
-    width: 100%;
-    border: 0;
-    border-radius: 14px;
-    padding: 8px 9px;
-    font-weight: 950;
-    cursor: pointer;
-    color: #020617;
-    background: linear-gradient(135deg, #facc15, #f97316);
-    margin-top: 7px;
-  }
-
-  #agv-convention-custom-options button.agv-secondary-addon-button {
-    color: #f8fafc;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.14);
-  }
-</style>
-
-<script id="agv-convention-custom-bingo-gate">
-(function () {
-  /*
-    AGV CLIENT:
-    Convention tier gets a private custom add-on purchase option.
-    Regular users do not see the Bingo launcher.
-  */
-
-  const ADDON_REQUEST_KEY = "agv_bingo_addon_purchase_requested";
-  const ADDON_ACTIVE_KEY = "agv_bingo_addon_active";
-
-  function normalizePlan(value) {
-    return String(value || "FREE").trim().toUpperCase();
-  }
-
-  function getStoredPlan() {
-    try {
-      return normalizePlan(
-        localStorage.getItem("agv_current_plan") ||
-        localStorage.getItem("agv_viewer_plan") ||
-        "FREE"
-      );
-    } catch (e) {
-      return "FREE";
-    }
-  }
-
-  function pageLooksConventionTier() {
-    const bodyText = String(document.body && document.body.innerText || "").toUpperCase();
-    return (
-      bodyText.includes("CONVENTION PLAN ACTIVE") ||
-      bodyText.includes("CONVENTION HOST") ||
-      bodyText.includes("CURRENT PLAN: CONVENTION") ||
-      bodyText.includes("ACTIVE PLAN: CONVENTION")
-    );
-  }
-
-  function isConventionTier() {
-    return getStoredPlan() === "CONVENTION" || pageLooksConventionTier();
-  }
-
-  function hideOldBingoLaunchers() {
-    const nodes = Array.from(document.querySelectorAll("a, button, div"));
-    nodes.forEach(function (node) {
-      const text = String(node.textContent || "").toLowerCase();
-      const href = String(node.getAttribute && node.getAttribute("href") || "").toLowerCase();
-
-      const looksLikePublicBingo =
-        text.includes("fundraiser bingo") ||
-        text.includes("enter fundraiser bingo") ||
-        text.includes("join fundraiser bingo") ||
-        href.includes("agv-fundraiser-bingo") ||
-        href.includes("127.0.0.1:8794") ||
-        href.includes("localhost:8794");
-
-      const isConventionCustom = node.closest && node.closest("#agv-convention-custom-options");
-
-      if (looksLikePublicBingo && !isConventionCustom) {
-        node.style.display = "none";
-        node.style.visibility = "hidden";
-        node.style.pointerEvents = "none";
-      }
-    });
-  }
-
-  function removeCustomOptions() {
-    const existing = document.getElementById("agv-convention-custom-options");
-    if (existing) existing.remove();
-  }
-
-  function addonRequested() {
-    try {
-      return localStorage.getItem(ADDON_REQUEST_KEY) === "true";
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function addonActive() {
-    try {
-      return localStorage.getItem(ADDON_ACTIVE_KEY) === "true";
-    } catch (e) {
-      return false;
-    }
-  }
-
-  function openBingo() {
-    window.open(
-      "http://127.0.0.1:8794/agv-fundraiser-bingo.html?fundraiserId=fundraiser_8655ab17bbd6e7bf&roomId=main-hall&eventId=agv-fundraiser-bingo&cards=4",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  }
-
-  function renderConventionCustomOptions() {
-    hideOldBingoLaunchers();
-
-    if (!isConventionTier()) {
-      removeCustomOptions();
-      return;
-    }
-
-    const active = addonActive();
-    const requested = addonRequested();
-
-    let box = document.getElementById("agv-convention-custom-options");
-    if (!box) {
-      box = document.createElement("div");
-      box.id = "agv-convention-custom-options";
-      box.setAttribute("data-agv-convention-custom", "true"); box.classList.add("agv-addon-collapsed");
-      document.body.appendChild(box);
-    }
-
-    box.innerHTML = `
-      <button type="button" id="agv-toggle-convention-addon">Bingo Add-On</button><div class="agv-custom-badge">CONVENTION CUSTOM OPTION</div><div class="agv-custom-title">Fundraiser Bingo Add-On</div>
-      <div class="agv-custom-text">
-        Fundraiser Bingo is a Convention-tier custom add-on for ticketed fundraising, paid cards,
-        caller mode, prize tracking, and controlled event play.
-      </div>
-
-      ${
-        active
-          ? `
-            <button type="button" id="agv-open-convention-bingo">
-              Open Fundraiser Bingo Add-On
-            </button>
-            <div class="agv-custom-small">
-              Status: Add-On Active
-            </div>
-          `
-          : requested
-          ? `
-            <button type="button" id="agv-open-convention-bingo-test">
-              Open Local Add-On Preview
-            </button>
-            <div class="agv-custom-small">
-              Status: Purchase request saved locally. Stripe checkout can be connected after a Bingo Add-On price ID is added.
-            </div>
-          `
-          : `
-            <button type="button" id="agv-purchase-convention-bingo">
-              Purchase Bingo Add-On
-            </button>
-            <div class="agv-custom-small">
-              This is hidden from regular users and only appears for Convention-tier accounts.
-            </div>
-          `
-      }
-
-      <button type="button" class="agv-secondary-addon-button" id="agv-refresh-convention-addon">
-        Refresh Custom Options
-      </button>
-    `;
-
-    const purchaseButton = document.getElementById("agv-purchase-convention-bingo");
-    if (purchaseButton) {
-      purchaseButton.addEventListener("click", function () {
-        try {
-          localStorage.setItem(ADDON_REQUEST_KEY, "true");
-        } catch (e) {}
-
-        alert(
-          "Bingo Add-On purchase request saved. Next step is to connect this button to a real Stripe Bingo Add-On price ID."
-        );
-
-        renderConventionCustomOptions();
-      });
-    }
-
-    const openButton = document.getElementById("agv-open-convention-bingo");
-    if (openButton) {
-      openButton.addEventListener("click", openBingo);
-    }
-
-    const previewButton = document.getElementById("agv-open-convention-bingo-test");
-    if (previewButton) {
-      previewButton.addEventListener("click", openBingo);
-    }
-
-    const refreshButton = document.getElementById("agv-refresh-convention-addon");
-    if (refreshButton) {
-      refreshButton.addEventListener("click", renderConventionCustomOptions);
-    }
-  }
-
-  renderConventionCustomOptions();
-  setInterval(renderConventionCustomOptions, 1200);
-})();
-</script>
-<!-- AGV CONVENTION CUSTOM BINGO GATE END -->
 <!-- AGV COMPACT CONTROL CENTER START -->
 <style id="agv-compact-control-center-style">
   /*
@@ -496,151 +220,329 @@
 })();
 </script>
 <!-- AGV COMPACT CONTROL CENTER END -->
-<!-- AGV BINGO ADDON CLICK ONLY ICON START -->
-<style id="agv-bingo-addon-click-only-style">
+<!-- AGV CLEAN CONVENTION BINGO ADDON START -->
+<style id="agv-clean-convention-bingo-addon-style">
   /*
     AGV CLIENT:
-    Final override. Bingo Add-On stays as a tiny icon.
-    It will NOT expand on hover. It only opens when clicked.
+    Clean final Bingo Add-On behavior.
+    Convention tier only.
+    Tiny dice icon by default.
+    Click opens panel.
+    Panel stays open.
+    Close button closes panel.
+    No hover expansion.
   */
 
-  #agv-convention-custom-options {
-    position: fixed !important;
-    right: 12px !important;
-    bottom: 12px !important;
-    top: auto !important;
-    left: auto !important;
-    transform: none !important;
-    z-index: 999999 !important;
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    max-width: 38px !important;
-    min-height: 38px !important;
-    max-height: 38px !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    border-radius: 999px !important;
-    opacity: 0.62 !important;
-    background: rgba(2,6,23,0.78) !important;
-    border: 1px solid rgba(250,204,21,0.42) !important;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.20) !important;
+  #agv-clean-bingo-addon {
+    display: none;
   }
 
-  #agv-convention-custom-options:hover,
-  #agv-convention-custom-options:focus-within {
-    width: 38px !important;
-    height: 38px !important;
-    max-width: 38px !important;
-    max-height: 38px !important;
-    padding: 0 !important;
-    border-radius: 999px !important;
-    opacity: 0.82 !important;
-    overflow: hidden !important;
+  body.agv-convention-tier-active #agv-clean-bingo-addon {
+    display: block;
   }
 
-  #agv-convention-custom-options.agv-addon-open {
-    right: 12px !important;
-    bottom: 12px !important;
-    width: 250px !important;
-    height: auto !important;
-    max-width: 250px !important;
-    max-height: 62vh !important;
-    padding: 10px !important;
-    border-radius: 16px !important;
-    opacity: 1 !important;
-    overflow-y: auto !important;
-    background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98)) !important;
-    box-shadow: 0 14px 32px rgba(0,0,0,0.34) !important;
+  #agv-clean-bingo-addon {
+    position: fixed;
+    right: 12px;
+    bottom: 12px;
+    z-index: 999999;
+    font-family: Arial, sans-serif;
   }
 
-  #agv-toggle-convention-addon {
-    width: 38px !important;
-    height: 38px !important;
-    min-width: 38px !important;
-    min-height: 38px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    border-radius: 999px !important;
-    font-size: 0 !important;
-    line-height: 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+  #agv-clean-bingo-addon-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid rgba(250,204,21,0.45);
+    background: rgba(2,6,23,0.84);
+    color: #facc15;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.24);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 38px;
+    text-align: center;
+    padding: 0;
+    opacity: 0.78;
   }
 
-  #agv-toggle-convention-addon::before {
-    content: "🎲" !important;
-    font-size: 18px !important;
-    line-height: 1 !important;
+  #agv-clean-bingo-addon-icon:hover {
+    opacity: 1;
   }
 
-  #agv-convention-custom-options.agv-addon-open #agv-toggle-convention-addon {
-    width: 100% !important;
-    height: auto !important;
-    min-width: 0 !important;
-    min-height: 0 !important;
-    padding: 8px 9px !important;
-    margin-bottom: 7px !important;
-    border-radius: 999px !important;
-    font-size: 11px !important;
-    line-height: 1.2 !important;
+  #agv-clean-bingo-addon-panel {
+    display: none;
+    width: 280px;
+    max-width: calc(100vw - 28px);
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    border: 1px solid rgba(250,204,21,0.45);
+    background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98));
+    color: #f8fafc;
+    box-shadow: 0 16px 36px rgba(0,0,0,0.36);
+    padding: 12px;
   }
 
-  #agv-convention-custom-options.agv-addon-open #agv-toggle-convention-addon::before {
-    content: "Close Bingo Add-On" !important;
-    font-size: 11px !important;
+  #agv-clean-bingo-addon.agv-open #agv-clean-bingo-addon-icon {
+    display: none;
   }
 
-  #agv-convention-custom-options .agv-custom-badge,
-  #agv-convention-custom-options .agv-custom-title,
-  #agv-convention-custom-options .agv-custom-text,
-  #agv-convention-custom-options .agv-custom-small,
-  #agv-convention-custom-options button:not(#agv-toggle-convention-addon) {
-    display: none !important;
+  #agv-clean-bingo-addon.agv-open #agv-clean-bingo-addon-panel {
+    display: block;
   }
 
-  #agv-convention-custom-options.agv-addon-open .agv-custom-badge,
-  #agv-convention-custom-options.agv-addon-open .agv-custom-title,
-  #agv-convention-custom-options.agv-addon-open .agv-custom-text,
-  #agv-convention-custom-options.agv-addon-open .agv-custom-small,
-  #agv-convention-custom-options.agv-addon-open button:not(#agv-toggle-convention-addon) {
-    display: block !important;
+  #agv-clean-bingo-addon .agv-bingo-badge {
+    display: inline-block;
+    margin-bottom: 8px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: rgba(250,204,21,0.14);
+    border: 1px solid rgba(250,204,21,0.35);
+    color: #facc15;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.4px;
+  }
+
+  #agv-clean-bingo-addon .agv-bingo-title {
+    color: #facc15;
+    font-weight: 950;
+    font-size: 14px;
+    margin-bottom: 6px;
+  }
+
+  #agv-clean-bingo-addon .agv-bingo-text {
+    color: rgba(248,250,252,0.80);
+    font-size: 11px;
+    line-height: 1.45;
+    margin-bottom: 10px;
+  }
+
+  #agv-clean-bingo-addon .agv-bingo-small {
+    color: rgba(248,250,252,0.62);
+    font-size: 10px;
+    line-height: 1.35;
+    margin-top: 8px;
+  }
+
+  #agv-clean-bingo-addon button {
+    width: 100%;
+    border-radius: 12px;
+    border: 0;
+    padding: 8px 9px;
+    font-size: 11px;
+    font-weight: 950;
+    cursor: pointer;
+    margin-top: 7px;
+  }
+
+  #agv-clean-bingo-addon .agv-primary {
+    color: #020617;
+    background: linear-gradient(135deg, #facc15, #f97316);
+  }
+
+  #agv-clean-bingo-addon .agv-secondary {
+    color: #f8fafc;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
   }
 </style>
 
-<script id="agv-bingo-addon-click-only-script">
+<script id="agv-clean-convention-bingo-addon-script">
 (function () {
-  /*
-    AGV CLIENT:
-    Force Bingo Add-On to open only by click, not hover.
-  */
+  if (window.__AGV_CLEAN_BINGO_ADDON__) return;
+  window.__AGV_CLEAN_BINGO_ADDON__ = true;
 
-  function wireClickOnlyBingoAddon() {
-    const panel = document.getElementById("agv-convention-custom-options");
-    const toggle = document.getElementById("agv-toggle-convention-addon");
+  const ADDON_REQUEST_KEY = "agv_bingo_addon_purchase_requested";
+  const ADDON_ACTIVE_KEY = "agv_bingo_addon_active";
 
-    if (!panel || !toggle || toggle.dataset.agvClickOnlyWired === "true") return;
+  function normalizePlan(value) {
+    return String(value || "FREE").trim().toUpperCase();
+  }
 
-    toggle.dataset.agvClickOnlyWired = "true";
+  function getStoredPlan() {
+    try {
+      return normalizePlan(
+        localStorage.getItem("agv_current_plan") ||
+        localStorage.getItem("agv_viewer_plan") ||
+        "FREE"
+      );
+    } catch (e) {
+      return "FREE";
+    }
+  }
 
-    panel.classList.add("agv-addon-collapsed");
-    panel.classList.remove("agv-addon-open");
+  function pageLooksConvention() {
+    const text = String(document.body && document.body.innerText || "").toUpperCase();
+    return (
+      text.includes("CONVENTION PLAN ACTIVE") ||
+      text.includes("CONVENTION HOST") ||
+      text.includes("CURRENT PLAN: CONVENTION") ||
+      text.includes("ACTIVE PLAN: CONVENTION")
+    );
+  }
 
-    toggle.addEventListener("click", function (event) {
-      event.preventDefault();
-      event.stopPropagation();
-      panel.classList.toggle("agv-addon-open");
+  function isConventionTier() {
+    return getStoredPlan() === "CONVENTION" || pageLooksConvention();
+  }
+
+  function addonRequested() {
+    try {
+      return localStorage.getItem(ADDON_REQUEST_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function addonActive() {
+    try {
+      return localStorage.getItem(ADDON_ACTIVE_KEY) === "true";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function openBingoPreview() {
+    window.open(
+      "http://127.0.0.1:8794/agv-fundraiser-bingo.html?fundraiserId=fundraiser_8655ab17bbd6e7bf&roomId=main-hall&eventId=agv-fundraiser-bingo&cards=4",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  function hideOldPublicBingo() {
+    Array.from(document.querySelectorAll("a, button, div")).forEach(function (node) {
+      if (node.closest && node.closest("#agv-clean-bingo-addon")) return;
+
+      const text = String(node.textContent || "").toLowerCase();
+      const href = String(node.getAttribute && node.getAttribute("href") || "").toLowerCase();
+
+      const oldBingo =
+        text.includes("fundraiser bingo") ||
+        text.includes("enter fundraiser bingo") ||
+        text.includes("join fundraiser bingo") ||
+        href.includes("agv-fundraiser-bingo") ||
+        href.includes("127.0.0.1:8794") ||
+        href.includes("localhost:8794");
+
+      if (oldBingo) {
+        node.style.display = "none";
+        node.style.visibility = "hidden";
+        node.style.pointerEvents = "none";
+      }
     });
   }
 
-  wireClickOnlyBingoAddon();
-  setInterval(wireClickOnlyBingoAddon, 800);
+  function ensureAddonShell() {
+    let box = document.getElementById("agv-clean-bingo-addon");
+
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "agv-clean-bingo-addon";
+      box.innerHTML = `
+        <button type="button" id="agv-clean-bingo-addon-icon" title="Bingo Add-On">🎲</button>
+        <div id="agv-clean-bingo-addon-panel"></div>
+      `;
+      document.body.appendChild(box);
+
+      document.getElementById("agv-clean-bingo-addon-icon").addEventListener("click", function () {
+        box.classList.add("agv-open");
+      });
+    }
+
+    return box;
+  }
+
+  function renderPanel() {
+    hideOldPublicBingo();
+
+    const convention = isConventionTier();
+
+    if (convention) {
+      document.body.classList.add("agv-convention-tier-active");
+    } else {
+      document.body.classList.remove("agv-convention-tier-active");
+    }
+
+    const box = ensureAddonShell();
+
+    if (!convention) {
+      box.classList.remove("agv-open");
+      return;
+    }
+
+    const active = addonActive();
+    const requested = addonRequested();
+    const panel = document.getElementById("agv-clean-bingo-addon-panel");
+
+    if (!panel) return;
+
+    panel.innerHTML = `
+      <div class="agv-bingo-badge">CONVENTION CUSTOM OPTION</div>
+      <div class="agv-bingo-title">Fundraiser Bingo Add-On</div>
+      <div class="agv-bingo-text">
+        Convention-tier custom add-on for ticketed fundraising, paid cards,
+        caller mode, prize tracking, and controlled event play.
+      </div>
+
+      ${
+        active
+          ? `
+            <button type="button" class="agv-primary" id="agv-clean-open-bingo">Open Fundraiser Bingo Add-On</button>
+            <div class="agv-bingo-small">Status: Add-On Active</div>
+          `
+          : requested
+          ? `
+            <button type="button" class="agv-primary" id="agv-clean-open-bingo">Open Local Add-On Preview</button>
+            <div class="agv-bingo-small">
+              Status: Purchase request saved locally. Stripe checkout can be connected after a Bingo Add-On price ID is added.
+            </div>
+          `
+          : `
+            <button type="button" class="agv-primary" id="agv-clean-purchase-bingo">Purchase Bingo Add-On</button>
+            <div class="agv-bingo-small">
+              Hidden from regular users. Available only for Convention-tier accounts.
+            </div>
+          `
+      }
+
+      <button type="button" class="agv-secondary" id="agv-clean-close-bingo">Close</button>
+    `;
+
+    const purchase = document.getElementById("agv-clean-purchase-bingo");
+    if (purchase) {
+      purchase.onclick = function () {
+        try {
+          localStorage.setItem(ADDON_REQUEST_KEY, "true");
+        } catch (e) {}
+        alert("Bingo Add-On purchase request saved. Next step is connecting the real Stripe Add-On price ID.");
+        renderPanel();
+        box.classList.add("agv-open");
+      };
+    }
+
+    const open = document.getElementById("agv-clean-open-bingo");
+    if (open) {
+      open.onclick = openBingoPreview;
+    }
+
+    const close = document.getElementById("agv-clean-close-bingo");
+    if (close) {
+      close.onclick = function () {
+        box.classList.remove("agv-open");
+      };
+    }
+  }
+
+  renderPanel();
+  setInterval(renderPanel, 1000);
 })();
 </script>
-<!-- AGV BINGO ADDON CLICK ONLY ICON END -->
+<!-- AGV CLEAN CONVENTION BINGO ADDON END -->
 </body>
 </html>
+
+
 
 
 
