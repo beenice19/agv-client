@@ -539,8 +539,129 @@
 })();
 </script>
 <!-- AGV CLEAN CONVENTION BINGO ADDON END -->
+<!-- AGV MOVE GOOGLE DRIVE NEXT TO SCREEN SHARE START -->
+<style id="agv-google-drive-next-to-screenshare-style">
+  /*
+    AGV CLIENT:
+    Make Google Drive fit beside Screen Share.
+  */
+
+  .agv-google-drive-next-to-screenshare {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    max-width: 170px !important;
+    min-width: 0 !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    max-height: 34px !important;
+    padding: 7px 10px !important;
+    margin: 0 0 0 6px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    vertical-align: middle !important;
+  }
+
+  .agv-google-drive-next-to-screenshare * {
+    font-size: 11px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+  }
+
+  .agv-screenshare-google-drive-row {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    max-width: 100% !important;
+  }
+</style>
+
+<script id="agv-google-drive-next-to-screenshare-script">
+(function () {
+  /*
+    AGV CLIENT:
+    Move Open Google Drive beside Screen Share.
+    This waits for the React UI to render, then safely relocates the existing button.
+  */
+
+  if (window.__AGV_GOOGLE_DRIVE_NEXT_TO_SCREENSHARE__) return;
+  window.__AGV_GOOGLE_DRIVE_NEXT_TO_SCREENSHARE__ = true;
+
+  function textOf(el) {
+    return String(el && el.textContent || "").replace(/\s+/g, " ").trim().toLowerCase();
+  }
+
+  function isVisible(el) {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }
+
+  function findButtonByText(parts) {
+    const candidates = Array.from(document.querySelectorAll("button, a, [role='button']"));
+    return candidates.find(function (el) {
+      const t = textOf(el);
+      return parts.every(function (part) {
+        return t.includes(part);
+      });
+    });
+  }
+
+  function findGoogleDriveButton() {
+    return findButtonByText(["google", "drive"]) ||
+           findButtonByText(["open", "drive"]);
+  }
+
+  function findScreenShareButton() {
+    return findButtonByText(["screen", "share"]) ||
+           findButtonByText(["share", "screen"]);
+  }
+
+  function moveGoogleDrive() {
+    const drive = findGoogleDriveButton();
+    const screen = findScreenShareButton();
+
+    if (!drive || !screen || drive === screen) return;
+    if (!isVisible(screen)) return;
+
+    drive.classList.add("agv-google-drive-next-to-screenshare");
+
+    let row = screen.closest(".agv-screenshare-google-drive-row");
+
+    if (!row) {
+      row = document.createElement("span");
+      row.className = "agv-screenshare-google-drive-row";
+
+      screen.parentNode.insertBefore(row, screen);
+      row.appendChild(screen);
+    }
+
+    if (drive.parentNode !== row) {
+      row.appendChild(drive);
+    }
+
+    drive.style.display = "inline-flex";
+    drive.style.visibility = "visible";
+    drive.style.pointerEvents = "auto";
+  }
+
+  moveGoogleDrive();
+  setInterval(moveGoogleDrive, 900);
+})();
+</script>
+<!-- AGV MOVE GOOGLE DRIVE NEXT TO SCREEN SHARE END -->
 </body>
 </html>
+
 
 
 
