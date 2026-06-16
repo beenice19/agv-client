@@ -1520,8 +1520,145 @@ restore();health();if(fid())loadState();else renderCards();
 })();
 </script>
 <!-- AGV PRIZE TITLE FIELD END -->
+<script id="agv-new-fundraiser-voice-bridge">
+(function(){
+  /*
+    BINGO CLIENT:
+    Fix voice calls after creating a new fundraiser.
+    The original voice caller can follow the fundraiserId in the URL.
+    This bridge follows the live Fundraiser ID input field, so newly-created fundraisers speak too.
+  */
+  if (window.__AGV_NEW_FUNDRAISER_VOICE_BRIDGE__) return;
+  window.__AGV_NEW_FUNDRAISER_VOICE_BRIDGE__ = true;
+
+  let lastVoiceKey = "";
+
+  function byId(id){ return document.getElementById(id); }
+
+  function getApiBase(){
+    const field = byId("apiBase");
+    const fallback = "https://agv-fundraiser-bingo-server.onrender.com";
+    return field && field.value ? field.value.replace(/\/+$/, "") : fallback;
+  }
+
+  function getFieldFundraiserId(){
+    const field = byId("fundraiserId");
+    return field && field.value ? field.value.trim() : "";
+  }
+
+  function getUrlFundraiserId(){
+    try {
+      return new URLSearchParams(window.location.search).get("fundraiserId") || "";
+    } catch(e) {
+      return "";
+    }
+  }
+
+  function letterFor(n){
+    n = Number(n);
+    if (n >= 1 && n <= 15) return "B";
+    if (n >= 16 && n <= 30) return "I";
+    if (n >= 31 && n <= 45) return "N";
+    if (n >= 46 && n <= 60) return "G";
+    return "O";
+  }
+
+  function callText(n){
+    n = Number(n);
+    if (!n) return "";
+    return letterFor(n) + " " + n;
+  }
+
+  function findVoice(){
+    try {
+      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      return (
+        voices.find(v => /brian/i.test(v.name || "") && /^en/i.test(v.lang || "")) ||
+        voices.find(v => /david|guy|mark|aria|jenny|zira/i.test(v.name || "") && /^en/i.test(v.lang || "")) ||
+        voices.find(v => /^en-US/i.test(v.lang || "")) ||
+        voices.find(v => /^en/i.test(v.lang || "")) ||
+        null
+      );
+    } catch(e) {
+      return null;
+    }
+  }
+
+  function speakCall(n){
+    try {
+      if (!("speechSynthesis" in window) || !window.SpeechSynthesisUtterance) return;
+
+      const text = callText(n);
+      if (!text) return;
+
+      window.speechSynthesis.cancel();
+
+      const u = new SpeechSynthesisUtterance(text);
+      const voice = findVoice();
+      if (voice) u.voice = voice;
+
+      u.lang = "en-US";
+      u.rate = 0.86;
+      u.pitch = 0.92;
+      u.volume = 1;
+
+      window.speechSynthesis.speak(u);
+    } catch(e) {}
+  }
+
+  async function pollNewFundraiserVoice(){
+    try {
+      const fieldFid = getFieldFundraiserId();
+      if (!fieldFid) return;
+
+      /*
+        If the field fundraiser is different from the URL fundraiser,
+        this is probably a newly-created fundraiser inside the page.
+        That is the case the original voice caller can miss.
+      */
+      const urlFid = getUrlFundraiserId();
+      if (urlFid && fieldFid === urlFid) return;
+
+      const res = await fetch(
+        getApiBase() + "/api/fundraisers/" + encodeURIComponent(fieldFid) + "/state",
+        { cache: "no-store" }
+      );
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const f = data && data.fundraiser ? data.fundraiser : null;
+      if (!f) return;
+
+      const latest = f.latest || f.latestCall || "";
+      if (!latest) return;
+
+      const key = fieldFid + ":" + latest;
+      if (key === lastVoiceKey) return;
+
+      lastVoiceKey = key;
+      speakCall(latest);
+    } catch(e) {}
+  }
+
+  ["createBtn", "startBtn", "callBtn", "loadBtn"].forEach(function(id){
+    setTimeout(function(){
+      const btn = byId(id);
+      if (!btn) return;
+      btn.addEventListener("click", function(){
+        localStorage.setItem("agvBingoVoiceEnabled", "yes");
+        setTimeout(pollNewFundraiserVoice, 900);
+        setTimeout(pollNewFundraiserVoice, 1800);
+      });
+    }, 500);
+  });
+
+  setInterval(pollNewFundraiserVoice, 1000);
+})();
+</script>
 </body>
 </html>
+
 
 
 
