@@ -315,7 +315,7 @@ window.agvNormalBingoCallText = function (n) {
   <section class="panel">
     <h2>Connect</h2>
     <div class="notice">This version uses real players only. No fake players, no simulated winners, no sandbox queue.</div><div class="notice" id="agvLaunchNotice" style="display:none"></div>
-    <label>API Base</label><input id="apiBase" value="http://127.0.0.1:8794">
+    <label>API Base</label><input id="apiBase" value="https://agv-fundraiser-bingo-server.onrender.com">
     <label>Fundraiser ID</label><input id="fundraiserId" placeholder="Create fundraiser first"><input id="agvRoomId" type="hidden"><input id="agvEventId" type="hidden">
     <label>Host Admin Key</label><input id="adminKey" type="password" value="agv-admin">
     <button class="primary" id="createBtn">Create Fundraiser</button>
@@ -398,7 +398,13 @@ function money(n){return "$"+Number(n||0).toLocaleString(undefined,{maximumFract
 function letter(n){return LETTERS[Math.floor((n-1)/15)]||""}
 function save(){localStorage.setItem("agvBingoApi",$("apiBase").value);localStorage.setItem("agvBingoFid",$("fundraiserId").value);localStorage.setItem("agvBingoKey",$("adminKey").value)}
 function restore(){
- $("apiBase").value=localStorage.getItem("agvBingoApi")||$("apiBase").value;
+ const savedApiBase = localStorage.getItem("agvBingoApi");
+if (!savedApiBase || savedApiBase.includes("127.0.0.1") || savedApiBase.includes("localhost")) {
+  $("apiBase").value = "https://agv-fundraiser-bingo-server.onrender.com";
+  localStorage.setItem("agvBingoApi", $("apiBase").value);
+} else {
+  $("apiBase").value = savedApiBase;
+}
  $("fundraiserId").value=localStorage.getItem("agvBingoFid")||"";
  const savedAdminKey=localStorage.getItem("agvBingoKey"); $("adminKey").value=(!savedAdminKey||savedAdminKey==="change-this-to-your-real-admin-key")?"agv-admin":savedAdminKey; localStorage.setItem("agvBingoKey",$("adminKey").value);
 
@@ -601,7 +607,7 @@ restore();health();if(fid())loadState();else renderCards();
     if (!fid) return;
 
     try {
-      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+      const r = await fetch("https://agv-fundraiser-bingo-server.onrender.com/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
         cache: "no-store"
       });
 
@@ -692,7 +698,7 @@ restore();health();if(fid())loadState();else renderCards();
     if (!fid) return;
 
     try {
-      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+      const r = await fetch("https://agv-fundraiser-bingo-server.onrender.com/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
         cache: "no-store"
       });
 
@@ -943,7 +949,7 @@ restore();health();if(fid())loadState();else renderCards();
     if (!fid) return;
 
     try {
-      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+      const r = await fetch("https://agv-fundraiser-bingo-server.onrender.com/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
         cache: "no-store"
       });
 
@@ -1281,7 +1287,7 @@ restore();health();if(fid())loadState();else renderCards();
 
   function apiBase() {
     const field = byId("apiBase");
-    return field && field.value ? field.value.replace(/\/$/, "") : "http://127.0.0.1:8794";
+    return field && field.value ? field.value.replace(/\/$/, "") : "https://agv-fundraiser-bingo-server.onrender.com";
   }
 
   function fundraiserId() {
@@ -1516,6 +1522,7 @@ restore();health();if(fid())loadState();else renderCards();
 <!-- AGV PRIZE TITLE FIELD END -->
 </body>
 </html>
+
 
 
 
