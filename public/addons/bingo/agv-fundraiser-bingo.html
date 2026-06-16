@@ -1,0 +1,1553 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AGV Fundraiser Bingo</title>
+<style>
+:root{
+  --bg:#080d12;--panel:#111923;--gold:#f7b733;--cream:#fff4dc;
+  --blue:#1ea7ff;--red:#ef476f;--green:#45d483;--line:rgba(255,244,220,.15);
+  --muted:rgba(255,244,220,.68)
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top,#172333,#080d12 55%);color:var(--cream)}
+.wrap{max-width:1250px;margin:auto;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}
+.logo{width:58px;height:58px;border-radius:16px;background:linear-gradient(145deg,var(--gold),#b77410);color:#111;display:grid;place-items:center;font-weight:900;font-size:20px}
+.brand{display:flex;align-items:center;gap:14px}
+h1{margin:0;font-size:26px}
+h1 small{display:block;color:var(--gold);font-size:12px;letter-spacing:.18em;text-transform:uppercase}
+.pills{display:flex;gap:9px;flex-wrap:wrap}
+.pill{border:1px solid var(--line);border-radius:999px;padding:8px 12px;background:rgba(255,255,255,.04);font-weight:800}
+.pill b{color:var(--gold)}
+.grid{display:grid;grid-template-columns:340px 1fr 300px;gap:16px;margin-top:18px}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}.stage{order:-1}}
+.panel,.stageBox{background:linear-gradient(180deg,var(--panel),rgba(17,25,35,.88));border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 20px 55px rgba(0,0,0,.35)}
+h2{margin:0 0 12px;color:var(--gold);font-size:13px;letter-spacing:.16em;text-transform:uppercase}
+label{display:block;margin-bottom:6px;color:var(--muted);font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+input,select{width:100%;margin-bottom:10px;padding:11px;border-radius:10px;border:1px solid var(--line);background:#0b1118;color:var(--cream)}
+button{border:0;border-radius:10px;padding:11px 13px;font-weight:900;cursor:pointer;margin:4px 4px 4px 0}
+.primary{background:var(--gold);color:#111}.blue{background:var(--blue);color:#07101b}.red{background:var(--red);color:white}.ghost{background:transparent;color:var(--cream);border:1px solid var(--line)}
+.status{color:var(--muted);font-size:13px;line-height:1.45}.ok{color:var(--green);font-weight:900}.bad{color:#ff9a9a;font-weight:900}
+.notice{border:1px solid rgba(247,183,51,.35);background:rgba(247,183,51,.10);padding:12px;border-radius:14px;margin-bottom:12px;font-size:14px}
+.stageBox{text-align:center}
+.ball{width:176px;height:176px;border-radius:50%;margin:18px auto 10px;background:radial-gradient(circle at 30% 25%,#fff,var(--cream) 50%,#b8a06d);color:#111;display:grid;place-items:center;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+.inner{width:116px;height:116px;border-radius:50%;border:4px solid #111;display:grid;place-items:center}
+.letter{font-size:34px;font-weight:900;color:var(--red)}.num{font-size:56px;font-weight:900;line-height:.9}
+.calledLine{font-size:18px;color:var(--gold);font-weight:900;margin:10px 0}
+.board{margin-top:16px;display:grid;grid-template-columns:34px repeat(15,1fr);gap:4px}
+.rowl{font-weight:900;color:var(--gold);display:grid;place-items:center}
+.cell{aspect-ratio:1;border:1px solid var(--line);border-radius:6px;background:rgba(0,0,0,.25);display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--muted)}
+.cell.called{background:var(--cream);color:#111}.cell.latest{background:var(--red);color:white}
+.money{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.moneyBox{background:rgba(0,0,0,.24);border:1px solid var(--line);border-radius:13px;padding:10px}
+.moneyBox b{display:block;color:var(--gold);font-size:22px}.moneyBox span{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}
+.players{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto}
+.player{display:flex;justify-content:space-between;border:1px solid var(--line);border-radius:12px;padding:9px;background:rgba(0,0,0,.18);font-size:13px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;margin-top:16px;text-align:left}
+.card{background:#fff8e8;color:#111;border-radius:16px;padding:13px;position:relative}
+.serial{position:absolute;top:8px;right:12px;font-size:10px;font-weight:900;color:#6c6048}
+.cardHead,.cardGrid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.cardHead div{text-align:center;color:var(--red);font-weight:900;font-size:22px}
+.sq{aspect-ratio:1;border:1.5px solid rgba(0,0,0,.35);border-radius:9px;background:white;display:grid;place-items:center;font-weight:900;position:relative;cursor:pointer}
+.sq.free{font-size:11px;color:var(--red)}.sq.dabbed::after{content:"";position:absolute;inset:14%;border-radius:50%;background:rgba(239,71,111,.78);mix-blend-mode:multiply}
+.cardFoot{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:10px}.cardFoot small{color:#6c6048;font-weight:800}
+.moneyBox{display:none!important}.moneyBox.winnerOnly{display:block!important}.adminDash{display:none;margin-top:16px;border:1px solid rgba(247,183,51,.35);background:rgba(247,183,51,.08);border-radius:16px;padding:14px}
+.adminDash.show{display:block}
+.adminGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+.adminBox{background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:12px;padding:10px}
+.adminBox b{display:block;color:var(--gold);font-size:20px}
+.adminBox span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;font-weight:900}
+.adminTable{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+.adminTable th,.adminTable td{border-bottom:1px solid var(--line);padding:7px;text-align:left}
+.adminTable th{color:var(--gold);font-size:10px;text-transform:uppercase}
+.agvVoiceMiniBtn{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:999999;
+  padding:10px 13px;
+  border-radius:999px;
+  border:1px solid rgba(247,183,51,.70);
+  background:linear-gradient(135deg,#f7b733,#b77410);
+  color:#111;
+  font-weight:1000;
+  cursor:pointer;
+  box-shadow:0 14px 35px rgba(0,0,0,.45);
+}
+.agvVoicePanelCompact{
+  display:none;
+  position:fixed;
+  right:18px;
+  bottom:70px;
+  z-index:999999;
+  max-width:360px;
+  border:1px solid rgba(247,183,51,.70);
+  border-radius:16px;
+  background:linear-gradient(135deg, rgba(8,12,24,.97), rgba(39,22,5,.97));
+  color:#fff;
+  box-shadow:0 22px 60px rgba(0,0,0,.55);
+  padding:14px;
+}
+.agvVoicePanelCompact.show{display:block}
+.agvPaidGateNotice{
+  margin:12px 0;
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(247,183,51,.45);
+  background:rgba(247,183,51,.09);
+  color:#f7b733;
+  font-weight:900;
+}
+</style>
+<style id="agv-bingo-card-half-size">
+/* BINGO CLIENT — reduce visible Bingo card size by 50% */
+.bingoCard,
+.card {
+  transform: scale(0.5);
+  transform-origin: top left;
+}
+
+/* Keep layout space closer to the reduced card size */
+.bingoCard,
+.card {
+  margin-right: -50%;
+  margin-bottom: -50%;
+}
+
+/* Help multiple cards stay tighter on screen */
+#cards,
+#playerCards,
+.cardGrid,
+.cardsGrid,
+.playerCards,
+.bingoCards {
+  gap: 8px !important;
+}
+</style>
+<style id="agv-bingo-number-visibility-only">
+/* BINGO CLIENT — increase only the visible numbers on Bingo cards */
+.bingoCard td,
+.card td,
+.bingoCard button,
+.card button,
+.bingoCard .cell,
+.card .cell {
+  font-size: 56px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+}
+
+.bingoCard th,
+.card th {
+  font-size: 60px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+}
+
+.bingoCard .free,
+.card .free,
+.bingoCard td.free,
+.card td.free {
+  font-size: 36px !important;
+  font-weight: 1000 !important;
+}
+</style>
+<style id="agv-bingo-card-number-fit-final">
+/* BINGO CLIENT — keep Bingo numbers inside the card cells */
+.bingoCard,
+.card {
+  overflow: hidden !important;
+}
+
+.bingoCard table,
+.card table {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.bingoCard th,
+.card th,
+.bingoCard td,
+.card td,
+.bingoCard button,
+.card button,
+.bingoCard .cell,
+.card .cell {
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.bingoCard td,
+.card td,
+.bingoCard button,
+.card button,
+.bingoCard .cell,
+.card .cell {
+  font-size: 34px !important;
+  font-weight: 1000 !important;
+  padding: 3px !important;
+}
+
+.bingoCard th,
+.card th {
+  font-size: 36px !important;
+  font-weight: 1000 !important;
+  padding: 3px !important;
+}
+
+.bingoCard .free,
+.card .free,
+.bingoCard td.free,
+.card td.free {
+  font-size: 18px !important;
+  font-weight: 1000 !important;
+}
+</style>
+<script id="agv-english-only-bingo-voice-helper">
+/* BINGO CLIENT — force Bingo caller to English voices only */
+window.agvFindEnglishBingoVoice = function () {
+  try {
+    const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+    if (!voices || !voices.length) return null;
+
+    const englishVoices = voices.filter(v => {
+      const lang = String(v.lang || "").toLowerCase();
+      const name = String(v.name || "").toLowerCase();
+      return lang.startsWith("en") ||
+        name.includes("english") ||
+        name.includes("brian") ||
+        name.includes("david") ||
+        name.includes("mark") ||
+        name.includes("zira") ||
+        name.includes("guy");
+    });
+
+    const preferred = englishVoices.find(v => /brian/i.test(v.name)) ||
+      englishVoices.find(v => /david/i.test(v.name)) ||
+      englishVoices.find(v => /mark/i.test(v.name)) ||
+      englishVoices.find(v => /zira/i.test(v.name)) ||
+      englishVoices.find(v => /guy/i.test(v.name)) ||
+      englishVoices.find(v => /google us english/i.test(v.name)) ||
+      englishVoices.find(v => /microsoft/i.test(v.name)) ||
+      englishVoices[0];
+
+    return preferred || null;
+  } catch (e) {
+    return null;
+  }
+};
+
+window.agvNormalBingoCallText = function (n) {
+  const num = Number(n);
+  let letter = "B";
+  if (num >= 1 && num <= 15) letter = "B";
+  else if (num >= 16 && num <= 30) letter = "I";
+  else if (num >= 31 && num <= 45) letter = "N";
+  else if (num >= 46 && num <= 60) letter = "G";
+  else if (num >= 61 && num <= 75) letter = "O";
+
+  return letter + "-" + num;
+};
+</script>
+<style id="agv-bingo-card-visible-number-boost">
+/* BINGO CLIENT — make Bingo card numbers easier to see without changing the working layout */
+.bingocard .sq,
+.bingoCard .sq,
+.card .sq {
+  font-size: 26px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+}
+
+.bingocard .sq.free,
+.bingoCard .sq.free,
+.card .sq.free {
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+}
+
+.bingocard .cardhead div,
+.bingoCard .cardhead div,
+.card .cardhead div {
+  font-size: 30px !important;
+  font-weight: 1000 !important;
+}
+
+/* Fallback for table-style cards if the server renders that version */
+.bingoCard td,
+.card td,
+.bingoCard button,
+.card button {
+  font-size: 34px !important;
+  font-weight: 1000 !important;
+  line-height: 1 !important;
+}
+</style>
+<!-- AGV PULL MONEY DISPLAY CSS START -->
+<style id="agvPullMoneyDisplayCss">
+  #winningPotTitle,
+  #winningPotBox,
+  #prize {
+    display: none !important;
+  }
+</style>
+<!-- AGV PULL MONEY DISPLAY CSS END -->
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="brand"><div class="logo">AGV</div><h1>AGV Fundraiser Bingo<small>Real-player fundraiser add-on</small></h1></div>
+  <div class="pills">
+    <div class="pill">Server: <b id="serverState">checking</b></div>
+    <div class="pill">Room: <b id="roomCode">—</b></div>
+    <div class="pill">Round: <b id="roundNum">—</b></div>
+    <div class="pill">Players: <b id="seatCount">0</b></div>
+  </div>
+</header>
+
+<div class="grid">
+  <section class="panel">
+    <h2>Connect</h2>
+    <div class="notice">This version uses real players only. No fake players, no simulated winners, no sandbox queue.</div><div class="notice" id="agvLaunchNotice" style="display:none"></div>
+    <label>API Base</label><input id="apiBase" value="http://127.0.0.1:8794">
+    <label>Fundraiser ID</label><input id="fundraiserId" placeholder="Create fundraiser first"><input id="agvRoomId" type="hidden"><input id="agvEventId" type="hidden">
+    <label>Host Admin Key</label><input id="adminKey" type="password" value="agv-admin">
+    <button class="primary" id="createBtn">Create Fundraiser</button>
+    <button class="ghost" id="loadBtn">Load</button>
+    <div class="status" id="connectStatus"></div>
+<button class="ghost" id="adminDashBtn" type="button">Open Private Host Dashboard</button>
+
+<div class="adminDash" id="adminDash">
+  <h2>Private Host/Admin Financial Dashboard</h2>
+  <div class="status">Private view only. Do not show this screen to players.</div>
+
+  <div class="adminGrid">
+    <div class="adminBox"><b id="adGross"><div class="status" id="connectStatus"></div></b><span>Gross Round Value</span></div>
+    <div class="adminBox"><b id="adAgvFee"><div class="status" id="connectStatus"></div></b><span>AGV 7% Fee</span></div>
+    <div class="adminBox"><b id="adNetPool"><div class="status" id="connectStatus"></div></b><span>Net Pool</span></div>
+    <div class="adminBox"><b id="adWinner"><div class="status" id="connectStatus"></div></b><span>Winner Prize</span></div>
+    <div class="adminBox"><b id="adCause"><div class="status" id="connectStatus"></div></b><span>Fundraiser Cause</span></div>
+    <div class="adminBox"><b id="adCards">0</b><span>Cards Sold</span></div>
+    <div class="adminBox"><b id="adPaidEntries"><div class="status" id="connectStatus"></div></b><span>Paid Entries Recorded</span></div>
+    <div class="adminBox"><b id="adPlayers">0</b><span>Active Players</span></div>
+  </div>
+
+  <h2 style="margin-top:14px">donation player entries</h2>
+  <div id="adPlayerRows" class="status">No private player records loaded.</div>
+
+  <h2 style="margin-top:14px">Winner Payout Ledger</h2>
+  <div id="adLedgerRows" class="status">No winner payout recorded yet.</div>
+</div>
+
+    <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+    <h2>Donate & Enter Round</h2>
+    <label>Player Name</label><input id="playerName" placeholder="Full name">
+    <label>Email</label><input id="playerEmail" placeholder="player@email.com">
+    <label>Donation method</label><input id="paymentStatusView" value="Donation method connected through AGV account" readonly><input id="ticketCode" type="hidden" value="">
+    <label>Cards — $10 donation each</label><input id="cardCount" type="number" min="1" max="4" value="1"><div class="status" id="entryCostPreview">Donation total: $10</div>
+    <button class="blue" id="joinBtn">Donate & Enter Round</button>
+    <div class="status" id="playerStatus"></div>
+  </section>
+
+  <main class="stage">
+    <section class="stageBox">
+      <h2 id="gameStatus">Not loaded</h2>
+      <div class="ball"><div class="inner"><div><div class="letter" id="ballLetter">B</div><div class="num" id="ballNum">—</div></div></div></div>
+      <div class="calledLine" id="calledLine">Create a fundraiser to begin.</div>
+      <button class="primary" id="startBtn">Start Round</button>
+      <button class="blue" id="callBtn">Call Next Ball</button>
+      <button class="ghost" id="nextRoundBtn">Prepare Next Round</button>
+      <div class="board" id="board"></div>
+    </section>
+    <section class="cards" id="cards"></section>
+  </main>
+
+    <aside class="panel">
+    <h2 id="winningPotTitle">Winning Pot</h2>
+
+    <div class="money" id="winningPotBox">
+      <div class="moneyBox winnerOnly" style="grid-column:1/-1;text-align:center;padding:22px">
+        <b id="prize" style="font-size:40px"></b>
+        <span>Winner</span>
+      </div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+
+    <h2>Real Player Roster</h2>
+    <div class="players" id="players"></div>
+  </aside>
+</div>
+</div>
+
+<script>
+const LETTERS=["B","I","N","G","O"];
+const $=id=>document.getElementById(id);
+let state=null,myPlayer=null,dabbedByCard={},poller=null;
+
+function api(){return $("apiBase").value.replace(/\/+$/,"")}
+function fid(){return $("fundraiserId").value.trim()}
+function key(){const fixedKey="agv-admin"; try{localStorage.setItem("agvBingoKey",fixedKey);}catch(e){} if($("adminKey")) $("adminKey").value=fixedKey; return fixedKey;}
+function money(n){return "$"+Number(n||0).toLocaleString(undefined,{maximumFractionDigits:2})}
+function letter(n){return LETTERS[Math.floor((n-1)/15)]||""}
+function save(){localStorage.setItem("agvBingoApi",$("apiBase").value);localStorage.setItem("agvBingoFid",$("fundraiserId").value);localStorage.setItem("agvBingoKey",$("adminKey").value)}
+function restore(){
+ $("apiBase").value=localStorage.getItem("agvBingoApi")||$("apiBase").value;
+ $("fundraiserId").value=localStorage.getItem("agvBingoFid")||"";
+ const savedAdminKey=localStorage.getItem("agvBingoKey"); $("adminKey").value=(!savedAdminKey||savedAdminKey==="change-this-to-your-real-admin-key")?"agv-admin":savedAdminKey; localStorage.setItem("agvBingoKey",$("adminKey").value);
+
+ const params = new URLSearchParams(window.location.search);
+ const urlFundraiserId = params.get("fundraiserId") || params.get("fid");
+ const urlRoomId = params.get("roomId") || params.get("agvRoomId") || "";
+ const urlEventId = params.get("eventId") || params.get("agvEventId") || "";
+ const urlTicketCode = params.get("ticketCode") || params.get("ticket") || "";
+ const urlName = params.get("name") || params.get("playerName") || "";
+ const urlEmail = params.get("email") || "";
+ const urlCards = params.get("cards") || params.get("cardCount") || "";
+
+ if(urlFundraiserId){
+   $("fundraiserId").value = urlFundraiserId;
+   localStorage.setItem("agvBingoFid", urlFundraiserId);
+ }
+
+ if($("agvRoomId")) $("agvRoomId").value = urlRoomId;
+ if($("agvEventId")) $("agvEventId").value = urlEventId;
+ if(urlTicketCode) $("ticketCode").value = urlTicketCode;
+ if(urlName) $("playerName").value = urlName;
+ if(urlEmail) $("playerEmail").value = urlEmail;
+ if(urlCards) $("cardCount").value = urlCards;
+
+ if(urlFundraiserId || urlTicketCode || urlRoomId || urlEventId){
+   const notice = $("agvLaunchNotice");
+   if(notice){
+     notice.style.display = "block";
+     notice.innerHTML = "<b>AGV Ticketed Room Launch</b><br>Room: " + (urlRoomId || "AGV Bingo") + "<br>AGV account/payment launch received.";
+   }
+ }
+
+ try{myPlayer=JSON.parse(localStorage.getItem("agvBingoPlayer")||"null")}catch{}
+}
+async function req(path,body,method="POST"){const r=await fetch(api()+path,{method,headers:{"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});const d=await r.json();if(!r.ok||d.ok===false)throw new Error(d.error||"Request failed");return d}
+async function health(){try{const d=await fetch(api()+"/health").then(r=>r.json());$("serverState").textContent=d.ok?"online":"offline";$("serverState").className=d.ok?"ok":"bad"}catch{$("serverState").textContent="offline";$("serverState").className="bad"}}
+
+async function createFundraiser(){
+  save();
+  try{
+    const d=await req("/api/fundraisers/create",{adminKey:key(),title:"AGV Fundraiser Bingo Night",causeName:"AGV Fundraiser",roomCode:"AGV-BINGO",cardPrice:10,causeSplit:.7,agvFeeRate:.07,roomCap:300,pattern:"line"});
+    $("fundraiserId").value=d.fundraiser.id; save(); await loadState(); $("connectStatus").innerHTML='<span class="ok">Fundraiser created. Save this ID.</span>';
+  }catch(e){$("connectStatus").innerHTML='<span class="bad">'+e.message+"</span>"}
+}
+
+async function loadState(){
+  save();
+  if(!fid()){ $("connectStatus").innerHTML='<span class="bad">No fundraiser ID yet.</span>'; return; }
+  try{
+    const d=await req("/api/fundraisers/"+encodeURIComponent(fid())+"/state",null,"GET");
+    state=d; render(); $("connectStatus").innerHTML='<span class="ok">Loaded.</span>';
+    if(!poller) poller=setInterval(loadState,2500);
+  }catch(e){$("connectStatus").innerHTML='<span class="bad">'+e.message+"</span>"}
+}
+
+async function join(){
+  try{
+    const d=await req("/api/fundraisers/"+encodeURIComponent(fid())+"/join",{playerName:$("playerName").value,email:$("playerEmail").value,ticketCode:$("ticketCode").value,paymentMethodConnected:true,paymentStatus:"paid-local-test",paymentReference:"AGV-LOCAL-ROUND-"+Date.now(),cardsRequested:Number($("cardCount").value||1),agvRoomId:$("agvRoomId")?$("agvRoomId").value:"",agvEventId:$("agvEventId")?$("agvEventId").value:""});
+    myPlayer=d.player; localStorage.setItem("agvBingoPlayer",JSON.stringify(myPlayer)); dabbedByCard={};
+    $("playerStatus").innerHTML='<span class="ok">Paid entry approved. Joined as '+myPlayer.name+'. Status: '+myPlayer.status+'.</span>';
+    await loadState();
+  }catch(e){$("playerStatus").innerHTML='<span class="bad">'+e.message+"</span>"}
+}
+
+async function startRound(){try{await req("/api/fundraisers/"+encodeURIComponent(fid())+"/round/start",{adminKey:key()});await loadState()}catch(e){alert(e.message)}}
+async function callNext(){try{const d=await req("/api/fundraisers/"+encodeURIComponent(fid())+"/call/next",{adminKey:key()});state={fundraiser:d.fundraiser,players:state?.players||[]};render();speak(d.call.display)}catch(e){alert(e.message)}}
+async function nextRound(){try{await req("/api/fundraisers/"+encodeURIComponent(fid())+"/round/next",{adminKey:key(),dealFreshCards:true});await loadState()}catch(e){alert(e.message)}}
+async function claim(cardId){try{if(!myPlayer)throw new Error("Join first.");const d=await req("/api/fundraisers/"+encodeURIComponent(fid())+"/claim",{playerId:myPlayer.id,cardId,dabbedCells:dabbedByCard[cardId]||["2-2"]});state={fundraiser:d.fundraiser,players:state?.players||[]};render();alert("Verified Bingo!")}catch(e){alert(e.message)}}
+
+function render(){
+ if(!state)return;
+ const f=state.fundraiser;
+ $("roomCode").textContent=f.roomCode;$("roundNum").textContent=f.round;$("seatCount").textContent=f.seatedCount+"/"+f.roomCap;$("gameStatus").textContent=f.status;
+ if($("winningPotTitle"))$("winningPotTitle").style.display="none"; if($("winningPotBox"))$("winningPotBox").style.display="none"; if($("prize"))$("prize").textContent="";
+ if(f.latest){$("ballLetter").textContent=letter(f.latest);$("ballNum").textContent=f.latest;$("calledLine").textContent="Latest call: "+letter(f.latest)+" "+f.latest}else{$("ballLetter").textContent="B";$("ballNum").textContent="—";$("calledLine").textContent="Round ready"}
+ if(f.winner){$("calledLine").textContent="Verified Bingo Winner: "+f.winner.player.name}
+ renderBoard(f.called||[],f.latest); renderPlayers(state.players||[]); renderCards();
+}
+function renderBoard(called,latest){const b=$("board");b.innerHTML="";for(let r=0;r<5;r++){let row=document.createElement("div");row.className="rowl";row.textContent=LETTERS[r];b.appendChild(row);for(let i=0;i<15;i++){let n=r*15+i+1,d=document.createElement("div");d.className="cell"+(called.includes(n)?(n===latest?" latest":" called"):"");d.textContent=n;b.appendChild(d)}}}
+function renderPlayers(players){const w=$("players");w.innerHTML="";if(!players.length){w.innerHTML='<div class="status">No players have joined yet.</div>';return}players.forEach(p=>{let d=document.createElement("div");d.className="player";d.innerHTML='<div><b>'+p.name+'</b></div><small>'+p.status+'</small>';w.appendChild(d)})}
+function renderCards(){const w=$("cards");w.innerHTML="";if(!myPlayer||!myPlayer.cards){w.innerHTML='<div class="panel" style="grid-column:1/-1"><h2>Your Cards</h2><div class="status">Join the fundraiser to receive cards.</div></div>';return}myPlayer.cards.forEach(card=>{if(!dabbedByCard[card.id])dabbedByCard[card.id]=["2-2"];let set=new Set(dabbedByCard[card.id]);let c=document.createElement("div");c.className="card";c.innerHTML='<div class="serial">'+card.serial+'</div><div class="cardHead">'+LETTERS.map(x=>"<div>"+x+"</div>").join("")+"</div>";let g=document.createElement("div");g.className="cardGrid";for(let r=0;r<5;r++)for(let col=0;col<5;col++){let val=card.grid[r][col],k=r+"-"+col,s=document.createElement("div");s.className="sq"+(val==="FREE"?" free":"")+(set.has(k)?" dabbed":"");s.textContent=val==="FREE"?"FREE":val;s.onclick=()=>{if(val==="FREE")return;let ns=new Set(dabbedByCard[card.id]);ns.has(k)?ns.delete(k):ns.add(k);dabbedByCard[card.id]=Array.from(ns);renderCards()};g.appendChild(s)}c.appendChild(g);let foot=document.createElement("div");foot.className="cardFoot";foot.innerHTML="<small>Tap squares to dab.</small>";let btn=document.createElement("button");btn.className="red";btn.textContent="BINGO!";btn.onclick=()=>claim(card.id);foot.appendChild(btn);c.appendChild(foot);w.appendChild(c)})}
+function speak(text){try{let u=new SpeechSynthesisUtterance(text);speechSynthesis.cancel();speechSynthesis.speak(u)}catch{}}
+
+$("cardCount").oninput=()=>{
+  const cards = Math.max(1, Math.min(4, Number($("cardCount").value || 1))); $("cardCount").value = cards;
+  const cost = cards * 10;
+  if($("entryCostPreview")) $("entryCostPreview").textContent = "Donation total: $" + cost.toLocaleString();
+};
+async function loadAdminDashboard(){
+  if(!fid()){
+    alert("Create or load a fundraiser first.");
+    return;
+  }
+
+  try{
+    const d = await req("/api/fundraisers/"+encodeURIComponent(fid())+"/admin", { adminKey:key() });
+
+    const f = d.financials || {};
+    $("adGross").textContent = money(f.grossRoundValue || 0);
+    $("adAgvFee").textContent = money(f.agvFee || 0);
+    $("adNetPool").textContent = money(f.netPool || 0);
+    $("adWinner").textContent = money(f.winnerPrize || 0);
+    $("adCause").textContent = money(f.fundraiserCause || 0);
+    $("adCards").textContent = Number(f.cardsSold || 0).toLocaleString();
+    $("adPaidEntries").textContent = money(f.paidEntryTotal || 0);
+    $("adPlayers").textContent = Number(f.activePlayers || 0).toLocaleString();
+
+    const players = d.paidPlayers || [];
+    if(players.length){
+      $("adPlayerRows").innerHTML =
+        '<table class="adminTable"><thead><tr><th>Name</th><th>Email</th><th>Cards</th><th>Entry</th><th>Status</th></tr></thead><tbody>' +
+        players.map(p =>
+          '<tr><td>'+p.name+'</td><td>'+p.email+'</td><td>'+p.cardsPurchased+'</td><td>'+money(p.entryAmount)+'</td><td>'+p.paymentStatus+'</td></tr>'
+        ).join("") +
+        '</tbody></table>';
+    } else {
+      $("adPlayerRows").textContent = "No donation player entries recorded yet.";
+    }
+
+    const ledger = d.payoutLedger || [];
+    if(ledger.length){
+      $("adLedgerRows").innerHTML =
+        '<table class="adminTable"><thead><tr><th>Round</th><th>Winner</th><th>Email</th><th>Card</th><th>Prize</th></tr></thead><tbody>' +
+        ledger.map(x =>
+          '<tr><td>'+x.round+'</td><td>'+x.winnerName+'</td><td>'+x.winnerEmail+'</td><td>'+x.cardSerial+'</td><td>Prize awarded</td></tr>'
+        ).join("") +
+        '</tbody></table>';
+    } else {
+      $("adLedgerRows").textContent = "No winner payout recorded yet.";
+    }
+
+    $("adminDash").classList.add("show");
+  }catch(e){
+    alert(e.message);
+  }
+}
+$("adminDashBtn").onclick=loadAdminDashboard;$("createBtn").onclick=createFundraiser;$("loadBtn").onclick=loadState;$("joinBtn").onclick=join;$("startBtn").onclick=startRound;$("callBtn").onclick=callNext;$("nextRoundBtn").onclick=nextRound;
+restore();health();if(fid())loadState();else renderCards();
+</script>
+<script id="agv-intermission-countdown">
+(function(){
+  if (window.__AGV_INTERMISSION_COUNTDOWN__) return;
+  window.__AGV_INTERMISSION_COUNTDOWN__ = true;
+
+  function getFundraiserId(){
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (
+        params.get("fundraiserId") ||
+        params.get("fid") ||
+        localStorage.getItem("agvBingoFundraiserId") ||
+        (document.getElementById("fundraiserId") ? document.getElementById("fundraiserId").value : "") ||
+        ""
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  function ensureBox(){
+    let box = document.getElementById("agvIntermissionBox");
+    if (box) return box;
+
+    box = document.createElement("div");
+    box.id = "agvIntermissionBox";
+    box.style.display = "none";
+    box.style.position = "fixed";
+    box.style.left = "50%";
+    box.style.top = "18px";
+    box.style.transform = "translateX(-50%)";
+    box.style.zIndex = "999999";
+    box.style.width = "min(720px, calc(100vw - 28px))";
+    box.style.border = "1px solid rgba(247,183,51,.75)";
+    box.style.borderRadius = "18px";
+    box.style.background = "linear-gradient(135deg, rgba(8,12,24,.98), rgba(42,20,4,.96))";
+    box.style.color = "#fff";
+    box.style.boxShadow = "0 24px 70px rgba(0,0,0,.55)";
+    box.style.padding = "16px 18px";
+    box.style.textAlign = "center";
+    box.style.fontFamily = "system-ui, Segoe UI, Arial, sans-serif";
+
+    box.innerHTML =
+      '<div style="color:#f7b733;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;font-size:13px;">AGV Bingo Intermission</div>' +
+      '<div style="font-size:34px;font-weight:1000;margin-top:4px;" id="agvIntermissionClock">05:00</div>' +
+      '<div style="font-size:14px;color:#cbd5e1;font-weight:800;" id="agvIntermissionMsg">Next game starts automatically.</div>';
+
+    document.body.appendChild(box);
+    return box;
+  }
+
+  function fmt(ms){
+    const total = Math.max(0, Math.ceil(ms / 1000));
+    const m = Math.floor(total / 60);
+    const s = total % 60;
+    return String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+  }
+
+  async function pollIntermission(){
+    const fid = getFundraiserId();
+    if (!fid) return;
+
+    try {
+      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+        cache: "no-store"
+      });
+
+      if (!r.ok) return;
+
+      const d = await r.json();
+      const f = d.fundraiser || {};
+      const box = ensureBox();
+
+      if (f.status === "intermission" && f.intermissionEndsAt) {
+        const remaining = new Date(f.intermissionEndsAt).getTime() - Date.now();
+
+        box.style.display = "block";
+        document.getElementById("agvIntermissionClock").textContent = fmt(remaining);
+        document.getElementById("agvIntermissionMsg").textContent =
+          remaining > 0
+            ? "Next game starts automatically."
+            : "Starting next game now...";
+      } else if (f.status === "live") {
+        if (box.style.display === "block") {
+          document.getElementById("agvIntermissionClock").textContent = "LIVE";
+          document.getElementById("agvIntermissionMsg").textContent = "Next game has started.";
+          setTimeout(function(){ box.style.display = "none"; }, 2500);
+        }
+      } else {
+        box.style.display = "none";
+      }
+    } catch {}
+  }
+
+  setInterval(pollIntermission, 1000);
+  setTimeout(pollIntermission, 600);
+})();
+</script>
+<script id="agv-auto-caller-shuffle-notice">
+(function(){
+  if (window.__AGV_AUTO_CALLER_NOTICE__) return;
+  window.__AGV_AUTO_CALLER_NOTICE__ = true;
+
+  function getFundraiserId(){
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (
+        params.get("fundraiserId") ||
+        params.get("fid") ||
+        localStorage.getItem("agvBingoFundraiserId") ||
+        (document.getElementById("fundraiserId") ? document.getElementById("fundraiserId").value : "") ||
+        ""
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  function ensureNotice(){
+    let box = document.getElementById("agvAutoCallerShuffleNotice");
+    if (box) return box;
+
+    box = document.createElement("div");
+    box.id = "agvAutoCallerShuffleNotice";
+    box.style.position = "fixed";
+    box.style.left = "18px";
+    box.style.bottom = "18px";
+    box.style.zIndex = "999998";
+    box.style.maxWidth = "390px";
+    box.style.border = "1px solid rgba(247,183,51,.65)";
+    box.style.borderRadius = "16px";
+    box.style.background = "linear-gradient(135deg, rgba(8,12,24,.96), rgba(22,35,58,.96))";
+    box.style.color = "#fff";
+    box.style.boxShadow = "0 20px 55px rgba(0,0,0,.5)";
+    box.style.padding = "13px 15px";
+    box.style.fontFamily = "system-ui, Segoe UI, Arial, sans-serif";
+    box.style.fontWeight = "800";
+    box.style.display = "none";
+
+    box.innerHTML =
+      '<div style="color:#f7b733;font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:1000;">AGV Bingo Automation</div>' +
+      '<div id="agvAutoCallerLine" style="font-size:15px;margin-top:5px;">Auto Caller is ON.</div>' +
+      '<div id="agvShuffleLine" style="font-size:13px;color:#cbd5e1;margin-top:4px;">Game cards are shuffled after each match.</div>' +
+      '<div id="agvLatestCallLine" style="font-size:22px;color:#f7b733;margin-top:7px;font-weight:1000;"></div>';
+
+    document.body.appendChild(box);
+    return box;
+  }
+
+  async function pollAutomationNotice(){
+    const fid = getFundraiserId();
+    if (!fid) return;
+
+    try {
+      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+        cache: "no-store"
+      });
+
+      if (!r.ok) return;
+
+      const d = await r.json();
+      const f = d.fundraiser || {};
+      const box = ensureNotice();
+
+      if (f.status === "live" || f.status === "intermission") {
+        box.style.display = "block";
+
+        document.getElementById("agvAutoCallerLine").textContent =
+          f.status === "live"
+            ? "Auto Caller is ON. Numbers are being called automatically."
+            : "Intermission is active. Next game starts automatically.";
+
+        document.getElementById("agvShuffleLine").textContent =
+          f.cardsShuffledNotice || "Game cards are shuffled after each match.";
+
+        const latest = f.latest || f.latestCall || "";
+        document.getElementById("agvLatestCallLine").textContent =
+          latest ? "Latest Call: " + latest : "";
+      } else {
+        box.style.display = "none";
+      }
+    } catch {}
+  }
+
+  setInterval(pollAutomationNotice, 1000);
+  setTimeout(pollAutomationNotice, 700);
+})();
+</script>
+<script id="agv-brian-voice-caller">
+(function(){
+  if (window.__AGV_BRIAN_VOICE_CALLER__) return;
+  window.__AGV_BRIAN_VOICE_CALLER__ = true;
+
+  let voiceEnabled = localStorage.getItem("agvBingoVoiceEnabled") === "yes";
+  let selectedVoiceName = localStorage.getItem("agvBingoVoiceName") || "";
+  let lastSpokenKey = "";
+  let voicesReady = false;
+
+  function getFundraiserId(){
+    try {
+      const params = new URLSearchParams(window.location.search);
+      return (
+        params.get("fundraiserId") ||
+        params.get("fid") ||
+        localStorage.getItem("agvBingoFundraiserId") ||
+        (document.getElementById("fundraiserId") ? document.getElementById("fundraiserId").value : "") ||
+        ""
+      );
+    } catch {
+      return "";
+    }
+  }
+
+  function letterFor(n){
+    n = Number(n);
+    if (n >= 1 && n <= 15) return "B";
+    if (n >= 16 && n <= 30) return "I";
+    if (n >= 31 && n <= 45) return "N";
+    if (n >= 46 && n <= 60) return "G";
+    return "O";
+  }
+
+  function formatCall(n){
+    n = Number(n);
+    if (!n) return "";
+    return letterFor(n) + "-" + n;
+  }
+
+  function ensureVoiceBox(){
+    let box = document.getElementById("agvBrianVoiceBox");
+    if (box) return box;
+
+    box = document.createElement("div");
+    box.id = "agvBrianVoiceBox";
+    box.style.position = "fixed";
+    box.style.right = "18px";
+    box.style.bottom = "18px";
+    box.style.zIndex = "999999";
+    box.style.maxWidth = "420px";
+    box.style.border = "1px solid rgba(247,183,51,.70)";
+    box.style.borderRadius = "16px";
+    box.style.background = "linear-gradient(135deg, rgba(8,12,24,.97), rgba(39,22,5,.97))";
+    box.style.color = "#fff";
+    box.style.boxShadow = "0 22px 60px rgba(0,0,0,.55)";
+    box.style.padding = "14px";
+    box.style.fontFamily = "system-ui, Segoe UI, Arial, sans-serif";
+
+    box.innerHTML =
+      '<div style="color:#f7b733;font-size:12px;text-transform:uppercase;letter-spacing:.08em;font-weight:1000;">AGV Voice Caller</div>' +
+      '<div style="font-size:13px;color:#cbd5e1;margin-top:4px;font-weight:800;">Default voice target: Microsoft Brian Natural Voice</div>' +
+      '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">' +
+        '<button id="agvEnableVoiceBtn" type="button" style="padding:9px 10px;border-radius:10px;border:1px solid rgba(247,183,51,.65);background:#f7b733;color:#111;font-weight:1000;cursor:pointer;">Enable Caller Voice</button>' +
+        '<button id="agvTestVoiceBtn" type="button" style="padding:9px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-weight:900;cursor:pointer;">Test Voice</button>' +
+      '</div>' +
+      '<select id="agvVoiceSelect" style="margin-top:10px;width:100%;padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:#0b1220;color:#fff;font-weight:800;"></select>' +
+      '<div id="agvVoiceStatus" style="margin-top:8px;font-size:12px;color:#cbd5e1;font-weight:800;">Voice not enabled yet.</div>';
+
+    document.body.appendChild(box);
+
+    document.getElementById("agvEnableVoiceBtn").onclick = function(){
+      voiceEnabled = true;
+      localStorage.setItem("agvBingoVoiceEnabled", "yes");
+      updateVoiceStatus("Caller voice enabled.");
+      speakText("AGV Bingo caller voice is enabled. Brian will call the board when available.");
+    };
+
+    document.getElementById("agvTestVoiceBtn").onclick = function(){
+      voiceEnabled = true;
+      localStorage.setItem("agvBingoVoiceEnabled", "yes");
+      speakText("Testing AGV Bingo voice caller. B 12. I 24. N 37. G 51. O 69.");
+    };
+
+    document.getElementById("agvVoiceSelect").onchange = function(){
+      selectedVoiceName = this.value;
+      localStorage.setItem("agvBingoVoiceName", selectedVoiceName);
+      updateVoiceStatus("Selected voice: " + selectedVoiceName);
+      speakText("Voice changed. I will now use this voice for AGV Bingo.");
+    };
+
+    return box;
+  }
+
+  function updateVoiceStatus(msg){
+    const el = document.getElementById("agvVoiceStatus");
+    if (el) el.textContent = msg;
+  }
+
+  function getVoices(){
+    if (!("speechSynthesis" in window)) return [];
+    return window.speechSynthesis.getVoices() || [];
+  }
+
+  function pickBrianVoice(voices){
+    if (!voices || !voices.length) return null;
+
+    const exactBrian = voices.find(v =>
+      /brian/i.test(v.name) && /microsoft/i.test(v.name) && /natural|online/i.test(v.name)
+    );
+    if (exactBrian) return exactBrian;
+
+    const anyBrian = voices.find(v => /brian/i.test(v.name));
+    if (anyBrian) return anyBrian;
+
+    const microsoftNatural = voices.find(v =>
+      /microsoft/i.test(v.name) && /natural|online/i.test(v.name) && /english|united states|en-/i.test((v.name + " " + v.lang))
+    );
+    if (microsoftNatural) return microsoftNatural;
+
+    const english = voices.find(v => /^en/i.test(v.lang || ""));
+    return english || voices[0] || null;
+  }
+
+  function populateVoices(){
+    ensureVoiceBox();
+
+    const select = document.getElementById("agvVoiceSelect");
+    const voices = getVoices();
+
+    if (!select || !voices.length) {
+      updateVoiceStatus("Loading voices. If Brian does not appear, use Microsoft Edge or install Microsoft Natural voices.");
+      return;
+    }
+
+    const oldValue = select.value || selectedVoiceName;
+    select.innerHTML = "";
+
+    voices.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v.name;
+      opt.textContent = v.name + (v.lang ? " — " + v.lang : "");
+      select.appendChild(opt);
+    });
+
+    let chosen = null;
+
+    if (oldValue) {
+      chosen = voices.find(v => v.name === oldValue);
+    }
+
+    if (!chosen) {
+      chosen = pickBrianVoice(voices);
+    }
+
+    if (chosen) {
+      selectedVoiceName = chosen.name;
+      select.value = chosen.name;
+      localStorage.setItem("agvBingoVoiceName", chosen.name);
+
+      const brianFound = /brian/i.test(chosen.name);
+      updateVoiceStatus(
+        brianFound
+          ? "Default ready: " + chosen.name
+          : "Brian was not found. Using: " + chosen.name
+      );
+    }
+
+    voicesReady = true;
+  }
+
+  function getSelectedVoice(){
+    const voices = getVoices();
+
+    if (selectedVoiceName) {
+      const selected = voices.find(v => v.name === selectedVoiceName);
+      if (selected) return selected;
+    }
+
+    return pickBrianVoice(voices);
+  }
+
+  function speakText(text){
+    if (!("speechSynthesis" in window)) {
+      updateVoiceStatus("This browser does not support speech synthesis.");
+      return;
+    }
+
+    if (!text) return;
+
+    try {
+      window.speechSynthesis.cancel();
+
+      const u = new SpeechSynthesisUtterance(text);
+      const voice = getSelectedVoice();
+
+      if (voice) u.voice = voice;
+
+      u.rate = 0.86;
+      u.pitch = 0.92;
+      u.volume = 1;
+
+      window.speechSynthesis.speak(u);
+
+      updateVoiceStatus("Speaking with: " + (voice ? voice.name : "browser default"));
+    } catch (err) {
+      updateVoiceStatus("Voice error: " + err.message);
+    }
+  }
+
+  async function pollLatestCallForVoice(){
+    if (!voiceEnabled) return;
+
+    const fid = getFundraiserId();
+    if (!fid) return;
+
+    try {
+      const r = await fetch("http://127.0.0.1:8794/api/fundraisers/" + encodeURIComponent(fid) + "/state", {
+        cache: "no-store"
+      });
+
+      if (!r.ok) return;
+
+      const d = await r.json();
+      const f = d.fundraiser || {};
+
+      if (f.status !== "live") return;
+
+      const latest = Number(f.latest || 0);
+      if (!latest) return;
+
+      const key = String(fid) + "::" + String(f.round || "") + "::" + String(latest);
+      if (key === lastSpokenKey) return;
+
+      lastSpokenKey = key;
+      speakText(formatCall(latest));
+    } catch {}
+  }
+
+  ensureVoiceBox();
+  populateVoices();
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.onvoiceschanged = populateVoices;
+    setTimeout(populateVoices, 500);
+    setTimeout(populateVoices, 1500);
+    setTimeout(populateVoices, 3000);
+  }
+
+  setInterval(pollLatestCallForVoice, 1000);
+})();
+</script>
+<script id="agv-paid-card-voice-layout-guard">
+(function(){
+  if (window.__AGV_PAID_CARD_VOICE_GUARD__) return;
+  window.__AGV_PAID_CARD_VOICE_GUARD__ = true;
+
+  function $(id){ return document.getElementById(id); }
+
+  function currentPlayerConfirmed(){
+    try {
+      if (window.myPlayer && window.myPlayer.status === "seated") return true;
+
+      const statusText = (
+        ($("playerStatus") ? $("playerStatus").textContent : "") + " " +
+        (document.body ? document.body.textContent.slice(0, 2000) : "")
+      ).toLowerCase();
+
+      return statusText.includes("paid entry approved") || statusText.includes("status: seated");
+    } catch {
+      return false;
+    }
+  }
+
+  function findCardContainers(){
+    const ids = ["cards","playerCards","myCards","cardArea","cardsArea","playerCardArea"];
+    const found = [];
+
+    ids.forEach(id => {
+      const el = $(id);
+      if (el) found.push(el);
+    });
+
+    document.querySelectorAll(".cardGrid,.cardsGrid,.playerCards,.bingoCards,.bingoCardWrap").forEach(el => found.push(el));
+
+    return Array.from(new Set(found));
+  }
+
+  function ensurePaidNotice(){
+    let notice = $("agvPaidGateNotice");
+    if (notice) return notice;
+
+    notice = document.createElement("div");
+    notice.id = "agvPaidGateNotice";
+    notice.className = "agvPaidGateNotice";
+    notice.textContent = "Cards unlock after payment is confirmed and you are seated in the match.";
+
+    const playerStatus = $("playerStatus");
+    if (playerStatus && playerStatus.parentNode) {
+      playerStatus.parentNode.insertBefore(notice, playerStatus.nextSibling);
+    } else {
+      document.body.appendChild(notice);
+    }
+
+    return notice;
+  }
+
+  function enforcePaidCardGate(){
+    const confirmed = currentPlayerConfirmed();
+    const notice = ensurePaidNotice();
+
+    notice.style.display = confirmed ? "none" : "block";
+
+    findCardContainers().forEach(el => {
+      el.style.display = confirmed ? "" : "none";
+      el.style.pointerEvents = confirmed ? "" : "none";
+    });
+
+    document.querySelectorAll(".bingoCard,.card").forEach(card => {
+      card.style.pointerEvents = confirmed ? "" : "none";
+      card.style.opacity = confirmed ? "1" : ".35";
+    });
+  }
+
+  function compactVoicePanel(){
+    const oldBox = $("agvBrianVoiceBox");
+    if (!oldBox) return;
+
+    if (!$("agvVoiceMiniBtn")) {
+      const mini = document.createElement("button");
+      mini.id = "agvVoiceMiniBtn";
+      mini.className = "agvVoiceMiniBtn";
+      mini.type = "button";
+      mini.textContent = "Voice Settings";
+      document.body.appendChild(mini);
+
+      mini.onclick = function(){
+        oldBox.classList.toggle("show");
+      };
+    }
+
+    oldBox.classList.add("agvVoicePanelCompact");
+    oldBox.style.position = "";
+    oldBox.style.right = "";
+    oldBox.style.bottom = "";
+    oldBox.style.zIndex = "";
+    oldBox.style.maxWidth = "";
+    oldBox.style.border = "";
+    oldBox.style.borderRadius = "";
+    oldBox.style.background = "";
+    oldBox.style.color = "";
+    oldBox.style.boxShadow = "";
+    oldBox.style.padding = "";
+    oldBox.style.fontFamily = "";
+  }
+
+  function limitCardsToFour(){
+    const input = $("cardCount");
+    if (!input) return;
+
+    input.max = "4";
+
+    const val = Math.max(1, Math.min(4, Number(input.value || 1)));
+    input.value = String(val);
+  }
+
+  setInterval(function(){
+    compactVoicePanel();
+    limitCardsToFour();
+    enforcePaidCardGate();
+  }, 700);
+
+  setTimeout(function(){
+    compactVoicePanel();
+    limitCardsToFour();
+    enforcePaidCardGate();
+  }, 300);
+})();
+</script>
+<script id="agv-force-english-bingo-caller">
+/* BINGO CLIENT — force Bingo caller numbers to English words */
+(function () {
+  if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) return;
+  if (window.__agvEnglishBingoCallerInstalledV2) return;
+  window.__agvEnglishBingoCallerInstalledV2 = true;
+
+  const originalSpeak = window.speechSynthesis.speak.bind(window.speechSynthesis);
+
+  function numberToEnglishWords(num) {
+    const n = Number(num);
+    const ones = [
+      "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+      "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+      "seventeen", "eighteen", "nineteen"
+    ];
+
+    const tens = {
+      20: "twenty",
+      30: "thirty",
+      40: "forty",
+      50: "fifty",
+      60: "sixty",
+      70: "seventy"
+    };
+
+    if (n >= 0 && n < 20) return ones[n];
+    if (n >= 20 && n <= 75) {
+      const t = Math.floor(n / 10) * 10;
+      const r = n % 10;
+      return r === 0 ? tens[t] : tens[t] + " " + ones[r];
+    }
+
+    return String(num);
+  }
+
+  function getEnglishVoice() {
+    const voices = window.speechSynthesis.getVoices ? window.speechSynthesis.getVoices() : [];
+
+    return (
+      voices.find(v => /brian/i.test(v.name || "") && /^en/i.test(v.lang || "")) ||
+      voices.find(v => /david|guy|mark|aria|jenny|zira/i.test(v.name || "") && /^en/i.test(v.lang || "")) ||
+      voices.find(v => /^en-US/i.test(v.lang || "")) ||
+      voices.find(v => /^en/i.test(v.lang || "")) ||
+      null
+    );
+  }
+
+  function normalizeBingoCall(text) {
+    const raw = String(text || "").trim();
+
+    const match = raw.match(/^([BINGO])[-\s]+(\d{1,2})$/i);
+    if (!match) return raw;
+
+    const letter = match[1].toUpperCase();
+    const number = match[2];
+
+    return letter + " " + numberToEnglishWords(number);
+  }
+
+  window.speechSynthesis.speak = function (utterance) {
+    try {
+      if (utterance && typeof utterance.text === "string") {
+        utterance.text = normalizeBingoCall(utterance.text);
+        utterance.lang = "en-US";
+
+        const englishVoice = getEnglishVoice();
+        if (englishVoice) {
+          utterance.voice = englishVoice;
+        }
+      }
+    } catch (e) {}
+
+    return originalSpeak(utterance);
+  };
+
+  if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = function () {
+      getEnglishVoice();
+    };
+  }
+})();
+</script>
+<!-- AGV FORCE LOCAL BINGO ADMIN KEY START -->
+<script id="agv-force-local-bingo-admin-key">
+(function(){
+  /*
+    BINGO CLIENT:
+    Local development safety.
+    Keeps browser/localStorage aligned with BINGO SERVER default key.
+  */
+  function forceLocalAdminKey(){
+    try {
+      localStorage.setItem("agvBingoKey", "agv-admin");
+    } catch(e) {}
+
+    var field = document.getElementById("adminKey");
+    if (field) field.value = "agv-admin";
+  }
+
+  forceLocalAdminKey();
+  setInterval(forceLocalAdminKey, 500);
+})();
+</script>
+<!-- AGV FORCE LOCAL BINGO ADMIN KEY END -->
+<!-- AGV BINGO PLAY MODE SELECTOR START -->
+<style id="agv-bingo-play-mode-selector-style">
+  #agvPlayModeBox {
+    margin-top: 14px;
+    border: 1px solid rgba(247,183,51,.35);
+    background: rgba(247,183,51,.08);
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  #agvPlayModeBox h3 {
+    margin: 0 0 8px;
+    color: var(--gold, #f7b733);
+    font-size: 15px;
+  }
+
+  #agvPlayModeBox label {
+    display: block;
+    color: rgba(255,255,255,.80);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  #agvPlayModeSelect {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.18);
+    background: rgba(0,0,0,.30);
+    color: #fff;
+    padding: 10px;
+    font-weight: 800;
+  }
+
+  #agvPlayModeNotice {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(255,255,255,.78);
+  }
+
+  #agvSavePlayMode {
+    margin-top: 10px;
+  }
+
+  #agvPlayModeStatus {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--gold, #f7b733);
+    font-weight: 800;
+  }
+</style>
+
+<script id="agv-bingo-play-mode-selector-script">
+(function () {
+  if (window.__AGV_BINGO_PLAY_MODE_SELECTOR__) return;
+  window.__AGV_BINGO_PLAY_MODE_SELECTOR__ = true;
+
+  const MODE_NOTICES = {
+    demo_only: "Demo Only: no real money, no real prize, no payout. Use for testing and demonstration.",
+    prize_only: "Prize-Only Fundraiser: winners receive listed non-cash prizes only. No cash redemption or cash-equivalent points.",
+    licensed_cash_locked: "Licensed Cash Prize — Locked: not active. Requires legal review, eligible organization approval, and state/local compliance before use."
+  };
+
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function apiBase() {
+    const field = byId("apiBase");
+    return field && field.value ? field.value.replace(/\/$/, "") : "http://127.0.0.1:8794";
+  }
+
+  function fundraiserId() {
+    const field = byId("fundraiserId");
+    return field && field.value ? field.value : "fundraiser_8655ab17bbd6e7bf";
+  }
+
+  function adminKeyValue() {
+    if (typeof key === "function") return key();
+    const field = byId("adminKey");
+    return field && field.value ? field.value : "agv-admin";
+  }
+
+  function setNotice(mode) {
+    const notice = byId("agvPlayModeNotice");
+    if (notice) notice.textContent = MODE_NOTICES[mode] || MODE_NOTICES.prize_only;
+  }
+
+  function ensureBox() {
+    if (byId("agvPlayModeBox")) return;
+
+    const box = document.createElement("div");
+    box.id = "agvPlayModeBox";
+    box.innerHTML = `
+      <h3>AGV Play Mode / Compliance Setting</h3>
+      <label for="agvPlayModeSelect">Play Mode</label>
+      <select id="agvPlayModeSelect">
+        <option value="demo_only">Demo Only</option>
+        <option value="prize_only" selected>Prize-Only Fundraiser</option>
+        <option value="licensed_cash_locked">Licensed Cash Prize — Locked</option>
+      </select>
+      <div id="agvPlayModeNotice"></div>
+      <button type="button" id="agvSavePlayMode" class="ghost">Save Play Mode</button>
+      <div id="agvPlayModeStatus"></div>
+    `;
+
+    const adminDashButton = byId("adminDashBtn");
+    const adminKeyField = byId("adminKey");
+
+    if (adminDashButton && adminDashButton.parentNode) {
+      adminDashButton.parentNode.insertBefore(box, adminDashButton);
+    } else if (adminKeyField && adminKeyField.parentNode) {
+      adminKeyField.parentNode.insertBefore(box, adminKeyField.nextSibling);
+    } else {
+      document.body.appendChild(box);
+    }
+
+    byId("agvPlayModeSelect").addEventListener("change", function () {
+      setNotice(this.value);
+    });
+
+    byId("agvSavePlayMode").addEventListener("click", saveMode);
+
+    setNotice(byId("agvPlayModeSelect").value);
+  }
+
+  async function loadMode() {
+    ensureBox();
+
+    const status = byId("agvPlayModeStatus");
+    const select = byId("agvPlayModeSelect");
+
+    try {
+      const url = apiBase() + "/api/fundraisers/" + encodeURIComponent(fundraiserId()) + "/compliance";
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not load play mode.");
+
+      if (data.complianceMode && select) {
+        select.value = data.complianceMode;
+        setNotice(data.complianceMode);
+      }
+
+      if (status) {
+        status.textContent = "Current Mode: " + (data.complianceLabel || select.options[select.selectedIndex].text);
+      }
+    } catch (e) {
+      if (status) status.textContent = "Play Mode not loaded yet. Restart Bingo server, then save mode.";
+    }
+  }
+
+  async function saveMode() {
+    const status = byId("agvPlayModeStatus");
+    const select = byId("agvPlayModeSelect");
+    const selectedMode = select ? select.value : "prize_only";
+
+    try {
+      const url = apiBase() + "/api/fundraisers/" + encodeURIComponent(fundraiserId()) + "/compliance-set?adminKey=" + encodeURIComponent(adminKeyValue()) + "&mode=" + encodeURIComponent(selectedMode); const res = await fetch(url);
+
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not save play mode.");
+
+      setNotice(data.complianceMode || selectedMode);
+
+      if (status) {
+        status.textContent = "Saved Mode: " + (data.complianceLabel || select.options[select.selectedIndex].text);
+      }
+    } catch (e) {
+      if (status) status.textContent = "Save failed: " + e.message;
+      alert(e.message);
+    }
+  }
+
+  ensureBox();
+  loadMode();
+  setInterval(ensureBox, 1200);
+})();
+</script>
+<!-- AGV BINGO PLAY MODE SELECTOR END -->
+
+<!-- AGV PRIZE TITLE FIELD START -->
+<style id="agvPrizeTitleFieldCss">
+  .agv-prize-title-box {
+    margin: 12px 0 16px 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 215, 0, .50);
+    background: rgba(255, 215, 0, .10);
+    color: #fff7c2;
+  }
+
+  .agv-prize-title-box h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    letter-spacing: .02em;
+  }
+
+  .agv-prize-title-display {
+    font-size: 16px;
+    font-weight: 900;
+    line-height: 1.35;
+    color: #ffffff;
+    margin-bottom: 10px;
+  }
+
+  .agv-prize-title-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .agv-prize-title-row input {
+    flex: 1;
+    min-width: 260px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,.22);
+    background: rgba(0,0,0,.35);
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .agv-prize-title-row button {
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 0;
+    cursor: pointer;
+    font-weight: 900;
+  }
+</style>
+
+<script id="agvPrizeTitleFieldScript">
+(function () {
+  const KEY = "agvBingoPrizeTitle";
+  const DEFAULT_TITLE = "Winner gets two banquet tickets at the President's Banquet at the 2026 Congress of Christian Education.";
+
+  function getPrizeTitle() {
+    return localStorage.getItem(KEY) || DEFAULT_TITLE;
+  }
+
+  function setPrizeTitle(value) {
+    const clean = String(value || "").trim();
+    localStorage.setItem(KEY, clean || DEFAULT_TITLE);
+  }
+
+  function buildPrizeTitleBox() {
+    if (document.getElementById("agvPrizeTitleBox")) return;
+
+    const box = document.createElement("div");
+    box.id = "agvPrizeTitleBox";
+    box.className = "agv-prize-title-box";
+
+    box.innerHTML = `
+      <h3>🏆 Prize Title</h3>
+      <div id="agvPrizeTitleDisplay" class="agv-prize-title-display"></div>
+      <div class="agv-prize-title-row">
+        <input id="agvPrizeTitleInput" type="text" placeholder="Enter prize title">
+        <button id="agvPrizeTitleSaveBtn" type="button">Save Prize Title</button>
+      </div>
+    `;
+
+    const target =
+      document.querySelector("main") ||
+      document.querySelector(".app") ||
+      document.querySelector(".container") ||
+      document.body;
+
+    target.prepend(box);
+
+    const input = document.getElementById("agvPrizeTitleInput");
+    const display = document.getElementById("agvPrizeTitleDisplay");
+    const btn = document.getElementById("agvPrizeTitleSaveBtn");
+
+    function refresh() {
+      const title = getPrizeTitle();
+      input.value = title;
+      display.textContent = title;
+    }
+
+    btn.onclick = function () {
+      setPrizeTitle(input.value);
+      refresh();
+    };
+
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        setPrizeTitle(input.value);
+        refresh();
+      }
+    });
+
+    refresh();
+  }
+
+  document.addEventListener("DOMContentLoaded", buildPrizeTitleBox);
+  setTimeout(buildPrizeTitleBox, 300);
+})();
+</script>
+<!-- AGV PRIZE TITLE FIELD END -->
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
