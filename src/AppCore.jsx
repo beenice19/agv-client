@@ -404,6 +404,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const canModerate = isHost || isModerator;
   const canControlStage = isHost;
   const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
+  const universityPalAllowed = isSuperAdmin || currentPlan !== "FREE";
   const hostVendorAgreementRequired =
     isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
   const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
@@ -1783,6 +1784,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   
   function openAgvUniversityPal() {
+    if (!universityPalAllowed) {
+      setStatus("AGV University Pal is included with Creator, Ministry / Pro, and Convention plans. Upgrade to unlock registration, certificates, and verification tools.");
+      return;
+    }
+
     try {
       const universityPalUrl = "/addons/university-pal/agv-university-pal.html";
       const finalUrl = new URL(universityPalUrl, window.location.origin);
@@ -3853,9 +3859,22 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 </button>
 
                 {/* AGV UNIVERSITY PAL CLEAN REACT LAUNCHER */}
-                <button style={styles.secondaryButton} onClick={openAgvUniversityPal}>
-                  Open AGV University Pal
-                </button>
+                {universityPalAllowed ? (
+                  <button style={styles.secondaryButton} onClick={openAgvUniversityPal}>
+                    Open AGV University Pal
+                  </button>
+                ) : (
+                  <button
+                    style={styles.lockedButton || styles.secondaryButton}
+                    onClick={() =>
+                      setStatus(
+                        "AGV University Pal is a paid-plan education add-on. Upgrade to Creator, Ministry / Pro, or Convention to unlock it."
+                      )
+                    }
+                  >
+                    University Pal — Upgrade Required
+                  </button>
+                )}
               </div>
             ) : (
               <div style={styles.stageControls}>
