@@ -1781,6 +1781,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     setTimeout(applyViewerAudioSettings, 0);
   }
 
+  
+  function openAgvUniversityPal() {
+    try {
+      const universityPalUrl = "/addons/university-pal/agv-university-pal.html";
+      const finalUrl = new URL(universityPalUrl, window.location.origin);
+
+      window.open(finalUrl.toString(), "_blank", "noopener,noreferrer");
+      setStatus("AGV University Pal opened in a new tab.");
+    } catch {
+      window.open("/addons/university-pal/agv-university-pal.html", "_blank", "noopener,noreferrer");
+      setStatus("AGV University Pal opened in a new tab.");
+    }
+  }
+
   function openAgvAcademyCompanion() {
     try {
       const companionUrl =
@@ -3836,6 +3850,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 {/* PASS31V_B_SWAP_DRIVE_CONNECT_HOST */}
                 <button style={styles.secondaryButton} onClick={() => window.open("https://drive.google.com", "_blank")}>
                   Open Google Drive
+                </button>
+
+                {/* AGV UNIVERSITY PAL CLEAN REACT LAUNCHER */}
+                <button style={styles.secondaryButton} onClick={openAgvUniversityPal}>
+                  Open AGV University Pal
                 </button>
               </div>
             ) : (
