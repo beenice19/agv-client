@@ -358,6 +358,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [broadcastEgressId, setBroadcastEgressId] = useState("");
   const [broadcastLastEgressId, setBroadcastLastEgressId] = useState("");
 
+  // PASS_EVENT_ESTIMATE_GATE_UI_1C
+  // AGV CLIENT — Cloudflare event estimate gate state.
+  const [eventEstimateInputs, setEventEstimateInputs] = useState({
+    expectedViewers: "500",
+    expectedMinutes: "90",
+    interactiveParticipants: "1",
+    screenShare: false,
+  });
+  const [eventEstimateResult, setEventEstimateResult] = useState(null);
+  const [eventEstimateWorking, setEventEstimateWorking] = useState(false);
+
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E
   // AGV CLIENT — Free-tier live token wallet display state.
   const [freeTokenWallet, setFreeTokenWallet] = useState(null);
@@ -2063,6 +2074,96 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
 
 
+
+  // PASS_EVENT_ESTIMATE_GATE_UI_1C
+  // AGV CLIENT — call SERVER 8794 to estimate LiveKit + Cloudflare usage.
+  async function estimateAgvEventUsage() {
+    setEventEstimateWorking(true);
+    setBroadcastStatus("Estimating AGV event usage...");
+
+    try {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/usage/estimate-event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: agvFreeTokenUserId(),
+          plan: String(currentPlan || "FREE").toUpperCase(),
+          roomId: selectedRoomId || "main-hall",
+          expectedViewers: Number(eventEstimateInputs.expectedViewers || 0),
+          expectedMinutes: Number(eventEstimateInputs.expectedMinutes || 0),
+          interactiveParticipants: Number(eventEstimateInputs.interactiveParticipants || 1),
+          screenShare: Boolean(eventEstimateInputs.screenShare || screenOn),
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(data?.message || data?.error || "Event estimate failed.");
+      }
+
+      setEventEstimateResult(data);
+
+      const needed = Number(data?.eventEstimate?.broadcastCreditsNeeded || 0);
+      const available = Number(data?.balances?.availableBroadcastCredits || 0);
+      const shortage = Number(data?.shortage?.broadcastCredits || 0);
+      const pack = data?.recommendedBroadcastPack;
+
+      setBroadcastStatus(
+        shortage > 0
+          ? "Broadcast Credits needed: " +
+              needed.toLocaleString() +
+              " | Available: " +
+              available.toLocaleString() +
+              " | Short: " +
+              shortage.toLocaleString() +
+              " | Recommended: " +
+              (pack?.name || "Custom Broadcast Pack") +
+              (pack?.priceUsd ? " — $" + pack.priceUsd : "")
+          : "Event estimate approved. Broadcast Credits are available."
+      );
+
+      return data;
+    } catch (error) {
+      setBroadcastStatus("Event estimate error: " + (error?.message || String(error)));
+      return null;
+    } finally {
+      setEventEstimateWorking(false);
+    }
+  }
+
+  // PASS_EVENT_ESTIMATE_GATE_UI_1C
+  // AGV CLIENT — block visible Cloudflare start when credits are short.
+  async function ensureBroadcastCreditsBeforeCloudflare() {
+    const estimate = await estimateAgvEventUsage();
+
+    if (!estimate?.ok) return false;
+
+    if (!estimate.allowed?.cloudflareAllowed) {
+      setBroadcastStatus(
+        "Cloudflare public broadcast is not included on this plan. Upgrade to Creator, Ministry / Pro, or Convention."
+      );
+      return false;
+    }
+
+    if (!estimate.allowed?.broadcastAllowed) {
+      const shortage = Number(estimate.shortage?.broadcastCredits || 0);
+      const pack = estimate.recommendedBroadcastPack;
+
+      setBroadcastStatus(
+        "Broadcast blocked: this event needs " +
+          shortage.toLocaleString() +
+          " more AGV Broadcast Credits. Recommended: " +
+          (pack?.name || "Custom Broadcast Pack") +
+          (pack?.priceUsd ? " — $" + pack.priceUsd : "")
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
   async function startCloudflareBroadcast() {
     // PASS_FREE_TOKENS_DIRECT_CLOUDFLARE_GUARD_1E
     const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
@@ -3546,6 +3647,168 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       marginBottom: "10px",
                     }}
                   >
+                    {/* PASS_EVENT_ESTIMATE_GATE_UI_1C */}
+                    <div
+                      style={{
+                        margin: "10px 0 12px",
+                        padding: 12,
+                        borderRadius: 16,
+                        border: "1px solid rgba(250,204,21,0.45)",
+                        background: "rgba(15,23,42,0.94)",
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, color: "#facc15", marginBottom: 6 }}>
+                        AGV Event Estimate Gate
+                      </div>
+
+                      <div style={{ fontSize: 12, color: "#cbd5e1", marginBottom: 10 }}>
+                        Estimate LiveKit + Cloudflare usage before public broadcast starts.
+                      </div>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                          gap: 8,
+                        }}
+                      >
+                        <label style={{ fontSize: 11, color: "#e5e7eb" }}>
+                          Expected viewers
+                          <input
+                            value={eventEstimateInputs.expectedViewers}
+                            onChange={(e) =>
+                              setEventEstimateInputs((prev) => ({
+                                ...prev,
+                                expectedViewers: e.target.value,
+                              }))
+                            }
+                            style={{
+                              width: "100%",
+                              marginTop: 4,
+                              padding: "8px",
+                              borderRadius: 10,
+                              border: "1px solid rgba(148,163,184,0.45)",
+                              background: "rgba(2,6,23,0.75)",
+                              color: "#f8fafc",
+                            }}
+                          />
+                        </label>
+
+                        <label style={{ fontSize: 11, color: "#e5e7eb" }}>
+                          Event minutes
+                          <input
+                            value={eventEstimateInputs.expectedMinutes}
+                            onChange={(e) =>
+                              setEventEstimateInputs((prev) => ({
+                                ...prev,
+                                expectedMinutes: e.target.value,
+                              }))
+                            }
+                            style={{
+                              width: "100%",
+                              marginTop: 4,
+                              padding: "8px",
+                              borderRadius: 10,
+                              border: "1px solid rgba(148,163,184,0.45)",
+                              background: "rgba(2,6,23,0.75)",
+                              color: "#f8fafc",
+                            }}
+                          />
+                        </label>
+
+                        <label style={{ fontSize: 11, color: "#e5e7eb" }}>
+                          Interactive people
+                          <input
+                            value={eventEstimateInputs.interactiveParticipants}
+                            onChange={(e) =>
+                              setEventEstimateInputs((prev) => ({
+                                ...prev,
+                                interactiveParticipants: e.target.value,
+                              }))
+                            }
+                            style={{
+                              width: "100%",
+                              marginTop: 4,
+                              padding: "8px",
+                              borderRadius: 10,
+                              border: "1px solid rgba(148,163,184,0.45)",
+                              background: "rgba(2,6,23,0.75)",
+                              color: "#f8fafc",
+                            }}
+                          />
+                        </label>
+
+                        <label
+                          style={{
+                            fontSize: 11,
+                            color: "#e5e7eb",
+                            display: "flex",
+                            gap: 8,
+                            alignItems: "center",
+                            paddingTop: 20,
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={eventEstimateInputs.screenShare}
+                            onChange={(e) =>
+                              setEventEstimateInputs((prev) => ({
+                                ...prev,
+                                screenShare: e.target.checked,
+                              }))
+                            }
+                          />
+                          Screen share
+                        </label>
+
+                        <button
+                          style={styles.secondaryButton}
+                          disabled={eventEstimateWorking || broadcastWorking}
+                          onClick={estimateAgvEventUsage}
+                        >
+                          {eventEstimateWorking ? "Estimating..." : "Estimate Event"}
+                        </button>
+                      </div>
+
+                      {eventEstimateResult ? (
+                        <div style={{ marginTop: 10, fontSize: 12, color: "#f8fafc" }}>
+                          <div>
+                            Broadcast needed:{" "}
+                            <strong>
+                              {Number(
+                                eventEstimateResult.eventEstimate?.broadcastCreditsNeeded || 0
+                              ).toLocaleString()}
+                            </strong>
+                          </div>
+                          <div>
+                            Broadcast available:{" "}
+                            <strong>
+                              {Number(
+                                eventEstimateResult.balances?.availableBroadcastCredits || 0
+                              ).toLocaleString()}
+                            </strong>
+                          </div>
+                          <div>
+                            Shortage:{" "}
+                            <strong>
+                              {Number(
+                                eventEstimateResult.shortage?.broadcastCredits || 0
+                              ).toLocaleString()}
+                            </strong>
+                          </div>
+                          <div style={{ color: "#facc15" }}>
+                            Recommended:{" "}
+                            <strong>
+                              {eventEstimateResult.recommendedBroadcastPack?.name || "None"}
+                              {eventEstimateResult.recommendedBroadcastPack?.priceUsd
+                                ? " — $" + eventEstimateResult.recommendedBroadcastPack.priceUsd
+                                : ""}
+                            </strong>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+
                     {/* PASS_SCALE10B_ONE_BUTTON_CLOUDFLARE_BROADCAST_UI */}
                     {/* PASS_BCAST5_CLIENT_WORKING_EGRESS_BUTTONS */}
                     <button
@@ -3566,6 +3829,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         }
 
                         await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+
+                        // PASS_EVENT_ESTIMATE_GATE_UI_1C
+                        const broadcastCreditsOk = await ensureBroadcastCreditsBeforeCloudflare();
+                        if (!broadcastCreditsOk) {
+                          setBroadcastWorking(false);
+                          return;
+                        }
 
                         setBroadcastStatus("Starting AGV LiveKit → Cloudflare broadcast...");
 
