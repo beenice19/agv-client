@@ -3009,102 +3009,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         </div>
       ) : null}
 
-      {!isViewerOnly && currentPlan !== "FREE" ? (
-        <div
-          style={{
-            margin: "0 18px 12px 18px",
-            padding: "14px",
-            borderRadius: 18,
-            border: "1px solid rgba(242, 198, 74, 0.38)",
-            background:
-              "linear-gradient(135deg, rgba(242,198,74,0.12), rgba(22,198,163,0.10), rgba(15,23,42,0.86))",
-            boxShadow: "0 14px 30px rgba(0,0,0,0.28)",
-            color: "#e5e7eb",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div style={{ minWidth: 240 }}>
-            <div style={{ fontWeight: 950, color: "#fde68a", fontSize: 15 }}>
-              AGV Companion Education Toolkit
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.82, lineHeight: 1.5 }}>
-              Open the Teacher Toolkit and Student Portal in a separate tab, then screen-share it to your AGV class.
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={openAgvAcademyCompanion}
-            style={{
-              border: "1px solid rgba(242, 198, 74, 0.55)",
-              background: "linear-gradient(135deg, #f2c64a, #fff0bd)",
-              color: "#07111f",
-              borderRadius: 999,
-              padding: "11px 16px",
-              fontWeight: 950,
-              cursor: "pointer",
-              boxShadow: "0 10px 24px rgba(242,198,74,0.16)",
-            }}
-          >
-            Open Teacher Toolkit / Student Portal
-          </button>
-        </div>
-      ) : !isViewerOnly && currentPlan === "FREE" ? (
-        <div
-          style={{
-            margin: "0 18px 12px 18px",
-            padding: "14px",
-            borderRadius: 18,
-            border: "1px solid rgba(22, 198, 163, 0.34)",
-            background:
-              "linear-gradient(135deg, rgba(22,198,163,0.11), rgba(242,198,74,0.08), rgba(15,23,42,0.86))",
-            boxShadow: "0 14px 30px rgba(0,0,0,0.22)",
-            color: "#e5e7eb",
-            display: "flex",
-            flexWrap: "wrap",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
-          <div style={{ minWidth: 240 }}>
-            <div style={{ fontWeight: 950, color: "#99f6e4", fontSize: 15 }}>
-              Unlock AGV Companion With Any Paid Plan
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.86, lineHeight: 1.5 }}>
-              Upgrade to Creator, Ministry, or Convention and receive the AGV Companion Teacher Toolkit
-              and Student Portal included with your subscription.
-            </div>
-          </div>
-
-          <div
-            style={{
-              border: "1px solid rgba(22, 198, 163, 0.42)",
-              background: "rgba(3, 17, 14, 0.72)",
-              color: "#ccfbf1",
-              borderRadius: 999,
-              padding: "10px 14px",
-              fontWeight: 900,
-              minWidth: 280,
-              maxWidth: 520,
-              overflow: "hidden",
-              boxShadow: "0 10px 24px rgba(22,198,163,0.14)",
-            }}
-            aria-label="AGV Companion paid plan message"
-          >
-            <marquee behavior="scroll" direction="left" scrollamount="4">
-              Unlock AGV Companion With Any Paid Plan — Upgrade to Creator, Ministry, or Convention and receive the AGV Companion Teacher Toolkit and Student Portal included with your subscription.
-            </marquee>
-          </div>
-        </div>
-      ) : null}
+      {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN — UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
 
       {/* AGV UNIVERSITY PAL DASHBOARD PRODUCT CARD */}
-      {!isViewerOnly ? (
+      {!isViewerOnly && universityPalAllowed ? (
         <div
           style={{
             margin: "0 18px 12px 18px",
@@ -3134,7 +3042,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
               <span style={styles.chip}>Plan: {currentPlanLimits.label}</span>
               <span style={styles.chip}>
-                {universityPalAllowed ? "University Pal Access: Included" : "University Pal Access: Upgrade Required"}
+                University Pal Access: Included
               </span>
               <span style={styles.chip}>Supabase-ready</span>
               <span style={styles.chip}>Certificate verification</span>
@@ -3152,7 +3060,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     )
             }
           >
-            {universityPalAllowed ? "Open AGV University Pal" : "University Pal — Upgrade Required"}
+            Open AGV University Pal
           </button>
         </div>
       ) : null}
