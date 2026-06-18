@@ -42,6 +42,11 @@ const ROOM_API_BASE =
   import.meta.env.VITE_AGV_SERVER_API_URL ||
   "http://127.0.0.1:8787";
 
+// PASS_FREE_TOKENS_CLIENT_PANEL_1E
+// AGV CLIENT — Free-tier live token wallet API.
+const FREE_TOKEN_API_BASE =
+  import.meta.env.VITE_AGV_FREE_TOKEN_API_URL || "http://127.0.0.1:8794";
+
 const DEFAULT_ROOMS = [
   { id: "main-hall", name: "Main Hall", category: "Convention", isPrivate: false, isLocked: false },
   { id: "studio-a", name: "Studio A", category: "Media", isPrivate: false, isLocked: false },
@@ -353,6 +358,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [broadcastEgressId, setBroadcastEgressId] = useState("");
   const [broadcastLastEgressId, setBroadcastLastEgressId] = useState("");
 
+  // PASS_FREE_TOKENS_CLIENT_PANEL_1E
+  // AGV CLIENT — Free-tier live token wallet display state.
+  const [freeTokenWallet, setFreeTokenWallet] = useState(null);
+  const [freeTokenStatus, setFreeTokenStatus] = useState("");
+  const [freeTokenSessionId, setFreeTokenSessionId] = useState("");
+
   const [messagesByRoom, setMessagesByRoom] = useState({});
   const [chatInput, setChatInput] = useState("");
 
@@ -404,6 +415,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const canModerate = isHost || isModerator;
   const canControlStage = isHost;
   const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
+  const cloudflareBroadcastAllowed = isSuperAdmin || currentPlan !== "FREE";
   const universityPalAllowed = isSuperAdmin || currentPlan !== "FREE";
   const hostVendorAgreementRequired =
     isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
@@ -1506,6 +1518,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   async function startHostCamera() {
+    // PASS_FREE_LIVEKIT_CAMERA_TOKEN_GATE_1I
+    const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
+    if (!freeTokenOk) return;
+
+    await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+
     if (!canControlStage) {
       setStatus("Viewer mode: camera controls are locked.");
       return;
@@ -1842,6 +1860,127 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setStatus("Viewer link ready to copy.");
     }
   }
+  // PASS_FREE_TOKENS_CLIENT_PANEL_1E
+  // AGV CLIENT — Free-tier live token wallet helpers.
+  function agvFreeTokenUserId() {
+    try {
+      return (
+        localStorage.getItem("agv_user_id") ||
+        localStorage.getItem("agvUserId") ||
+        localStorage.getItem("agv_owner_email") ||
+        localStorage.getItem("agv_email") ||
+        "local-free-user"
+      );
+    } catch {
+      return "local-free-user";
+    }
+  }
+
+  async function refreshFreeTokenWallet(planOverride = currentPlan) {
+    try {
+      const plan = String(planOverride || currentPlan || "FREE").toUpperCase();
+      const userId = agvFreeTokenUserId();
+
+      const response = await fetch(
+        FREE_TOKEN_API_BASE +
+          "/api/free-tokens/wallet?userId=" +
+          encodeURIComponent(userId) +
+          "&plan=" +
+          encodeURIComponent(plan)
+      );
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        setFreeTokenStatus(data?.message || data?.error || "Free token wallet unavailable.");
+        return null;
+      }
+
+      setFreeTokenWallet(data.wallet || null);
+
+      if (plan === "FREE") {
+        setFreeTokenStatus(
+          data?.canStartBroadcast
+            ? "Free live tokens available."
+            : "Free live tokens exhausted. Upgrade to continue broadcasting."
+        );
+      } else {
+        setFreeTokenStatus("Paid plan: token debit bypassed.");
+      }
+
+      return data.wallet || null;
+    } catch (error) {
+      setFreeTokenStatus("Free token wallet error: " + (error?.message || String(error)));
+      return null;
+    }
+  }
+
+  function freeLiveTokensExhausted() {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+    if (plan !== "FREE" || isSuperAdmin) return false;
+    return Number(freeTokenWallet?.balance || 0) <= 0;
+  }
+
+  async function ensureFreeTokensBeforeBroadcast() {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+
+    if (plan !== "FREE" || isSuperAdmin) {
+      return true;
+    }
+
+    const wallet = await refreshFreeTokenWallet(plan);
+    const balance = Number(wallet?.balance || 0);
+
+    if (balance <= 0) {
+      setBroadcastStatus("Free AGV Live Tokens are exhausted. Upgrade to continue broadcasting.");
+      setFreeTokenStatus("Free AGV Live Tokens are exhausted. Upgrade to continue broadcasting.");
+      return false;
+    }
+
+    return true;
+  }
+
+  async function startFreeTokenLiveSession(roomId = selectedRoomId || "main-hall") {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+
+    if (plan !== "FREE" || isSuperAdmin) {
+      return "";
+    }
+
+    const okToStart = await ensureFreeTokensBeforeBroadcast();
+    if (!okToStart) return "";
+
+    try {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/start-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: agvFreeTokenUserId(),
+          plan,
+          roomId,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        setBroadcastStatus(data?.message || "Free token session could not start.");
+        setFreeTokenStatus(data?.message || "Free token session could not start.");
+        return "";
+      }
+
+      setFreeTokenSessionId(data.sessionId || "");
+      setFreeTokenWallet(data.wallet || null);
+      setFreeTokenStatus("Free token session started.");
+
+      return data.sessionId || "";
+    } catch (error) {
+      setFreeTokenStatus("Free token session error: " + (error?.message || String(error)));
+      return "";
+    }
+  }
+
+
 
   // PASS_BCAST5_HOST_BROADCAST_CONTROLS
   async function refreshBroadcastStatus() {
@@ -1870,8 +2009,71 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       return null;
     }
   }
+  // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_DEBIT_HELPER
+  // AGV CLIENT — debit Free tokens while the Free user is live.
+  async function debitFreeLiveTokens(seconds = 60, viewerCount = 0, screenShare = false) {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+
+    if (plan !== "FREE" || isSuperAdmin) {
+      return true;
+    }
+
+    try {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/debit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: agvFreeTokenUserId(),
+          plan,
+          roomId: selectedRoomId || "main-hall",
+          sessionId: freeTokenSessionId || "client-live-session",
+          seconds,
+          viewerCount,
+          screenShare,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (data?.wallet) {
+        setFreeTokenWallet(data.wallet);
+      }
+
+      setFreeTokenStatus(data?.message || "Free live tokens updated.");
+
+      if (!response.ok || data?.blocked) {
+        setBroadcastStatus(
+          data?.message || "Free AGV Live Tokens exhausted. Upgrade to continue broadcasting."
+        );
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      setFreeTokenStatus("Free token live debit error: " + (error?.message || String(error)));
+      return false;
+    }
+  }
+
+  // PASS_FREE_TOKENS_CLIENT_PANEL_1E_AUTOLOAD
+  // AGV CLIENT — load Free token balance.
+  useEffect(() => {
+    refreshFreeTokenWallet(currentPlan);
+  }, [currentPlan]);
+
+
 
   async function startCloudflareBroadcast() {
+    // PASS_FREE_TOKENS_DIRECT_CLOUDFLARE_GUARD_1E
+    const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
+    if (!freeTokenOk) return;
+
+    await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+
+    if (!cloudflareBroadcastAllowed) {
+      setBroadcastStatus("Cloudflare broadcast is available on paid AGV plans only. Upgrade to Creator, Ministry / Pro, or Convention.");
+      return;
+    }
     if (!isHost) {
       setBroadcastStatus("Only host/admin can start broadcast.");
       return;
@@ -1908,6 +2110,35 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setBroadcastWorking(false);
     }
   }
+
+  // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_TIMER
+  // AGV CLIENT — while Free user is live, debit one minute of host stream time every 60 seconds.
+  useEffect(() => {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+
+    if (plan !== "FREE" || isSuperAdmin || !broadcastLive) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tick = async () => {
+      if (cancelled) return;
+
+      const ok = await debitFreeLiveTokens(60, 0, false);
+
+      if (!ok) {
+        setBroadcastLive(false);
+      }
+    };
+
+    const timerId = setInterval(tick, 60000);
+
+    return () => {
+      cancelled = true;
+      clearInterval(timerId);
+    };
+  }, [currentPlan, isSuperAdmin, broadcastLive, selectedRoomId, freeTokenSessionId]);
 
   async function stopCloudflareBroadcast() {
     if (!isHost) {
@@ -1956,6 +2187,41 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
     await connectToRoom("viewer", selectedRoomId);
   }
+
+  // PASS_FREE_LIVEKIT_CAMERA_TOKEN_HEARTBEAT_1I
+  // AGV CLIENT — debit Free tokens while host camera is actually live in LiveKit.
+  useEffect(() => {
+    const plan = String(currentPlan || "FREE").toUpperCase();
+
+    if (plan !== "FREE" || isSuperAdmin || !cameraOn || !livekitRoom) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const tick = async () => {
+      if (cancelled) return;
+
+      const viewerCount = Number(livekitRoom?.remoteParticipants?.size || 0);
+      const ok = await debitFreeLiveTokens(15, viewerCount, Boolean(screenOn));
+
+      if (!ok) {
+        setCameraOn(false);
+        setScreenOn(false);
+        setStatus("Free AGV Live Tokens exhausted. Upgrade to continue broadcasting.");
+      }
+    };
+
+    // First debit happens quickly so the on-screen count visibly moves during testing.
+    const firstTick = setTimeout(tick, 5000);
+    const timerId = setInterval(tick, 15000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(firstTick);
+      clearInterval(timerId);
+    };
+  }, [currentPlan, isSuperAdmin, cameraOn, screenOn, livekitRoom, selectedRoomId, freeTokenSessionId]);
 
   function disconnectFromLiveKit() {
     cleanupLocalTracks();
@@ -3287,6 +3553,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
+                        if (!cloudflareBroadcastAllowed) {
+                          setBroadcastStatus("Cloudflare LiveKit egress is available on paid AGV plans only. Upgrade to Creator, Ministry / Pro, or Convention.");
+                          return;
+                        }
+
+                        // PASS_FREE_TOKENS_INLINE_CLOUDFLARE_GUARD_1E
+                        const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
+                        if (!freeTokenOk) {
+                          setBroadcastWorking(false);
+                          return;
+                        }
+
+                        await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+
                         setBroadcastStatus("Starting AGV LiveKit → Cloudflare broadcast...");
 
                         try {
@@ -3340,7 +3620,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         }
                       }}
                     >
-                      {broadcastWorking ? "Going Live..." : "Go Live to Cloudflare"}
+                      {cloudflareBroadcastAllowed ? (broadcastWorking ? "Going Live..." : "Go Live to Cloudflare") : "Cloudflare Broadcast Locked"}
                     </button>
 
                     <button
@@ -3591,6 +3871,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
+                        if (!cloudflareBroadcastAllowed) {
+                          setBroadcastStatus("Cloudflare bridge broadcast is available on paid AGV plans only. Upgrade to Creator, Ministry / Pro, or Convention.");
+                          return;
+                        }
+
+                        // PASS_FREE_TOKENS_INLINE_BRIDGE_GUARD_1E
+                        const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
+                        if (!freeTokenOk) {
+                          setBroadcastWorking(false);
+                          return;
+                        }
+
+                        await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+
                         setBroadcastStatus("Starting LiveKit → Cloudflare bridge...");
 
                         try {
@@ -3639,7 +3933,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         }
                       }}
                     >
-                      {broadcastWorking ? "Starting Bridge..." : "Start LiveKit Bridge"}
+                      {cloudflareBroadcastAllowed ? (broadcastWorking ? "Starting Bridge..." : "Start LiveKit Bridge") : "Cloudflare Bridge Locked"}
                     </button>
 
                     <button
@@ -3806,6 +4100,31 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       lineHeight: "1.45",
                     }}
                   >
+                    {String(currentPlan || "FREE").toUpperCase() === "FREE" ? (
+                      <div
+                        style={{
+                          marginBottom: "10px",
+                          padding: "10px 12px",
+                          borderRadius: "14px",
+                          border: "1px solid rgba(251,191,36,0.35)",
+                          background: "rgba(251,191,36,0.08)",
+                          color: "#fff",
+                          fontSize: "13px",
+                          lineHeight: "1.45",
+                        }}
+                      >
+                        <strong>AGV Free Live Tokens:</strong>{" "}
+                        {freeTokenWallet?.balance ?? "Loading..."} / 150000
+                        <div style={{ color: "rgba(255,255,255,0.72)", marginTop: "4px" }}>
+                          {freeTokenStatus || "Free live token wallet checking..."}
+                        </div>
+                        {freeLiveTokensExhausted() ? (
+                          <div style={{ color: "#fbbf24", marginTop: "6px", fontWeight: 800 }}>
+                            Upgrade required to continue live broadcasting.
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                     <strong>Status:</strong> {broadcastStatus || "Scale backend ready. Click Scale Status."}
                     <div style={{ color: "rgba(255,255,255,0.68)", marginTop: "4px" }}>
                       {/* PASS_SCALE8C_DUAL_BROADCAST_PATH_HELPER_TEXT */}
