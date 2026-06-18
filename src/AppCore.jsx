@@ -3103,6 +3103,60 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         </div>
       ) : null}
 
+      {/* AGV UNIVERSITY PAL DASHBOARD PRODUCT CARD */}
+      {!isViewerOnly ? (
+        <div
+          style={{
+            margin: "0 18px 12px 18px",
+            padding: "16px",
+            borderRadius: 18,
+            border: universityPalAllowed
+              ? "1px solid rgba(45, 212, 191, 0.40)"
+              : "1px solid rgba(250, 204, 21, 0.36)",
+            background: universityPalAllowed
+              ? "linear-gradient(135deg, rgba(13, 148, 136, 0.22), rgba(15, 23, 42, 0.94))"
+              : "linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(15, 23, 42, 0.94))",
+            boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
+            display: "flex",
+            gap: 14,
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={{ minWidth: 260, flex: "1 1 360px" }}>
+            <div style={{ fontWeight: 950, color: "#fde68a", fontSize: 16 }}>
+              AGV Education / University Pal
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.86, lineHeight: 1.55, marginTop: 4 }}>
+              Registration, class tracking, certificates, graduation records, and public certificate verification for AGV-powered training programs.
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+              <span style={styles.chip}>Plan: {currentPlanLimits.label}</span>
+              <span style={styles.chip}>
+                {universityPalAllowed ? "University Pal Access: Included" : "University Pal Access: Upgrade Required"}
+              </span>
+              <span style={styles.chip}>Supabase-ready</span>
+              <span style={styles.chip}>Certificate verification</span>
+            </div>
+          </div>
+
+          <button
+            style={universityPalAllowed ? styles.primaryButton : styles.lockedButton || styles.secondaryButton}
+            onClick={
+              universityPalAllowed
+                ? openAgvUniversityPal
+                : () =>
+                    setStatus(
+                      "AGV University Pal is included with Creator, Ministry / Pro, and Convention plans. Upgrade to unlock registration, certificates, and verification tools."
+                    )
+            }
+          >
+            {universityPalAllowed ? "Open AGV University Pal" : "University Pal — Upgrade Required"}
+          </button>
+        </div>
+      ) : null}
+
       <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
@@ -3857,24 +3911,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 <button style={styles.secondaryButton} onClick={() => window.open("https://drive.google.com", "_blank")}>
                   Open Google Drive
                 </button>
-
-                {/* AGV UNIVERSITY PAL CLEAN REACT LAUNCHER */}
-                {universityPalAllowed ? (
-                  <button style={styles.secondaryButton} onClick={openAgvUniversityPal}>
-                    Open AGV University Pal
-                  </button>
-                ) : (
-                  <button
-                    style={styles.lockedButton || styles.secondaryButton}
-                    onClick={() =>
-                      setStatus(
-                        "AGV University Pal is a paid-plan education add-on. Upgrade to Creator, Ministry / Pro, or Convention to unlock it."
-                      )
-                    }
-                  >
-                    University Pal — Upgrade Required
-                  </button>
-                )}
               </div>
             ) : (
               <div style={styles.stageControls}>
