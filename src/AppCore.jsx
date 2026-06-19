@@ -368,6 +368,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   });
   const [eventEstimateResult, setEventEstimateResult] = useState(null);
   const [eventEstimateWorking, setEventEstimateWorking] = useState(false);
+  // PASS_BROADCAST_PACK_BUTTON_1A
+  // AGV CLIENT — Broadcast Credit Pack top-up button state.
+  const [broadcastPackWorking, setBroadcastPackWorking] = useState(false);
 
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E
   // AGV CLIENT — Free-tier live token wallet display state.
@@ -2132,6 +2135,59 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
 
+  // PASS_BROADCAST_PACK_BUTTON_1A
+  // AGV CLIENT — Add recommended Broadcast Credit Pack through SERVER 8794.
+  async function addRecommendedBroadcastPack() {
+    const pack = eventEstimateResult?.recommendedBroadcastPack;
+    const shortage = Number(eventEstimateResult?.shortage?.broadcastCredits || 0);
+
+    if (!pack?.id || pack.id === "custom") {
+      setBroadcastStatus("No standard Broadcast Pack is available for this event. Use a custom quote.");
+      return;
+    }
+
+    if (shortage <= 0) {
+      setBroadcastStatus("No Broadcast Pack is needed. This event already has enough credits.");
+      return;
+    }
+
+    setBroadcastPackWorking(true);
+    setBroadcastStatus("Adding " + pack.name + " to AGV Broadcast Credits...");
+
+    try {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/usage/add-broadcast-pack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: agvFreeTokenUserId(),
+          plan: String(currentPlan || "FREE").toUpperCase(),
+          packId: pack.id,
+        }),
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok || !data?.ok) {
+        throw new Error(data?.message || data?.error || "Broadcast Pack could not be added.");
+      }
+
+      setBroadcastStatus(
+        (data.pack?.name || pack.name) +
+          " added. Broadcast Credits available: " +
+          Number(data.wallet?.broadcastCreditsBalance || 0).toLocaleString()
+      );
+
+      await estimateAgvEventUsage();
+
+      return data;
+    } catch (error) {
+      setBroadcastStatus("Broadcast Pack add error: " + (error?.message || String(error)));
+      return null;
+    } finally {
+      setBroadcastPackWorking(false);
+    }
+  }
+
   // PASS_EVENT_ESTIMATE_GATE_UI_1C
   // AGV CLIENT — block visible Cloudflare start when credits are short.
   async function ensureBroadcastCreditsBeforeCloudflare() {
@@ -3805,6 +3861,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                                 : ""}
                             </strong>
                           </div>
+
+                          {Number(eventEstimateResult.shortage?.broadcastCredits || 0) > 0 &&
+                          eventEstimateResult.recommendedBroadcastPack?.id &&
+                          eventEstimateResult.recommendedBroadcastPack?.id !== "custom" ? (
+                            <button
+                              style={{ ...styles.primaryButton, marginTop: 10 }}
+                              disabled={broadcastPackWorking || eventEstimateWorking || broadcastWorking}
+                              onClick={addRecommendedBroadcastPack}
+                            >
+                              {broadcastPackWorking
+                                ? "Adding Broadcast Pack..."
+                                : "Add Recommended Broadcast Pack"}
+                            </button>
+                          ) : null}
                         </div>
                       ) : null}
                     </div>
