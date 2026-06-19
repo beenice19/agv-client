@@ -2135,8 +2135,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
 
-  // PASS_BROADCAST_PACK_BUTTON_1A
-  // AGV CLIENT — Add recommended Broadcast Credit Pack through SERVER 8794.
+  // PASS_STRIPE_BROADCAST_PACK_CLIENT_1A
+  // AGV CLIENT — Create Stripe Checkout session for the recommended Broadcast Pack.
   async function addRecommendedBroadcastPack() {
     const pack = eventEstimateResult?.recommendedBroadcastPack;
     const shortage = Number(eventEstimateResult?.shortage?.broadcastCredits || 0);
@@ -2152,10 +2152,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     setBroadcastPackWorking(true);
-    setBroadcastStatus("Adding " + pack.name + " to AGV Broadcast Credits...");
+    setBroadcastStatus("Opening Stripe Checkout for " + pack.name + "...");
 
     try {
-      const response = await fetch(FREE_TOKEN_API_BASE + "/api/usage/add-broadcast-pack", {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/usage/create-broadcast-pack-checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2167,21 +2167,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || !data?.ok) {
-        throw new Error(data?.message || data?.error || "Broadcast Pack could not be added.");
+      if (!response.ok || !data?.ok || !data?.checkoutUrl) {
+        throw new Error(data?.message || data?.error || "Stripe Checkout could not be created.");
       }
 
-      setBroadcastStatus(
-        (data.pack?.name || pack.name) +
-          " added. Broadcast Credits available: " +
-          Number(data.wallet?.broadcastCreditsBalance || 0).toLocaleString()
-      );
+      setBroadcastStatus("Stripe Checkout created for " + (data.pack?.name || pack.name) + ". Redirecting...");
 
-      await estimateAgvEventUsage();
+      window.location.href = data.checkoutUrl;
 
       return data;
     } catch (error) {
-      setBroadcastStatus("Broadcast Pack add error: " + (error?.message || String(error)));
+      setBroadcastStatus("Stripe Checkout error: " + (error?.message || String(error)));
       return null;
     } finally {
       setBroadcastPackWorking(false);
@@ -3871,8 +3867,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               onClick={addRecommendedBroadcastPack}
                             >
                               {broadcastPackWorking
-                                ? "Adding Broadcast Pack..."
-                                : "Add Recommended Broadcast Pack"}
+                                ? "Opening Stripe Checkout..."
+                                : "Buy Recommended Broadcast Pack"}
                             </button>
                           ) : null}
                         </div>
