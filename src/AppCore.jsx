@@ -2080,6 +2080,55 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   // PASS_EVENT_ESTIMATE_GATE_UI_1C
   // AGV CLIENT — call SERVER 8794 to estimate LiveKit + Cloudflare usage.
+  // PASS_CLIENT_ESTIMATE_DISPLAY_RAW_8794_FIX_1A
+  // CLIENT ONLY — SERVER 8794 returns:
+  // estimate.requiredBroadcastCredits, availableBroadcastCredits, shortage, recommendedPack.
+  // The existing screen expects:
+  // eventEstimate.broadcastCreditsNeeded, balances.availableBroadcastCredits,
+  // shortage.broadcastCredits, recommendedBroadcastPack.
+  function normalizeRaw8794Estimate(data) {
+    const estimate = data?.estimate || data?.eventEstimate || {};
+    const wallet = data?.wallet || {};
+
+    const needed = Number(
+      data?.eventEstimate?.broadcastCreditsNeeded ||
+        estimate?.requiredBroadcastCredits ||
+        estimate?.broadcastCreditsNeeded ||
+        0
+    );
+
+    const available = Number(
+      data?.balances?.availableBroadcastCredits ||
+        data?.availableBroadcastCredits ||
+        wallet?.broadcastCreditsBalance ||
+        0
+    );
+
+    const shortage =
+      typeof data?.shortage === "number"
+        ? Number(data.shortage || 0)
+        : Number(data?.shortage?.broadcastCredits || 0);
+
+    const pack = data?.recommendedBroadcastPack || data?.recommendedPack || null;
+
+    return {
+      ...data,
+      eventEstimate: {
+        ...estimate,
+        broadcastCreditsNeeded: needed,
+      },
+      balances: {
+        ...(data?.balances || {}),
+        availableBroadcastCredits: available,
+      },
+      shortage: {
+        ...(typeof data?.shortage === "object" ? data.shortage : {}),
+        broadcastCredits: shortage,
+      },
+      recommendedBroadcastPack: pack,
+    };
+  }
+
   async function estimateAgvEventUsage() {
     setEventEstimateWorking(true);
     setBroadcastStatus("Estimating AGV event usage...");
@@ -2095,7 +2144,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           expectedViewers: Number(eventEstimateInputs.expectedViewers || 0),
           expectedMinutes: Number(eventEstimateInputs.expectedMinutes || 0),
           interactiveParticipants: Number(eventEstimateInputs.interactiveParticipants || 1),
+
+          viewers: Number(eventEstimateInputs.expectedViewers || 0),
+          minutes: Number(eventEstimateInputs.expectedMinutes || 0),
+          eventMinutes: Number(eventEstimateInputs.expectedMinutes || 0),
+          interactivePeople: Number(eventEstimateInputs.interactiveParticipants || 1),
+
           screenShare: Boolean(eventEstimateInputs.screenShare || screenOn),
+          screenShareOn: Boolean(eventEstimateInputs.screenShare || screenOn),
         }),
       });
 
@@ -3822,57 +3878,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         </button>
                       </div>
 
-                      {eventEstimateResult ? (
-                        <div style={{ marginTop: 10, fontSize: 12, color: "#f8fafc" }}>
-                          <div>
-                            Broadcast needed:{" "}
-                            <strong>
-                              {Number(
-                                eventEstimateResult.eventEstimate?.broadcastCreditsNeeded || 0
-                              ).toLocaleString()}
-                            </strong>
-                          </div>
-                          <div>
-                            Broadcast available:{" "}
-                            <strong>
-                              {Number(
-                                eventEstimateResult.balances?.availableBroadcastCredits || 0
-                              ).toLocaleString()}
-                            </strong>
-                          </div>
-                          <div>
-                            Shortage:{" "}
-                            <strong>
-                              {Number(
-                                eventEstimateResult.shortage?.broadcastCredits || 0
-                              ).toLocaleString()}
-                            </strong>
-                          </div>
-                          <div style={{ color: "#facc15" }}>
-                            Recommended:{" "}
-                            <strong>
-                              {eventEstimateResult.recommendedBroadcastPack?.name || "None"}
-                              {eventEstimateResult.recommendedBroadcastPack?.priceUsd
-                                ? " — $" + eventEstimateResult.recommendedBroadcastPack.priceUsd
-                                : ""}
-                            </strong>
-                          </div>
-
-                          {Number(eventEstimateResult.shortage?.broadcastCredits || 0) > 0 &&
-                          eventEstimateResult.recommendedBroadcastPack?.id &&
-                          eventEstimateResult.recommendedBroadcastPack?.id !== "custom" ? (
-                            <button
-                              style={{ ...styles.primaryButton, marginTop: 10 }}
-                              disabled={broadcastPackWorking || eventEstimateWorking || broadcastWorking}
-                              onClick={addRecommendedBroadcastPack}
-                            >
-                              {broadcastPackWorking
-                                ? "Opening Stripe Checkout..."
-                                : "Buy Recommended Broadcast Pack"}
-                            </button>
-                          ) : null}
-                        </div>
-                      ) : null}
+                      {/* PASS_CLIENT_HARD_REMOVE_BAD_BROADCAST_ESTIMATE_DISPLAY_1B */}
                     </div>
 
                     {/* PASS_SCALE10B_ONE_BUTTON_CLOUDFLARE_BROADCAST_UI */}
