@@ -1897,7 +1897,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       const response = await fetch(
         FREE_TOKEN_API_BASE +
-          "/api/free-tokens/wallet?userId=" +
+          "/api/usage/wallet?userId=" +
           encodeURIComponent(userId) +
           "&plan=" +
           encodeURIComponent(plan)
@@ -1905,26 +1905,43 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || !data?.ok) {
-        setFreeTokenStatus(data?.message || data?.error || "Free token wallet unavailable.");
+      if (!response.ok || !data?.ok || !data?.wallet) {
+        setFreeTokenStatus(data?.message || data?.error || "AGV Plan Wallet unavailable.");
         return null;
       }
 
-      setFreeTokenWallet(data.wallet || null);
+      const wallet = data.wallet;
+
+      setFreeTokenWallet(wallet);
+
+      const liveTokensBalance = Number(wallet.liveTokensBalance ?? wallet.balance ?? 0);
+      const monthlyLiveTokens = Number(wallet.monthlyLiveTokens ?? 0);
+      const broadcastCreditsBalance = Number(wallet.broadcastCreditsBalance ?? 0);
 
       if (plan === "FREE") {
         setFreeTokenStatus(
-          data?.canStartBroadcast
-            ? "Free live tokens available."
+          liveTokensBalance > 0
+            ? "Free live tokens available. Remaining: " +
+                liveTokensBalance.toLocaleString() +
+                " / " +
+                monthlyLiveTokens.toLocaleString()
             : "Free live tokens exhausted. Upgrade to continue broadcasting."
         );
       } else {
-        setFreeTokenStatus("Paid plan: token debit bypassed.");
+        setFreeTokenStatus(
+          plan +
+            " wallet loaded. Live Tokens: " +
+            liveTokensBalance.toLocaleString() +
+            " / " +
+            monthlyLiveTokens.toLocaleString() +
+            " | Broadcast Credits: " +
+            broadcastCreditsBalance.toLocaleString()
+        );
       }
 
-      return data.wallet || null;
-    } catch (error) {
-      setFreeTokenStatus("Free token wallet error: " + (error?.message || String(error)));
+      return wallet;
+    } catch (err) {
+      setFreeTokenStatus("AGV Plan Wallet error: " + (err?.message || String(err)));
       return null;
     }
   }
@@ -1932,7 +1949,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   function freeLiveTokensExhausted() {
     const plan = String(currentPlan || "FREE").toUpperCase();
     if (plan !== "FREE" || isSuperAdmin) return false;
-    return Number(freeTokenWallet?.balance || 0) <= 0;
+    return Number(freeTokenWallet?.liveTokensBalance ?? freeTokenWallet?.balance ?? 0) <= 0;
   }
 
   async function ensureFreeTokensBeforeBroadcast() {
@@ -1943,7 +1960,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     const wallet = await refreshFreeTokenWallet(plan);
-    const balance = Number(wallet?.balance || 0);
+    const balance = Number(wallet?.liveTokensBalance ?? wallet?.balance ?? 0);
 
     if (balance <= 0) {
       setBroadcastStatus("Free AGV Live Tokens are exhausted. Upgrade to continue broadcasting.");
@@ -3550,9 +3567,84 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               <div style={styles.planMiniText}>
                 {currentPlanLimits.maxRooms} rooms • {currentPlanLimits.maxViewers} viewers
               </div>
-              <button style={styles.secondaryButtonFull} onClick={syncPlanFromSubscriptionServer}>
+              <button
+                style={styles.secondaryButtonFull}
+                onClick={() => {
+                  syncPlanFromSubscriptionServer();
+                  refreshFreeTokenWallet(currentPlan);
+                }}
+              >
                 Refresh Plan Sync
               </button>
+
+              {/* PASS_CLIENT_CORRECT_VISIBLE_PLAN_WALLET_1A */}
+              <div
+                style={{
+                  marginTop: 12,
+                  padding: "10px 12px",
+                  borderRadius: 14,
+                  border: "1px solid rgba(251,191,36,0.38)",
+                  background: "rgba(251,191,36,0.10)",
+                  color: "#f8fafc",
+                  fontSize: 12,
+                  lineHeight: 1.45,
+                }}
+              >
+                <div style={{ color: "#facc15", fontWeight: 950, marginBottom: 5 }}>
+                  AGV Plan Wallet
+                </div>
+
+                <div>
+                  Plan: <strong>{currentPlanLimits.label}</strong>
+                </div>
+
+                <div>
+                  Live Tokens:{" "}
+                  <strong>
+                    {freeTokenWallet
+                      ? Number(
+                          freeTokenWallet.liveTokensBalance ??
+                            freeTokenWallet.balance ??
+                            0
+                        ).toLocaleString()
+                      : "Loading..."}{" "}
+                    /{" "}
+                    {freeTokenWallet
+                      ? Number(
+                          freeTokenWallet.monthlyLiveTokens ??
+                            (String(currentPlan || "FREE").toUpperCase() === "FREE"
+                              ? 150000
+                              : String(currentPlan || "FREE").toUpperCase() === "CREATOR"
+                                ? 500000
+                                : String(currentPlan || "FREE").toUpperCase() === "CONVENTION"
+                                  ? 10000000
+                                  : 2500000)
+                        ).toLocaleString()
+                      : Number(
+                          String(currentPlan || "FREE").toUpperCase() === "FREE"
+                            ? 150000
+                            : String(currentPlan || "FREE").toUpperCase() === "CREATOR"
+                              ? 500000
+                              : String(currentPlan || "FREE").toUpperCase() === "CONVENTION"
+                                ? 10000000
+                                : 2500000
+                        ).toLocaleString()}
+                  </strong>
+                </div>
+
+                <div>
+                  Broadcast Credits:{" "}
+                  <strong>
+                    {freeTokenWallet
+                      ? Number(freeTokenWallet.broadcastCreditsBalance ?? 0).toLocaleString()
+                      : "Loading..."}
+                  </strong>
+                </div>
+
+                <div style={{ color: "rgba(255,255,255,0.72)", marginTop: 5 }}>
+                  {freeTokenStatus || "Wallet loading from SERVER 8794..."}
+                </div>
+              </div>
             </div>
 
             <div style={styles.controlBox}>
