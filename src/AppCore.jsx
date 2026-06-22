@@ -43,7 +43,7 @@ const ROOM_API_BASE =
   "http://127.0.0.1:8787";
 
 // PASS_FREE_TOKENS_CLIENT_PANEL_1E
-// AGV CLIENT Ã¢â‚¬â€ Free-tier live token wallet API.
+// AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Free-tier live token wallet API.
 const FREE_TOKEN_API_BASE =
   import.meta.env.VITE_AGV_FREE_TOKEN_API_URL || "http://127.0.0.1:8794";
 
@@ -360,7 +360,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [broadcastLastEgressId, setBroadcastLastEgressId] = useState("");
 
   // PASS_EVENT_ESTIMATE_GATE_UI_1C
-  // AGV CLIENT Ã¢â‚¬â€ Cloudflare event estimate gate state.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Cloudflare event estimate gate state.
   const [eventEstimateInputs, setEventEstimateInputs] = useState({
     expectedViewers: "500",
     expectedMinutes: "90",
@@ -370,11 +370,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [eventEstimateResult, setEventEstimateResult] = useState(null);
   const [eventEstimateWorking, setEventEstimateWorking] = useState(false);
   // PASS_BROADCAST_PACK_BUTTON_1A
-  // AGV CLIENT Ã¢â‚¬â€ Broadcast Credit Pack top-up button state.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Broadcast Credit Pack top-up button state.
   const [broadcastPackWorking, setBroadcastPackWorking] = useState(false);
 
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E
-  // AGV CLIENT Ã¢â‚¬â€ Free-tier live token wallet display state.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Free-tier live token wallet display state.
   const [freeTokenWallet, setFreeTokenWallet] = useState(null);
   const [freeTokenStatus, setFreeTokenStatus] = useState("");
   const [freeTokenSessionId, setFreeTokenSessionId] = useState("");
@@ -1196,7 +1196,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_SCALE8_CLOUDFLARE_STREAM_PLAYER_EMBED
-  // CLIENT Ã¢â‚¬â€ Prefer Cloudflare Stream iframe player when AGV only has a Cloudflare HLS URL.
+  // CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Prefer Cloudflare Stream iframe player when AGV only has a Cloudflare HLS URL.
   function agvCloudflareEmbedFromHlsUrl(url) {
     const raw = url == null ? "" : String(url).trim();
 
@@ -1223,7 +1223,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   function showAgvBroadcastPlayer(state) {
     // PASS_BCAST6_CLOUDFLARE_VIEWER_PLAYER_FIX
-    // CLIENT Ã¢â‚¬â€ Do not treat a Cloudflare .m3u8 HLS manifest as an iframe.
+    // CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Do not treat a Cloudflare .m3u8 HLS manifest as an iframe.
     // If the server gives AGV only HLS, convert it into the Cloudflare Stream iframe player.
     const rawEmbedUrl = state?.embedUrl ? String(state.embedUrl).trim() : "";
     const rawPlaybackUrl =
@@ -1295,7 +1295,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
     
 
-    // CLIENT Ã¢â‚¬â€ duplicate playback mode declarations removed.
+    // CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â duplicate playback mode declarations removed.
 
     
 
@@ -1303,7 +1303,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
     if (isHls) {
       // PASS_SCALE6_BROADCAST_WAITING_SCREEN
-      // CLIENT Ã¢â‚¬â€ professional waiting screen while Cloudflare HLS is not playing yet.
+      // CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â professional waiting screen while Cloudflare HLS is not playing yet.
       const frame = document.createElement("div");
       frame.style.position = "relative";
       frame.style.width = "100%";
@@ -1876,7 +1876,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E
-  // AGV CLIENT Ã¢â‚¬â€ Free-tier live token wallet helpers.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Free-tier live token wallet helpers.
   function agvFreeTokenUserId() {
     try {
       return (
@@ -1954,7 +1954,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_SAFE_WALLET_RESERVE_2B
-  // CLIENT 5175 â€” Reserve one live-session block from SERVER 8794 before Go Live starts.
+  // CLIENT 5175 Ã¢â‚¬â€ Reserve one live-session block from SERVER 8794 before Go Live starts.
   // This is NOT heartbeat debit. This is a one-time pre-live reservation.
   async function reserveAgvLiveSessionBeforeCamera(roomId = selectedRoomId || "main-hall") {
     try {
@@ -2110,7 +2110,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
   // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_DEBIT_HELPER
-  // AGV CLIENT Ã¢â‚¬â€ debit Free tokens while the Free user is live.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â debit Free tokens while the Free user is live.
   async function debitFreeLiveTokens(seconds = 60, viewerCount = 0, screenShare = false) {
     const plan = String(currentPlan || "FREE").toUpperCase();
 
@@ -2156,7 +2156,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E_AUTOLOAD
-  // AGV CLIENT Ã¢â‚¬â€ load Free token balance.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â load Free token balance.
   useEffect(() => {
     refreshFreeTokenWallet(currentPlan);
   }, [currentPlan]);
@@ -2165,9 +2165,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
 
   // PASS_EVENT_ESTIMATE_GATE_UI_1C
-  // AGV CLIENT Ã¢â‚¬â€ call SERVER 8794 to estimate LiveKit + Cloudflare usage.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â call SERVER 8794 to estimate LiveKit + Cloudflare usage.
   // PASS_CLIENT_ESTIMATE_DISPLAY_RAW_8794_FIX_1A
-  // CLIENT ONLY Ã¢â‚¬â€ SERVER 8794 returns:
+  // CLIENT ONLY ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â SERVER 8794 returns:
   // estimate.requiredBroadcastCredits, availableBroadcastCredits, shortage, recommendedPack.
   // The existing screen expects:
   // eventEstimate.broadcastCreditsNeeded, balances.availableBroadcastCredits,
@@ -2264,7 +2264,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               shortage.toLocaleString() +
               " | Recommended: " +
               (pack?.name || "Custom Broadcast Pack") +
-              (pack?.priceUsd ? " Ã¢â‚¬â€ $" + pack.priceUsd : "")
+              (pack?.priceUsd ? " ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â $" + pack.priceUsd : "")
           : "Event estimate approved. Broadcast Credits are available."
       );
 
@@ -2278,7 +2278,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_STRIPE_BROADCAST_PACK_CLIENT_1A
-  // AGV CLIENT Ã¢â‚¬â€ Create Stripe Checkout session for the recommended Broadcast Pack.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Create Stripe Checkout session for the recommended Broadcast Pack.
   async function addRecommendedBroadcastPack() {
     const pack = eventEstimateResult?.recommendedBroadcastPack;
     const shortage = Number(eventEstimateResult?.shortage?.broadcastCredits || 0);
@@ -2327,7 +2327,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_EVENT_ESTIMATE_GATE_UI_1C
-  // AGV CLIENT Ã¢â‚¬â€ block visible Cloudflare start when credits are short.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â block visible Cloudflare start when credits are short.
   async function ensureBroadcastCreditsBeforeCloudflare() {
     const estimate = await estimateAgvEventUsage();
 
@@ -2349,7 +2349,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           shortage.toLocaleString() +
           " more AGV Broadcast Credits. Recommended: " +
           (pack?.name || "Custom Broadcast Pack") +
-          (pack?.priceUsd ? " Ã¢â‚¬â€ $" + pack.priceUsd : "")
+          (pack?.priceUsd ? " ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â $" + pack.priceUsd : "")
       );
 
       return false;
@@ -2407,7 +2407,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_TIMER
-  // AGV CLIENT Ã¢â‚¬â€ while Free user is live, debit one minute of host stream time every 60 seconds.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â while Free user is live, debit one minute of host stream time every 60 seconds.
   useEffect(() => {
     const plan = String(currentPlan || "FREE").toUpperCase();
 
@@ -2485,7 +2485,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   // PASS_FREE_LIVEKIT_CAMERA_TOKEN_HEARTBEAT_1I
   // PASS_CLIENT_FREE_TOKEN_SCREENSHARE_HEARTBEAT_1A
-  // AGV CLIENT Ã¢â‚¬â€ debit Free tokens while host camera is actually live in LiveKit.
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â debit Free tokens while host camera is actually live in LiveKit.
   useEffect(() => {
     const plan = String(currentPlan || "FREE").toUpperCase();
     const freeLiveActivityOn = Boolean(cameraOn || screenOn || broadcastLive);
@@ -3411,7 +3411,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   lineHeight: 1.5,
                 }}
               >
-                Powered by Avant Global Vision Ã¢â‚¬â€ a digital stage, teaching, convention, and broadcast platform.
+                Powered by Avant Global Vision ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â a digital stage, teaching, convention, and broadcast platform.
               </div>
             </aside>
           </div>
@@ -3573,7 +3573,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         </div>
       ) : null}
 
-      {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN Ã¢â‚¬â€ UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
+      {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
 
       {/* AGV UNIVERSITY PAL DASHBOARD PRODUCT CARD */}
       {!isViewerOnly && universityPalAllowed ? (
@@ -3637,7 +3637,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             <div style={styles.planCardMini}>
               <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
               <div style={styles.planMiniText}>
-                {currentPlanLimits.maxRooms} rooms Ã¢â‚¬Â¢ {currentPlanLimits.maxViewers} viewers
+                {currentPlanLimits.maxRooms} rooms ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {currentPlanLimits.maxViewers} viewers
               </div>
               <button
                 style={styles.secondaryButtonFull}
@@ -3723,7 +3723,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               <div style={styles.controlTitle}>Create Host-Owned Room</div>
 
               <div style={styles.helperText}>
-                Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used Ã¢â‚¬Â¢ Plan: {currentPlanLimits.label}
+                Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Plan: {currentPlanLimits.label}
               </div>
 
               {!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1 ? (
@@ -3789,7 +3789,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 >
                   <div style={styles.roomName}>{room.name}</div>
                   <div style={styles.roomMeta}>
-                    {room.category} Ã¢â‚¬Â¢ {room.isPrivate ? "Private" : "Public"} Ã¢â‚¬Â¢{" "}
+                    {room.category} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {room.isPrivate ? "Private" : "Public"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢{" "}
                     {room.isLocked ? "Locked" : "Open"}
                   </div>
                   {room.ownerId === currentOwnerId ? (
@@ -3808,18 +3808,18 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             <div>
               <div style={styles.roomHeadline}>{selectedRoom?.name || "Room"}</div>
               <div style={styles.identityLine}>
-                Mode: {hostModeLabel} Ã¢â‚¬Â¢ LiveKit Room: {selectedRoomId}
+                Mode: {hostModeLabel} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ LiveKit Room: {selectedRoomId}
               </div>
 
               {!isViewerOnly ? (
                 <>
                   <div style={styles.identityLine}>Owner ID: {currentOwnerId}</div>
                   <div style={styles.identityLine}>
-                    Active Plan: {currentPlanLimits.label} Ã¢â‚¬Â¢ Rooms: {currentPlanLimits.maxRooms} Ã¢â‚¬Â¢ Viewers:{" "}
+                    Active Plan: {currentPlanLimits.label} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Rooms: {currentPlanLimits.maxRooms} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Viewers:{" "}
                     {currentPlanLimits.maxViewers}
                   </div>
                   <div style={styles.identityLine}>
-                    Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} Ã¢â‚¬Â¢{" "}
+                    Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢{" "}
                     {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
                   </div>
                 </>
@@ -4073,7 +4073,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           return;
                         }
 
-                        setBroadcastStatus("Starting AGV LiveKit Ã¢â€ â€™ Cloudflare broadcast...");
+                        setBroadcastStatus("Starting AGV LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/start`, {
@@ -4083,7 +4083,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               roomId: selectedRoomId || "main-hall",
                               title: "AGV LiveKit to Cloudflare Teaching Broadcast",
                               // PASS_BCAST7B_CLIENT_TEACHING_SCREENSHARE_LAYOUT
-                              // CLIENT SECOND Ã¢â‚¬â€ request screen-share-first teaching layout for Cloudflare viewers.
+                              // CLIENT SECOND ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â request screen-share-first teaching layout for Cloudflare viewers.
                               layout: "screen-share",
                               broadcastLayout: "teaching-screen-share",
                               message: "AGV is live through LiveKit egress to Cloudflare Stream. Teaching screen-share layout is enabled.",
@@ -4102,13 +4102,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                                 " | Active Video: " +
                                 (preflight.activeVideoTrackCount ?? "unknown")
                               : "";
-                            throw new Error((data?.error || "LiveKit Ã¢â€ â€™ Cloudflare broadcast start failed.") + detail);
+                            throw new Error((data?.error || "LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast start failed.") + detail);
                           }
 
                           setBroadcastLive(true);
 
                           setBroadcastStatus(
-                            "LiveKit Ã¢â€ â€™ Cloudflare Live | Player: " +
+                            "LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare Live | Player: " +
                               (data.playback?.player || "Cloudflare iframe") +
                               " | Egress: " +
                               (data.egressId || data.state?.egressId || data.egress?.egressId || "started") +
@@ -4120,7 +4120,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.state?.viewerMode || "broadcast")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit Ã¢â€ â€™ Cloudflare broadcast start error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast start error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4134,7 +4134,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Ending AGV LiveKit Ã¢â€ â€™ Cloudflare broadcast...");
+                        setBroadcastStatus("Ending AGV LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/stop`, {
@@ -4149,13 +4149,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
-                            throw new Error(data?.error || "LiveKit Ã¢â€ â€™ Cloudflare broadcast stop failed.");
+                            throw new Error(data?.error || "LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast stop failed.");
                           }
 
                           setBroadcastLive(false);
 
                           setBroadcastStatus(
-                            "LiveKit Ã¢â€ â€™ Cloudflare Ended | Viewer Mode: " +
+                            "LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare Ended | Viewer Mode: " +
                               (data.state?.viewerMode || "livekit") +
                               " | Source: " +
                               (data.source?.status || "standby") +
@@ -4163,7 +4163,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.state?.egressStatus || "state-reset")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit Ã¢â€ â€™ Cloudflare broadcast stop error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast stop error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4177,14 +4177,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Checking AGV LiveKit Ã¢â€ â€™ Cloudflare broadcast status...");
+                        setBroadcastStatus("Checking AGV LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast status...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/health`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
-                            throw new Error(data?.error || "LiveKit Ã¢â€ â€™ Cloudflare broadcast status failed.");
+                            throw new Error(data?.error || "LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast status failed.");
                           }
 
                           setBroadcastLive(data.viewerMode === "broadcast" || data.broadcastStatus === "live");
@@ -4206,7 +4206,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.egress?.active ? "active" : data.egress?.found ? "found/not active" : "none")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit Ã¢â€ â€™ Cloudflare broadcast status error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare broadcast status error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4336,7 +4336,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Checking LiveKit Ã¢â€ â€™ Cloudflare bridge health...");
+                        setBroadcastStatus("Checking LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare bridge health...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/health`);
@@ -4391,7 +4391,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                         await startFreeTokenLiveSession(selectedRoomId || "main-hall");
 
-                        setBroadcastStatus("Starting LiveKit Ã¢â€ â€™ Cloudflare bridge...");
+                        setBroadcastStatus("Starting LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare bridge...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/start`, {
@@ -4447,7 +4447,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Stopping LiveKit Ã¢â€ â€™ Cloudflare bridge...");
+                        setBroadcastStatus("Stopping LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare bridge...");
 
                         try {
                           let currentEgressId = "";
@@ -4634,7 +4634,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <strong>Status:</strong> {broadcastStatus || "Scale backend ready. Click Scale Status."}
                     <div style={{ color: "rgba(255,255,255,0.68)", marginTop: "4px" }}>
                       {/* PASS_SCALE8C_DUAL_BROADCAST_PATH_HELPER_TEXT */}
-                      Scale paths: Supabase registry Ã¢â€ â€™ Cloudflare delivery Ã¢â€ â€™ AGV viewer. Direct Cloudflare source and LiveKit Ã¢â€ â€™ Cloudflare bridge are supported.
+                      Scale paths: Supabase registry ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare delivery ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ AGV viewer. Direct Cloudflare source and LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare bridge are supported.
                     </div>
                   </div>
                 </div>
@@ -4767,7 +4767,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   selectedRoomMessages.map((message) => (
                     <div key={message.id} style={styles.chatMessage}>
                       <div style={styles.chatMeta}>
-                        {message.sender} Ã¢â‚¬Â¢ {message.time}
+                        {message.sender} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {message.time}
                       </div>
                       <div>{message.text}</div>
                     </div>
@@ -4823,7 +4823,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           {selectedPanel === "controls" && !isViewerOnly ? (
             <div style={styles.card}>
                             {/* PASS31U_V2_CONTROL_CENTER_SECTIONS */}
-              <div style={styles.panelTitle}>Control Center Ã¢â‚¬â€ Host Tools</div>
+              <div style={styles.panelTitle}>Control Center ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Host Tools</div>
               <div style={styles.helperText}>
                 Organized host tools for plan authority, tickets, revenue, events, files, invites, and moderation.
               </div>
@@ -4843,7 +4843,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   cursor: "pointer",
                   boxShadow: "0 14px 34px rgba(0,0,0,0.25)",
                 }}
-                onClick={() => alert("AGV Vendor Financial Docking Station modal is the next pass.")}
+                onClick={() => setVendorFinanceDockOpen(true)} // PASS_VENDOR_FINANCE_DOCK_3B
               >
                 Open Vendor Financial Dock
               </button>
@@ -4870,13 +4870,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
                 <div style={styles.controlTitle}>Plan Authority</div>
                 <div style={styles.helperText}>
-                  Current Plan: {currentPlanLimits.label} Ã¢â‚¬Â¢ Host Mode: {hostModeLabel}
+                  Current Plan: {currentPlanLimits.label} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Host Mode: {hostModeLabel}
                 </div>
                 <div style={styles.helperText}>
-                  Room Limit: {currentPlanLimits.maxRooms} Ã¢â‚¬Â¢ Viewer Limit: {currentPlanLimits.maxViewers}
+                  Room Limit: {currentPlanLimits.maxRooms} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Viewer Limit: {currentPlanLimits.maxViewers}
                 </div>
                 <div style={styles.helperText}>
-                  Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} Ã¢â‚¬Â¢ Ticket-Only Rooms:{" "}
+                  Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Ticket-Only Rooms:{" "}
                   {currentPlanLimits.allowTicketOnly ? "Allowed" : "Upgrade required"}
                 </div>
                 
@@ -5006,7 +5006,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       }}
                       onClick={acceptHostVendorAgreement}
                     >
-                      I Agree Ã¢â‚¬â€ Unlock Ticketed Event Tools
+                      I Agree ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Unlock Ticketed Event Tools
                     </button>
                   </div>
                 ) : null}
@@ -5042,7 +5042,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       <div style={styles.eventOwnerCard}>
                         <div style={styles.eventOwnerTitle}>Gateway Connectivity</div>
                         <div style={styles.helperText}>
-                          Status: Manual reporting mode Ã¢â‚¬Â¢ Future gateway connection: Ready for SERVER integration
+                          Status: Manual reporting mode ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Future gateway connection: Ready for SERVER integration
                         </div>
                         <div style={styles.helperText}>
                           Current reported gateway: {revenueGateway || revenueReports?.[0]?.gateway || "Not connected / not reported"}
@@ -5053,7 +5053,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                             setStatus("Vendor gateway onboarding shell is ready. SERVER Stripe Connect foundation is the next required step.")
                           }
                         >
-                          Connect Payment Gateway Ã¢â‚¬â€ Coming Soon
+                          Connect Payment Gateway ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Coming Soon
                         </button>
                       </div>
 
@@ -5190,7 +5190,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       <div style={styles.ownerSyncBox}>
                         <div style={styles.ownerSyncTitle}>AGV 7% Ticket Platform Fee Preview</div>
                         <div style={styles.helperText}>
-                          Gross: {formatMoney(revenueGross)} Ã¢â‚¬Â¢ Refunds: {formatMoney(revenueRefunds)}
+                          Gross: {formatMoney(revenueGross)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Refunds: {formatMoney(revenueRefunds)}
                         </div>
                         <div style={styles.helperText}>
                           Net collected revenue: {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)))}
@@ -5221,17 +5221,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         {revenueReports.slice(0, 5).map((report) => (
                           <div key={report.id} style={styles.eventOwnerCard}>
                             <div style={styles.eventOwnerTitle}>
-                              {report.eventName} Ã¢â‚¬Â¢ {report.status || "Reported"}
+                              {report.eventName} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {report.status || "Reported"}
                             </div>
                             <div style={styles.helperText}>
-                              Room: {report.roomId || "Not set"} Ã¢â‚¬Â¢ Gateway: {report.gateway || "Not set"}
+                              Room: {report.roomId || "Not set"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Gateway: {report.gateway || "Not set"}
                             </div>
                             <div style={styles.helperText}>
-                              Tickets: {report.ticketsSold || 0} Ã¢â‚¬Â¢ Net: {formatMoney(report.netRevenue)} Ã¢â‚¬Â¢ AGV 7% Platform Fee:{" "}
+                              Tickets: {report.ticketsSold || 0} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Net: {formatMoney(report.netRevenue)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ AGV 7% Platform Fee:{" "}
                               {formatMoney(report.agvFee)}
                             </div>
                             <div style={styles.helperText}>
-                              Host: {report.ownerName || "AGV Host"} Ã¢â‚¬Â¢ {report.organization || "Organization not set"}
+                              Host: {report.ownerName || "AGV Host"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {report.organization || "Organization not set"}
                             </div>
                           </div>
                         ))}
@@ -5282,29 +5282,29 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           {revenueReports.map((report) => (
                             <div key={report.id} style={styles.eventOwnerCard}>
                               <div style={styles.eventOwnerTitle}>
-                                {report.eventName} Ã¢â‚¬Â¢ {report.status || "Reported"}
+                                {report.eventName} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {report.status || "Reported"}
                               </div>
 
                               <div style={styles.helperText}>
-                                Host: {report.ownerName || "AGV Host"} Ã¢â‚¬Â¢ {report.organization || "Organization not set"}
+                                Host: {report.ownerName || "AGV Host"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ {report.organization || "Organization not set"}
                               </div>
 
                               <div style={styles.helperText}>
-                                Email: {report.ownerEmail || "Not saved"} Ã¢â‚¬Â¢ Plan: {report.plan || "Not saved"}
+                                Email: {report.ownerEmail || "Not saved"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Plan: {report.plan || "Not saved"}
                               </div>
 
                               <div style={styles.helperText}>
-                                Room: {report.roomId || "main-hall"} Ã¢â‚¬Â¢ Date: {report.eventDate || "Not set"} Ã¢â‚¬Â¢ Gateway:{" "}
+                                Room: {report.roomId || "main-hall"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Date: {report.eventDate || "Not set"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Gateway:{" "}
                                 {report.gateway || "Not reported"}
                               </div>
 
                               <div style={styles.helperText}>
-                                Tickets: {report.ticketsSold || 0} Ã¢â‚¬Â¢ Gross: {formatMoney(report.grossRevenue)} Ã¢â‚¬Â¢ Refunds:{" "}
+                                Tickets: {report.ticketsSold || 0} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Gross: {formatMoney(report.grossRevenue)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Refunds:{" "}
                                 {formatMoney(report.refunds)}
                               </div>
 
                               <div style={styles.helperText}>
-                                Net Revenue: {formatMoney(report.netRevenue)} Ã¢â‚¬Â¢ AGV 7% Platform Fee Owed:{" "}
+                                Net Revenue: {formatMoney(report.netRevenue)} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ AGV 7% Platform Fee Owed:{" "}
                                 {formatMoney(report.agvFee)}
                               </div>
 
@@ -5364,7 +5364,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         </div>
                       ) : (
                         <div style={styles.emptyText}>
-                          No revenue reports loaded yet. Click Ã¢â‚¬Å“Load Reports From SERVER 8794.Ã¢â‚¬Â
+                          No revenue reports loaded yet. Click ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œLoad Reports From SERVER 8794.ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â
                         </div>
                       )}
                     </div>
@@ -5457,8 +5457,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         <div style={styles.controlTitle}>{item.title}</div>
 
                         <div style={styles.helperText}>
-                          Room: {item.roomId || "main-hall"} Ã¢â‚¬Â¢ Date: {item.eventDate || "Not set"} Ã¢â‚¬Â¢ Time:{" "}
-                          {item.startTime || "Not set"} Ã¢â‚¬Â¢ Price: {item.ticketPrice || "Not set"}
+                          Room: {item.roomId || "main-hall"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Date: {item.eventDate || "Not set"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Time:{" "}
+                          {item.startTime || "Not set"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Price: {item.ticketPrice || "Not set"}
                         </div>
 
                         <div style={styles.eventOwnerCard}>
@@ -5503,7 +5503,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                             </div>
 
                             <div style={styles.helperText}>
-                              Room: {item.roomId || "main-hall"} Ã¢â‚¬Â¢ Date: {item.eventDate || "Not set"} Ã¢â‚¬Â¢ Time:{" "}
+                              Room: {item.roomId || "main-hall"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Date: {item.eventDate || "Not set"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢ Time:{" "}
                               {item.startTime || "Not set"}
                             </div>
 
@@ -5723,7 +5723,7 @@ const styles = {
 };
 
 // PASS_CLEAN_SCALE1_HIDE_ENGINEERING_BROADCAST_CONTROLS
-// CLIENT Ã¢â‚¬â€ Hide engineering broadcast controls from the visible AGV host panel.
+// CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Hide engineering broadcast controls from the visible AGV host panel.
 // Keeps product controls visible: Go Live to Cloudflare, End Cloudflare Broadcast,
 // screenshot controls, play/camera/screen-share controls, and Google Drive.
 if (typeof window !== "undefined" && !window.__AGV_CLEAN_SCALE1_HIDE_ENGINEERING_CONTROLS__) {
