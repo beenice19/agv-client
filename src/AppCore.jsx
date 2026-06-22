@@ -4827,6 +4827,26 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 Organized host tools for plan authority, tickets, revenue, events, files, invites, and moderation.
               </div>
 
+              {/* PASS_VENDOR_FINANCE_DOCK_2B */}
+              <button
+                style={{
+                  width: "100%",
+                  marginTop: 12,
+                  marginBottom: 12,
+                  border: "1px solid rgba(212,175,55,0.45)",
+                  borderRadius: 16,
+                  padding: "13px 14px",
+                  background: "linear-gradient(135deg, rgba(212,175,55,0.22), rgba(15,23,42,0.92))",
+                  color: "#fde68a",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                  boxShadow: "0 14px 34px rgba(0,0,0,0.25)",
+                }}
+                onClick={() => alert("AGV Vendor Financial Docking Station modal is the next pass.")}
+              >
+                Open Vendor Financial Dock
+              </button>
+
               <div style={styles.controlBox}>
                 
               <div
