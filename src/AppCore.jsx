@@ -2516,11 +2516,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   // PASS_FREE_LIVEKIT_CAMERA_TOKEN_HEARTBEAT_1I
+  // PASS_CLIENT_FREE_TOKEN_SCREENSHARE_HEARTBEAT_1A
   // AGV CLIENT — debit Free tokens while host camera is actually live in LiveKit.
   useEffect(() => {
     const plan = String(currentPlan || "FREE").toUpperCase();
+    const freeLiveActivityOn = Boolean(cameraOn || screenOn || broadcastLive);
 
-    if (plan !== "FREE" || isSuperAdmin || !cameraOn || !livekitRoom) {
+    if (plan !== "FREE" || isSuperAdmin || !freeLiveActivityOn || !livekitRoom) {
       return;
     }
 
@@ -2535,6 +2537,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       if (!ok) {
         setCameraOn(false);
         setScreenOn(false);
+        setBroadcastLive(false);
         setStatus("Free AGV Live Tokens exhausted. Upgrade to continue broadcasting.");
       }
     };
@@ -2548,7 +2551,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       clearTimeout(firstTick);
       clearInterval(timerId);
     };
-  }, [currentPlan, isSuperAdmin, cameraOn, screenOn, livekitRoom, selectedRoomId, freeTokenSessionId]);
+  }, [currentPlan, isSuperAdmin, cameraOn, screenOn, broadcastLive, livekitRoom, selectedRoomId, freeTokenSessionId]);
 
   function disconnectFromLiveKit() {
     cleanupLocalTracks();
