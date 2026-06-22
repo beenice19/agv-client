@@ -5641,6 +5641,97 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
           ) : null}
         </aside>
+      {/* PASS_VENDOR_FINANCE_DOCK_3C */}
+      {vendorFinanceDockOpen ? (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.72)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            style={{
+              width: "min(920px, 96vw)",
+              maxHeight: "86vh",
+              overflowY: "auto",
+              borderRadius: 24,
+              border: "1px solid rgba(212,175,55,0.45)",
+              background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98))",
+              boxShadow: "0 30px 90px rgba(0,0,0,0.55)",
+              padding: 22,
+              color: "#f8fafc",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start" }}>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 950, color: "#fde68a" }}>
+                  AGV Vendor Financial Docking Station
+                </div>
+                <div style={{ marginTop: 6, color: "#cbd5e1", fontSize: 13, lineHeight: 1.5 }}>
+                  Vendor finance setup, deposits, revenue review, payout status, and AGV fee policy.
+                </div>
+              </div>
+
+              <button
+                onClick={() => setVendorFinanceDockOpen(false)}
+                style={{
+                  border: "1px solid rgba(148,163,184,0.35)",
+                  borderRadius: 14,
+                  padding: "10px 14px",
+                  background: "rgba(15,23,42,0.85)",
+                  color: "#e5e7eb",
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                gap: 14,
+                marginTop: 20,
+              }}
+            >
+              {[
+                ["Vendor Profile", "Status: Setup Needed. Vendor name, organization, email, and event ownership will live here."],
+                ["Payment Connection", "Stripe, payment link, and deposit status will connect in a later server pass."],
+                ["Deposit Center", "Event deposit amount, paid or unpaid status, and manual review notes will display here."],
+                ["Revenue Summary", "Gross revenue, AGV 7 percent fee, broadcast fee, processing, and vendor net will display here."],
+                ["Payout Status", "Pending, Paid, or Manual Review status will appear here when payment records are connected."],
+                ["Fee Policy", "AGV platform fee, broadcast delivery fee, and payment processing terms will be explained here."]
+              ].map(([title, body]) => (
+                <div
+                  key={title}
+                  style={{
+                    border: "1px solid rgba(212,175,55,0.22)",
+                    borderRadius: 18,
+                    background: "rgba(15,23,42,0.72)",
+                    padding: 16,
+                  }}
+                >
+                  <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 8 }}>
+                    {title}
+                  </div>
+                  <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5 }}>
+                    {body}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       </main>
     </div>
   );
