@@ -107,62 +107,7 @@ function normalizePlan(plan) {
   return PLAN_LIMITS[cleanPlan] ? cleanPlan : "FREE";
 }
 
-// PASS_CLIENT_URL_FREE_OVERRIDE_FINAL_1A
-function getAgvUrlPlanOverride() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const rawPlan = String(
-      params.get("plan") ||
-        params.get("localPlan") ||
-        params.get("testPlan") ||
-        ""
-    )
-      .trim()
-      .toUpperCase();
-
-    const validPlans = ["FREE", "CREATOR", "MINISTRY", "PRO", "CONVENTION"];
-
-    return validPlans.includes(rawPlan) ? rawPlan : "";
-  } catch {
-    return "";
-  }
-}
-
-function getAgvLocalPlanLock() {
-  try {
-    const urlPlan = getAgvUrlPlanOverride();
-
-    if (urlPlan) {
-      localStorage.setItem("agv_local_plan_lock", urlPlan);
-      localStorage.setItem("agv_current_plan", urlPlan);
-      localStorage.setItem("agv_viewer_plan", urlPlan);
-
-      if (urlPlan === "FREE") {
-        localStorage.setItem("agv_user_id", "free-local-test-user");
-      }
-
-      return urlPlan;
-    }
-
-    const storedPlan = String(localStorage.getItem("agv_local_plan_lock") || "")
-      .trim()
-      .toUpperCase();
-
-    const validPlans = ["FREE", "CREATOR", "MINISTRY", "PRO", "CONVENTION"];
-
-    return validPlans.includes(storedPlan) ? storedPlan : "";
-  } catch {
-    return "";
-  }
-}
-
 function getLocalCurrentPlan() {
-  const lockedPlan = getAgvLocalPlanLock();
-
-  if (lockedPlan) {
-    return lockedPlan;
-  }
-
   return normalizePlan(
     localStorage.getItem("agv_current_plan") ||
       localStorage.getItem("agv_viewer_plan") ||
@@ -320,23 +265,6 @@ export default function AppCore({ entryRole = "viewer" }) {
   const currentOwnerId = getCurrentOwnerId();
 
   const [currentPlan, setCurrentPlan] = useState(getLocalCurrentPlan);
-
-  // PASS_CLIENT_URL_FREE_OVERRIDE_FINAL_1A_EFFECT
-  useEffect(() => {
-    const lockedPlan = getAgvLocalPlanLock();
-
-    if (!lockedPlan) return;
-
-    if (currentPlan !== lockedPlan) {
-      setCurrentPlan(lockedPlan);
-      setStatus("Local test plan forced from URL: " + lockedPlan);
-    }
-
-    try {
-      refreshFreeTokenWallet(lockedPlan);
-    } catch {}
-  }, [currentPlan]);
-
 
   const [rooms, setRooms] = useState(() => {
     try {
@@ -666,8 +594,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         return;
       }
 
-      const lockedPlan = getAgvLocalPlanLock();
-      const serverPlan = lockedPlan || normalizePlan(data.plan || localPlan);
+      const serverPlan = normalizePlan(data.plan || localPlan);
 
       localStorage.setItem("agv_current_plan", serverPlan);
       setCurrentPlan(serverPlan);
@@ -1985,37 +1912,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       const wallet = data.wallet;
 
-      // PASS_CLIENT_FREE_PLAN_HARD_LIMIT_FIX_1B
-      // FREE must never display paid-plan wallet allowances or paid broadcast credits.
-      const isFreePlan = plan === "FREE";
+      setFreeTokenWallet(wallet);
 
-      const freeLiveBalance = Number(wallet.balance ?? wallet.liveTokensBalance ?? 0);
-      const paidLiveBalance = Number(wallet.liveTokensBalance ?? wallet.balance ?? 0);
+      const liveTokensBalance = Number(wallet.liveTokensBalance ?? wallet.balance ?? 0);
+      const monthlyLiveTokens = Number(wallet.monthlyLiveTokens ?? 0);
+      const broadcastCreditsBalance = Number(wallet.broadcastCreditsBalance ?? 0);
 
-      const displayWallet = isFreePlan
-        ? {
-            ...wallet,
-            plan: "FREE",
-            liveTokensBalance: freeLiveBalance,
-            monthlyLiveTokens: 150000,
-            broadcastCreditsBalance: 0,
-            monthlyBroadcastCredits: 0,
-          }
-        : {
-            ...wallet,
-            liveTokensBalance: paidLiveBalance,
-            monthlyLiveTokens: Number(wallet.monthlyLiveTokens ?? 0),
-            broadcastCreditsBalance: Number(wallet.broadcastCreditsBalance ?? 0),
-            monthlyBroadcastCredits: Number(wallet.monthlyBroadcastCredits ?? 0),
-          };
-
-      setFreeTokenWallet(displayWallet);
-
-      const liveTokensBalance = Number(displayWallet.liveTokensBalance ?? 0);
-      const monthlyLiveTokens = Number(displayWallet.monthlyLiveTokens ?? 0);
-      const broadcastCreditsBalance = Number(displayWallet.broadcastCreditsBalance ?? 0);
-
-      if (isFreePlan) {
+      if (plan === "FREE") {
         setFreeTokenStatus(
           liveTokensBalance > 0
             ? "Free live tokens available. Remaining: " +
@@ -2036,7 +1939,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         );
       }
 
-      return displayWallet;
+      return wallet;
     } catch (err) {
       setFreeTokenStatus("AGV Plan Wallet error: " + (err?.message || String(err)));
       return null;
@@ -2079,20 +1982,29 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     if (!okToStart) return "";
 
     try {
-      // PASS_CLIENT_LIVE_DEBIT_ROUTE_FIX_1A
-      // SERVER 8794 does not use the old /api/free-tokens/start-session route.
-      // Use a local session id and let /api/usage/live-debit handle the actual burn.
-      const sessionId =
-        "free-live-" +
-        Date.now() +
-        "-" +
-        Math.random().toString(16).slice(2);
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/start-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: agvFreeTokenUserId(),
+          plan,
+          roomId,
+        }),
+      });
 
-      setFreeTokenSessionId(sessionId);
-      await refreshFreeTokenWallet(plan);
-      setFreeTokenStatus("Free live token session ready.");
+      const data = await response.json().catch(() => null);
 
-      return sessionId;
+      if (!response.ok || !data?.ok) {
+        setBroadcastStatus(data?.message || "Free token session could not start.");
+        setFreeTokenStatus(data?.message || "Free token session could not start.");
+        return "";
+      }
+
+      setFreeTokenSessionId(data.sessionId || "");
+      setFreeTokenWallet(data.wallet || null);
+      setFreeTokenStatus("Free token session started.");
+
+      return data.sessionId || "";
     } catch (error) {
       setFreeTokenStatus("Free token session error: " + (error?.message || String(error)));
       return "";
@@ -2138,7 +2050,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     try {
-      const response = await fetch(FREE_TOKEN_API_BASE + "/api/usage/live-debit", {
+      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/debit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2158,20 +2070,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         setFreeTokenWallet(data.wallet);
       }
 
-      const remaining = Number(
-        data?.wallet?.balance ??
-          data?.wallet?.liveTokensBalance ??
-          data?.remainingTokens ??
-          0
-      );
-
-      setFreeTokenStatus(
-        response.ok && data?.ok
-          ? "Free live tokens available. Remaining: " +
-              remaining.toLocaleString() +
-              " / 150,000"
-          : data?.message || "Free AGV Live Tokens exhausted. Upgrade to continue broadcasting."
-      );
+      setFreeTokenStatus(data?.message || "Free live tokens updated.");
 
       if (!response.ok || data?.blocked) {
         setBroadcastStatus(
@@ -3638,7 +3537,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
               <span style={styles.chip}>Plan: {currentPlanLimits.label}</span>
               <span style={styles.chip}>
-                {String(currentPlan || "FREE").toUpperCase() === "FREE" ? "University Pal Access: Upgrade Required" : "University Pal Access: Included"}
+                University Pal Access: Included
               </span>
               <span style={styles.chip}>Supabase-ready</span>
               <span style={styles.chip}>Certificate verification</span>
@@ -3707,22 +3606,18 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <strong>
                     {freeTokenWallet
                       ? Number(
-                          String(currentPlan || "FREE").toUpperCase() === "FREE"
-                            ? freeTokenWallet.balance ??
-                              freeTokenWallet.liveTokensBalance ??
-                              0
-                            : freeTokenWallet.liveTokensBalance ??
-                              freeTokenWallet.balance ??
-                              0
+                          freeTokenWallet.liveTokensBalance ??
+                            freeTokenWallet.balance ??
+                            0
                         ).toLocaleString()
                       : "Loading..."}{" "}
                     /{" "}
                     {freeTokenWallet
                       ? Number(
-                          String(currentPlan || "FREE").toUpperCase() === "FREE"
-                            ? 150000
-                            : freeTokenWallet.monthlyLiveTokens ??
-                              (String(currentPlan || "FREE").toUpperCase() === "CREATOR"
+                          freeTokenWallet.monthlyLiveTokens ??
+                            (String(currentPlan || "FREE").toUpperCase() === "FREE"
+                              ? 150000
+                              : String(currentPlan || "FREE").toUpperCase() === "CREATOR"
                                 ? 500000
                                 : String(currentPlan || "FREE").toUpperCase() === "CONVENTION"
                                   ? 10000000
@@ -3744,9 +3639,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   Broadcast Credits:{" "}
                   <strong>
                     {freeTokenWallet
-                      ? Number(String(currentPlan || "FREE").toUpperCase() === "FREE"
-                          ? 0
-                          : freeTokenWallet.broadcastCreditsBalance ?? 0).toLocaleString()
+                      ? Number(freeTokenWallet.broadcastCreditsBalance ?? 0).toLocaleString()
                       : "Loading..."}
                   </strong>
                 </div>
