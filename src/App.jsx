@@ -565,14 +565,9 @@ export default function App() {
       onClearBillingMessage={clearBillingMessage}
       onFreeStart={() => setEntryMode("free-signup")}
       onHostEnter={() => {
-        if (cleanPublicPlan(currentPlan) === "FREE") {
-          localStorage.setItem("agv_current_plan", "FREE");
-          localStorage.setItem("agv_host_trial_mode", "true");
-          setTicketApproved(true);
-          setEntryMode("host-approved");
-          return;
-        }
-
+        // PASS_CLIENT_HOST_LOGIN_BYPASS_FIX_1
+        // CLIENT - Always show the Host/Admin login gate before entering the platform.
+        // Forgot Host Password belongs on that login gate, not on the live stage.
         setEntryMode("host");
       }}
       onViewerEnter={() => {
