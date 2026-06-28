@@ -21,6 +21,13 @@ const BILLING_API_BASE =
 const EVENT_API_BASE =
   import.meta.env.VITE_AGV_EVENT_API_URL ||
   "https://agv-event-server.onrender.com";
+// PASS_CLIENT_BROADCAST_PACK_STRIPE_BUTTONS_2
+// CLIENT — Broadcast Credit Pack checkout API base.
+// Set VITE_AGV_USAGE_API_URL in production to the deployed Broadcast Credits server.
+const USAGE_API_BASE =
+  import.meta.env.VITE_AGV_USAGE_API_URL ||
+  import.meta.env.VITE_AGV_WALLET_API_URL ||
+  "http://127.0.0.1:8794";
 
 const PLAN_LIMITS = {
   FREE: {
@@ -1908,6 +1915,43 @@ function AgvLandingPage({
   }
 
 
+  async function startBroadcastPackCheckout(packId) {
+    const publicPlan = cleanPublicPlan(currentPlan);
+    const customerEmail = String(account?.email || "").trim().toLowerCase();
+    if (!customerEmail) {
+      setBillingMessage("Sync your AGV account email before purchasing Broadcast Credit Packs.");
+      return;
+    }
+    if (publicPlan === "FREE") {
+      setBillingMessage("Broadcast Credit Packs are available after upgrading from the Free plan.");
+      return;
+    }
+    setBillingMessage("Opening Broadcast Credit Pack checkout...");
+    try {
+      const response = await fetch(`${USAGE_API_BASE}/api/usage/create-broadcast-pack-checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: customerEmail,
+          plan: publicPlan,
+          packId,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.ok) {
+        setBillingMessage("Broadcast Credit Pack checkout is not available yet. Please try again or contact AGV support.");
+        return;
+      }
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      setBillingMessage("Broadcast Credit Pack checkout opened, but no checkout link was returned.");
+    } catch {
+      setBillingMessage("Could not reach Broadcast Credit Pack checkout. Please try again shortly.");
+    }
+  }
+
   async function openBillingPortal() {
     setBillingMessage("Opening Stripe Billing Portal...");
 
@@ -2213,21 +2257,45 @@ function AgvLandingPage({
                 <div style={styles.badgeSmall}>STARTER PACK</div>
                 <h3 style={styles.accountTitle}>Small events</h3>
                 <p style={styles.cardText}>Helpful for short programs, small paid events, and light extra reach.</p>
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => startBroadcastPackCheckout("starter")}
+                >
+                  Buy Starter Pack — $59
+                </button>
               </div>
               <div style={styles.subscriptionCard}>
                 <div style={styles.badgeSmall}>GROWTH PACK</div>
                 <h3 style={styles.accountTitle}>Growing audiences</h3>
                 <p style={styles.cardText}>Built for hosts expecting more viewers or longer broadcast time.</p>
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => startBroadcastPackCheckout("growth")}
+                >
+                  Buy Growth Pack — $199
+                </button>
               </div>
               <div style={styles.subscriptionCard}>
                 <div style={styles.badgeSmall}>EVENT PACK</div>
                 <h3 style={styles.accountTitle}>Major programs</h3>
                 <p style={styles.cardText}>Recommended for fundraisers, conferences, seminars, and ticketed events.</p>
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => startBroadcastPackCheckout("event")}
+                >
+                  Buy Event Pack — $799
+                </button>
               </div>
               <div style={styles.subscriptionCard}>
                 <div style={styles.badgeSmall}>CONVENTION PACK</div>
                 <h3 style={styles.accountTitle}>Large gatherings</h3>
                 <p style={styles.cardText}>Designed for conventions, multi-room programs, and high-attendance events.</p>
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => startBroadcastPackCheckout("convention")}
+                >
+                  Buy Convention Pack — $1,999
+                </button>
               </div>
             </div>
             <p style={{ ...styles.cardText, marginTop: 14 }}>
