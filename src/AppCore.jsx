@@ -336,16 +336,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const [status, setStatus] = useState("AGV LiveKit platform ready");
 
-  // PASS_CLIENT_FORGOT_HOST_PASSWORD_UI_1B
-  // CLIENT - Forgot Host Password UI state. Calls SERVER 8792 reset routes.
-  const [hostPasswordResetOpen, setHostPasswordResetOpen] = useState(false);
-  const [hostPasswordResetEmail, setHostPasswordResetEmail] = useState(
-    () => String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase()
-  );
-  const [hostPasswordResetCode, setHostPasswordResetCode] = useState("");
-  const [hostPasswordResetNewPassword, setHostPasswordResetNewPassword] = useState("");
-  const [hostPasswordResetWorking, setHostPasswordResetWorking] = useState(false);
-  const [hostPasswordResetMessage, setHostPasswordResetMessage] = useState("");
 
   const [ticketCode, setTicketCode] = useState(
     () => window.localStorage.getItem(TICKET_STORAGE_KEY) || ""
@@ -592,82 +582,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     };
   }, []);
 
-  async function requestHostPasswordReset() {
-    const email = String(hostPasswordResetEmail || storedAccount?.email || freeAccount?.email || "")
-      .trim()
-      .toLowerCase();
-    if (!email) {
-      setHostPasswordResetMessage("Enter the host account email first.");
-      setStatus("Enter the host account email first.");
-      return;
-    }
-    setHostPasswordResetWorking(true);
-    setHostPasswordResetMessage("Requesting host password reset code...");
-    setStatus("Requesting host password reset code from SERVER 8792...");
-    try {
-      const response = await fetch(SUBSCRIPTION_API_BASE + "/api/account/password-reset/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || data?.ok === false) {
-        throw new Error(data?.error || "Password reset request failed.");
-      }
-      setHostPasswordResetEmail(email);
-      setHostPasswordResetMessage(
-        data?.message || "Reset code requested. Check SERVER 8792 console or connected email delivery."
-      );
-      setStatus("Host password reset code requested from SERVER 8792.");
-    } catch (error) {
-      const message = error?.message || "SERVER 8792 password reset request failed.";
-      setHostPasswordResetMessage(message);
-      setStatus(message);
-    } finally {
-      setHostPasswordResetWorking(false);
-    }
-  }
-  async function confirmHostPasswordReset() {
-    const email = String(hostPasswordResetEmail || storedAccount?.email || freeAccount?.email || "")
-      .trim()
-      .toLowerCase();
-    const resetCode = String(hostPasswordResetCode || "").trim();
-    const newPassword = String(hostPasswordResetNewPassword || "");
-    if (!email || !resetCode || !newPassword) {
-      setHostPasswordResetMessage("Enter email, reset code, and new password.");
-      setStatus("Enter email, reset code, and new password.");
-      return;
-    }
-    if (newPassword.length < 8) {
-      setHostPasswordResetMessage("New password must be at least 8 characters.");
-      setStatus("New password must be at least 8 characters.");
-      return;
-    }
-    setHostPasswordResetWorking(true);
-    setHostPasswordResetMessage("Confirming host password reset...");
-    setStatus("Confirming host password reset with SERVER 8792...");
-    try {
-      const response = await fetch(SUBSCRIPTION_API_BASE + "/api/account/password-reset/confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, resetCode, newPassword }),
-      });
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || data?.ok === false) {
-        throw new Error(data?.error || "Password reset confirmation failed.");
-      }
-      setHostPasswordResetCode("");
-      setHostPasswordResetNewPassword("");
-      setHostPasswordResetMessage(data?.message || "Password reset successful.");
-      setStatus("Host password reset successful.");
-    } catch (error) {
-      const message = error?.message || "SERVER 8792 password reset confirmation failed.";
-      setHostPasswordResetMessage(message);
-      setStatus(message);
-    } finally {
-      setHostPasswordResetWorking(false);
-    }
-  }
   async function syncPlanFromSubscriptionServer() {
     const localPlan = getLocalCurrentPlan();
 
@@ -3915,97 +3829,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¢{" "}
                     {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
                   </div>
-                  <div style={{ marginTop: 8 }}>
-                    <button
-                      type="button"
-                      style={styles.secondaryButton}
-                      onClick={() => {
-                        setHostPasswordResetOpen((open) => !open);
-                        setHostPasswordResetEmail(
-                          String(hostPasswordResetEmail || storedAccount?.email || freeAccount?.email || "")
-                            .trim()
-                            .toLowerCase()
-                        );
-                      }}
-                    >
-                      {hostPasswordResetOpen ? "Close Host Password Reset" : "Forgot Host Password?"}
-                    </button>
-                  </div>
-                  {hostPasswordResetOpen ? (
-                    <div
-                      style={{
-                        marginTop: 10,
-                        padding: 12,
-                        border: "1px solid rgba(255,255,255,0.14)",
-                        borderRadius: 14,
-                        background: "rgba(0,0,0,0.22)",
-                      }}
-                    >
-                      <div style={styles.helperText}>
-                        Reset the host account password through SERVER 8792.
-                      </div>
-                      <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
-                        <input
-                          type="email"
-                          value={hostPasswordResetEmail}
-                          onChange={(event) => setHostPasswordResetEmail(event.target.value)}
-                          placeholder="Host account email"
-                          style={{
-                            padding: "10px 12px",
-                            borderRadius: 10,
-                            border: "1px solid rgba(255,255,255,0.16)",
-                            background: "rgba(0,0,0,0.35)",
-                            color: "white",
-                          }}
-                        />
-                        <button
-                          type="button"
-                          style={styles.secondaryButton}
-                          onClick={requestHostPasswordReset}
-                          disabled={hostPasswordResetWorking}
-                        >
-                          {hostPasswordResetWorking ? "Working..." : "Request Reset Code"}
-                        </button>
-                        <input
-                          type="text"
-                          value={hostPasswordResetCode}
-                          onChange={(event) => setHostPasswordResetCode(event.target.value)}
-                          placeholder="Reset code"
-                          style={{
-                            padding: "10px 12px",
-                            borderRadius: 10,
-                            border: "1px solid rgba(255,255,255,0.16)",
-                            background: "rgba(0,0,0,0.35)",
-                            color: "white",
-                          }}
-                        />
-                        <input
-                          type="password"
-                          value={hostPasswordResetNewPassword}
-                          onChange={(event) => setHostPasswordResetNewPassword(event.target.value)}
-                          placeholder="New host password"
-                          style={{
-                            padding: "10px 12px",
-                            borderRadius: 10,
-                            border: "1px solid rgba(255,255,255,0.16)",
-                            background: "rgba(0,0,0,0.35)",
-                            color: "white",
-                          }}
-                        />
-                        <button
-                          type="button"
-                          style={styles.primaryButton}
-                          onClick={confirmHostPasswordReset}
-                          disabled={hostPasswordResetWorking}
-                        >
-                          Confirm Password Reset
-                        </button>
-                        {hostPasswordResetMessage ? (
-                          <div style={styles.helperText}>{hostPasswordResetMessage}</div>
-                        ) : null}
-                      </div>
-                    </div>
-                  ) : null}
                 </>
               ) : null}
             </div>

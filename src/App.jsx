@@ -1025,6 +1025,87 @@ function HostPinGate({ onApproved, onBack }) {
   const [message, setMessage] = useState("");
   const [working, setWorking] = useState(false);
 
+
+  // PASS_CLIENT_FORGOT_HOST_PASSWORD_LOGIN_GATE_1
+  // CLIENT - Forgot Host Password UI belongs on the Host/Admin login gate.
+  const [hostResetOpen, setHostResetOpen] = useState(false);
+  const [hostResetEmail, setHostResetEmail] = useState(() => {
+    try {
+      const account =
+        JSON.parse(localStorage.getItem("agv_account") || "null") ||
+        JSON.parse(localStorage.getItem("agv_free_account") || "null") ||
+        {};
+      return String(account?.email || "").trim().toLowerCase();
+    } catch {
+      return "";
+    }
+  });
+  const [hostResetCode, setHostResetCode] = useState("");
+  const [hostResetNewPassword, setHostResetNewPassword] = useState("");
+  const [hostResetWorking, setHostResetWorking] = useState(false);
+  const [hostResetMessage, setHostResetMessage] = useState("");
+  async function requestHostPasswordResetFromGate() {
+    const email = String(hostResetEmail || "").trim().toLowerCase();
+    if (!email) {
+      setHostResetMessage("Enter the host account email first.");
+      return;
+    }
+    setHostResetWorking(true);
+    setHostResetMessage("Requesting host password reset code...");
+    try {
+      const response = await fetch(SUBSCRIPTION_API_BASE + "/api/account/password-reset/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.ok === false) {
+        throw new Error(data?.message || data?.error || "Password reset request failed.");
+      }
+      setHostResetEmail(email);
+      setHostResetMessage(
+        data?.message ||
+          "Password reset code requested. Check the SERVER 8792 console or configured delivery method."
+      );
+    } catch (error) {
+      setHostResetMessage(error?.message || "Unable to request host password reset code.");
+    } finally {
+      setHostResetWorking(false);
+    }
+  }
+  async function confirmHostPasswordResetFromGate() {
+    const email = String(hostResetEmail || "").trim().toLowerCase();
+    const resetCode = String(hostResetCode || "").trim();
+    const newPassword = String(hostResetNewPassword || "");
+    if (!email || !resetCode || !newPassword) {
+      setHostResetMessage("Enter email, reset code, and new password.");
+      return;
+    }
+    if (newPassword.length < 8) {
+      setHostResetMessage("New password must be at least 8 characters.");
+      return;
+    }
+    setHostResetWorking(true);
+    setHostResetMessage("Confirming host password reset...");
+    try {
+      const response = await fetch(SUBSCRIPTION_API_BASE + "/api/account/password-reset/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, resetCode, newPassword }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data?.ok === false) {
+        throw new Error(data?.message || data?.error || "Password reset failed.");
+      }
+      setHostResetCode("");
+      setHostResetNewPassword("");
+      setHostResetMessage(data?.message || "Password reset successful. Enter your host PIN to continue.");
+    } catch (error) {
+      setHostResetMessage(error?.message || "Unable to confirm host password reset.");
+    } finally {
+      setHostResetWorking(false);
+    }
+  }
   async function verifyHostPin() {
     const cleanPin = pin.trim();
 
@@ -1088,6 +1169,124 @@ function HostPinGate({ onApproved, onBack }) {
           <button style={styles.primaryButton} onClick={verifyHostPin}>
             {working ? "Checking..." : "Enter Host Platform"}
           </button>
+          <div
+            style={{
+              marginTop: 14,
+              border: "1px solid rgba(212,175,55,0.26)",
+              borderRadius: 20,
+              padding: 14,
+              background: "rgba(212,175,55,0.08)",
+            }}
+          >
+            <button
+              type="button"
+              style={{
+                border: "1px solid rgba(250,204,21,0.32)",
+                borderRadius: 999,
+                padding: "10px 14px",
+                background: "rgba(250,204,21,0.12)",
+                color: "#fde68a",
+                fontWeight: 950,
+                cursor: "pointer",
+                width: "100%",
+              }}
+              onClick={() => setHostResetOpen((open) => !open)}
+            >
+              {hostResetOpen ? "Close Password Reset" : "Forgot Host Password?"}
+            </button>
+            {hostResetOpen ? (
+              <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
+                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.55 }}>
+                  Reset your host account password before entering the AGV platform.
+                </div>
+                <input
+                  value={hostResetEmail}
+                  onChange={(event) => setHostResetEmail(event.target.value)}
+                  placeholder="Host account email"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    padding: "12px 14px",
+                    background: "rgba(15,23,42,0.82)",
+                    color: "#f8fafc",
+                    outline: "none",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={requestHostPasswordResetFromGate}
+                  disabled={hostResetWorking}
+                  style={{
+                    border: 0,
+                    borderRadius: 999,
+                    padding: "11px 14px",
+                    background: "linear-gradient(135deg, #facc15, #d97706)",
+                    color: "#111827",
+                    fontWeight: 950,
+                    cursor: hostResetWorking ? "not-allowed" : "pointer",
+                    opacity: hostResetWorking ? 0.68 : 1,
+                  }}
+                >
+                  {hostResetWorking ? "Working..." : "Request Reset Code"}
+                </button>
+                <input
+                  value={hostResetCode}
+                  onChange={(event) => setHostResetCode(event.target.value)}
+                  placeholder="Reset code"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    padding: "12px 14px",
+                    background: "rgba(15,23,42,0.82)",
+                    color: "#f8fafc",
+                    outline: "none",
+                  }}
+                />
+                <input
+                  type="password"
+                  value={hostResetNewPassword}
+                  onChange={(event) => setHostResetNewPassword(event.target.value)}
+                  placeholder="New host password"
+                  style={{
+                    width: "100%",
+                    boxSizing: "border-box",
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    padding: "12px 14px",
+                    background: "rgba(15,23,42,0.82)",
+                    color: "#f8fafc",
+                    outline: "none",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={confirmHostPasswordResetFromGate}
+                  disabled={hostResetWorking}
+                  style={{
+                    border: "1px solid rgba(255,255,255,0.14)",
+                    borderRadius: 999,
+                    padding: "11px 14px",
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#f8fafc",
+                    fontWeight: 950,
+                    cursor: hostResetWorking ? "not-allowed" : "pointer",
+                    opacity: hostResetWorking ? 0.68 : 1,
+                  }}
+                >
+                  Confirm Password Reset
+                </button>
+                {hostResetMessage ? (
+                  <div style={{ color: "#fde68a", fontSize: 13, lineHeight: 1.55 }}>
+                    {hostResetMessage}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
 
           <button style={styles.secondaryButton} onClick={onBack}>
             Back
