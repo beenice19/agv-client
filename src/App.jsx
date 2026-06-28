@@ -2097,6 +2097,48 @@ function AgvLandingPage({
           </div>
         </section>
 
+
+        {/* PASS_CLIENT_BROADCAST_CREDITS_AWARENESS_1 */}
+        <section style={{ ...styles.dashboardSection, alignItems: "stretch" }}>
+          <div>
+            <div style={styles.badgeSmall}>LIVE USAGE INCLUDED</div>
+            <h2 style={styles.sectionTitle}>Every AGV plan includes live usage.</h2>
+            <p style={styles.sectionText}>
+              AGV is built for everyday live rooms, classes, meetings, ministry, podcasts,
+              paid events, and larger online programs. Each plan includes live usage so hosts
+              can start with confidence before adding more reach.
+            </p>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+              gap: 12,
+            }}
+          >
+            <div style={styles.subscriptionCard}>
+              <div style={styles.badgeSmall}>START</div>
+              <h3 style={styles.accountTitle}>Included live room usage</h3>
+              <p style={styles.cardText}>
+                Use your plan for normal AGV rooms, teaching, meetings, small events, and host-led sessions.
+              </p>
+            </div>
+            <div style={styles.subscriptionCard}>
+              <div style={styles.badgeSmall}>GROW</div>
+              <h3 style={styles.accountTitle}>Add reach when needed</h3>
+              <p style={styles.cardText}>
+                When your audience grows, Broadcast Credit Packs help support larger programs before showtime.
+              </p>
+            </div>
+            <div style={styles.subscriptionCard}>
+              <div style={styles.badgeSmall}>PROTECT THE SHOW</div>
+              <h3 style={styles.accountTitle}>Plan before going live</h3>
+              <p style={styles.cardText}>
+                AGV helps hosts understand usage before major events so the broadcast experience stays smooth.
+              </p>
+            </div>
+          </div>
+        </section>
         <section style={styles.planSection}>
           <h2 style={styles.sectionTitle}>Choose Your AGV Plan</h2>
           <p style={styles.sectionText}>
@@ -2107,7 +2149,7 @@ function AgvLandingPage({
             <PublicPlanCard
               title="Free"
               price="$0"
-              text="1 public host room, 25 viewers, no ticket required. Try before you buy."
+              text="1 public host room, 25 viewers, starter live usage included. Try before you buy."
               buttonText="Start Free"
               onClick={onFreeStart}
               active={currentPlan === "FREE"}
@@ -2116,7 +2158,7 @@ function AgvLandingPage({
             <PublicPlanCard
               title="Creator"
               price="$29/mo"
-              text="3 rooms, 100 viewers, private rooms, ticket-only rooms."
+              text="3 rooms, 100 viewers, private rooms, ticket-only rooms, and monthly live usage."
               buttonText={currentPlan === "CREATOR" ? "Current Plan" : "Upgrade to Creator"}
               onClick={() => currentPlan === "CREATOR" ? null : startCheckout("CREATOR")}
               featured
@@ -2126,7 +2168,7 @@ function AgvLandingPage({
             <PublicPlanCard
               title="Ministry / Pro"
               price="$99/mo"
-              text="10 rooms, 500 viewers, church, teaching, and conference ready."
+              text="10 rooms, 500 viewers, expanded live usage for church, teaching, and conference programs."
               buttonText={currentPlan === "MINISTRY" ? "Current Plan" : "Upgrade to Ministry"}
               onClick={() => currentPlan === "MINISTRY" ? null : startCheckout("MINISTRY")}
               active={currentPlan === "MINISTRY"}
@@ -2135,11 +2177,62 @@ function AgvLandingPage({
             <PublicPlanCard
               title="Convention"
               price="$299/mo"
-              text="50 rooms, 2,000 viewers, large digital venue capability."
+              text="50 rooms, 2,000 viewers, high-capacity live usage for conventions and large events."
               buttonText={currentPlan === "CONVENTION" ? "Current Plan" : "Upgrade to Convention"}
               onClick={() => currentPlan === "CONVENTION" ? null : startCheckout("CONVENTION")}
               active={currentPlan === "CONVENTION"}
             />
+          </div>
+
+          <div
+            style={{
+              marginTop: 18,
+              border: "1px solid rgba(212,175,55,0.26)",
+              borderRadius: 24,
+              padding: 18,
+              background:
+                "linear-gradient(180deg, rgba(212,175,55,0.10), rgba(15,23,42,0.70))",
+            }}
+          >
+            <div style={styles.badgeSmall}>BROADCAST CREDIT PACKS</div>
+            <h3 style={styles.sectionTitle}>Need more broadcast reach?</h3>
+            <p style={styles.sectionText}>
+              Plans include live usage. For larger audiences, longer programs, or special events,
+              hosts can add Broadcast Credit Packs before going live. This helps AGV scale your
+              program safely without interrupting the show.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+                gap: 12,
+                marginTop: 14,
+              }}
+            >
+              <div style={styles.subscriptionCard}>
+                <div style={styles.badgeSmall}>STARTER PACK</div>
+                <h3 style={styles.accountTitle}>Small events</h3>
+                <p style={styles.cardText}>Helpful for short programs, small paid events, and light extra reach.</p>
+              </div>
+              <div style={styles.subscriptionCard}>
+                <div style={styles.badgeSmall}>GROWTH PACK</div>
+                <h3 style={styles.accountTitle}>Growing audiences</h3>
+                <p style={styles.cardText}>Built for hosts expecting more viewers or longer broadcast time.</p>
+              </div>
+              <div style={styles.subscriptionCard}>
+                <div style={styles.badgeSmall}>EVENT PACK</div>
+                <h3 style={styles.accountTitle}>Major programs</h3>
+                <p style={styles.cardText}>Recommended for fundraisers, conferences, seminars, and ticketed events.</p>
+              </div>
+              <div style={styles.subscriptionCard}>
+                <div style={styles.badgeSmall}>CONVENTION PACK</div>
+                <h3 style={styles.accountTitle}>Large gatherings</h3>
+                <p style={styles.cardText}>Designed for conventions, multi-room programs, and high-attendance events.</p>
+              </div>
+            </div>
+            <p style={{ ...styles.cardText, marginTop: 14 }}>
+              Broadcast Credit Packs are optional add-ons for larger events. Everyday hosts can start with the live usage included in their plan.
+            </p>
           </div>
         </section>
       </main>
