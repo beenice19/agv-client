@@ -1918,19 +1918,68 @@ function AgvLandingPage({
 
 
   async function startBroadcastPackCheckout(packId) {
-    const publicPlan = cleanPublicPlan(currentPlan);
-    const customerEmail = String(account?.email || "").trim().toLowerCase();
+    // PASS_CLIENT_BROADCAST_PACK_PLAN_RESOLVER_2
+    let publicPlan = cleanPublicPlan(
+      currentPlan ||
+        account?.plan ||
+        localStorage.getItem("agv_current_plan") ||
+        "FREE"
+    );
+
+    let customerEmail = String(account?.email || "").trim().toLowerCase();
+
     setBillingMessage("");
-    setBroadcastPackMessage("Checking Broadcast Credit Pack checkout...");
+    setBroadcastPackMessage("Checking your AGV plan before checkout...");
+
+    if (!customerEmail || publicPlan === "FREE") {
+      const subscriptionBases = [SUBSCRIPTION_API_BASE];
+
+      if (import.meta.env.DEV && !subscriptionBases.includes("http://127.0.0.1:8792")) {
+        subscriptionBases.push("http://127.0.0.1:8792");
+      }
+
+      for (const base of subscriptionBases) {
+        try {
+          const response = await fetch(`${base}/api/subscription`);
+          const data = await response.json();
+
+          if (!response.ok || !data?.ok) continue;
+
+          const serverPlan = cleanPublicPlan(
+            data.plan ||
+              data.account?.plan ||
+              publicPlan
+          );
+
+          if (serverPlan && serverPlan !== "FREE") {
+            publicPlan = serverPlan;
+            localStorage.setItem("agv_current_plan", serverPlan);
+          }
+
+          const serverEmail = String(data.account?.email || "").trim().toLowerCase();
+          if (!customerEmail && serverEmail) {
+            customerEmail = serverEmail;
+          }
+
+          if (customerEmail && publicPlan !== "FREE") break;
+        } catch {
+          // Try the next subscription source when available.
+        }
+      }
+    }
+
     if (!customerEmail) {
       setBroadcastPackMessage("Sync your AGV account email first, then choose a Broadcast Credit Pack.");
       return;
     }
+
     if (publicPlan === "FREE") {
       setBroadcastPackMessage("Broadcast Credit Packs are available after upgrading from the Free plan.");
       return;
     }
-    setBroadcastPackMessage("Opening Stripe checkout for your Broadcast Credit Pack...");
+
+    setBroadcastPackMessage(`Opening Stripe checkout for your ${PLAN_LIMITS[publicPlan]?.label || publicPlan} Broadcast Credit Pack...`);
+
     try {
       const response = await fetch(`${USAGE_API_BASE}/api/usage/create-broadcast-pack-checkout`, {
         method: "POST",
@@ -1941,7 +1990,9 @@ function AgvLandingPage({
           packId,
         }),
       });
+
       const data = await response.json();
+
       if (!response.ok || !data?.ok) {
         setBroadcastPackMessage(
           data?.error ||
@@ -1949,11 +2000,13 @@ function AgvLandingPage({
         );
         return;
       }
+
       if (data.checkoutUrl) {
         setBroadcastPackMessage("Stripe checkout is ready. Redirecting now...");
         window.location.assign(data.checkoutUrl);
         return;
       }
+
       setBroadcastPackMessage("Checkout started, but Stripe did not return a checkout link.");
     } catch {
       setBroadcastPackMessage("Could not reach Broadcast Credit Pack checkout. Make sure the Broadcast Credits server is running.");
