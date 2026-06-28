@@ -1885,6 +1885,8 @@ function AgvLandingPage({
   onSuperAdmin,
 }) {
   const [billingMessage, setBillingMessage] = useState("");
+  // PASS_CLIENT_BROADCAST_PACK_BUTTON_FEEDBACK_2
+  const [broadcastPackMessage, setBroadcastPackMessage] = useState("");
 
   const activePlan = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.FREE;
   const accountReady = Boolean(account?.email);
@@ -1918,15 +1920,17 @@ function AgvLandingPage({
   async function startBroadcastPackCheckout(packId) {
     const publicPlan = cleanPublicPlan(currentPlan);
     const customerEmail = String(account?.email || "").trim().toLowerCase();
+    setBillingMessage("");
+    setBroadcastPackMessage("Checking Broadcast Credit Pack checkout...");
     if (!customerEmail) {
-      setBillingMessage("Sync your AGV account email before purchasing Broadcast Credit Packs.");
+      setBroadcastPackMessage("Sync your AGV account email first, then choose a Broadcast Credit Pack.");
       return;
     }
     if (publicPlan === "FREE") {
-      setBillingMessage("Broadcast Credit Packs are available after upgrading from the Free plan.");
+      setBroadcastPackMessage("Broadcast Credit Packs are available after upgrading from the Free plan.");
       return;
     }
-    setBillingMessage("Opening Broadcast Credit Pack checkout...");
+    setBroadcastPackMessage("Opening Stripe checkout for your Broadcast Credit Pack...");
     try {
       const response = await fetch(`${USAGE_API_BASE}/api/usage/create-broadcast-pack-checkout`, {
         method: "POST",
@@ -1939,19 +1943,22 @@ function AgvLandingPage({
       });
       const data = await response.json();
       if (!response.ok || !data?.ok) {
-        setBillingMessage("Broadcast Credit Pack checkout is not available yet. Please try again or contact AGV support.");
+        setBroadcastPackMessage(
+          data?.error ||
+            "Broadcast Credit Pack checkout is not available yet. Please try again shortly."
+        );
         return;
       }
       if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+        setBroadcastPackMessage("Stripe checkout is ready. Redirecting now...");
+        window.location.assign(data.checkoutUrl);
         return;
       }
-      setBillingMessage("Broadcast Credit Pack checkout opened, but no checkout link was returned.");
+      setBroadcastPackMessage("Checkout started, but Stripe did not return a checkout link.");
     } catch {
-      setBillingMessage("Could not reach Broadcast Credit Pack checkout. Please try again shortly.");
+      setBroadcastPackMessage("Could not reach Broadcast Credit Pack checkout. Make sure the Broadcast Credits server is running.");
     }
   }
-
   async function openBillingPortal() {
     setBillingMessage("Opening Stripe Billing Portal...");
 
@@ -2245,6 +2252,17 @@ function AgvLandingPage({
               hosts can add Broadcast Credit Packs before going live. This helps AGV scale your
               program safely without interrupting the show.
             </p>
+            {broadcastPackMessage ? (
+              <p
+                style={{
+                  ...styles.adminMessage,
+                  marginTop: 14,
+                  marginBottom: 0,
+                }}
+              >
+                {broadcastPackMessage}
+              </p>
+            ) : null}
             <div
               style={{
                 display: "grid",
@@ -2258,6 +2276,7 @@ function AgvLandingPage({
                 <h3 style={styles.accountTitle}>Small events</h3>
                 <p style={styles.cardText}>Helpful for short programs, small paid events, and light extra reach.</p>
                 <button
+                  type="button"
                   style={styles.secondaryButton}
                   onClick={() => startBroadcastPackCheckout("starter")}
                 >
@@ -2269,6 +2288,7 @@ function AgvLandingPage({
                 <h3 style={styles.accountTitle}>Growing audiences</h3>
                 <p style={styles.cardText}>Built for hosts expecting more viewers or longer broadcast time.</p>
                 <button
+                  type="button"
                   style={styles.secondaryButton}
                   onClick={() => startBroadcastPackCheckout("growth")}
                 >
@@ -2280,6 +2300,7 @@ function AgvLandingPage({
                 <h3 style={styles.accountTitle}>Major programs</h3>
                 <p style={styles.cardText}>Recommended for fundraisers, conferences, seminars, and ticketed events.</p>
                 <button
+                  type="button"
                   style={styles.secondaryButton}
                   onClick={() => startBroadcastPackCheckout("event")}
                 >
@@ -2291,6 +2312,7 @@ function AgvLandingPage({
                 <h3 style={styles.accountTitle}>Large gatherings</h3>
                 <p style={styles.cardText}>Designed for conventions, multi-room programs, and high-attendance events.</p>
                 <button
+                  type="button"
                   style={styles.secondaryButton}
                   onClick={() => startBroadcastPackCheckout("convention")}
                 >
