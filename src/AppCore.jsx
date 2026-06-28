@@ -1544,6 +1544,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       return;
     }
 
+    const plan = String(currentPlan || "FREE").toUpperCase();
+    if (plan !== "FREE" && !isSuperAdmin) {
+      const reserveOk = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
+      if (!reserveOk) return;
+    }
+
     const room = livekitRoom || (await connectToRoom("host", selectedRoomId));
     if (!room) return;
 
