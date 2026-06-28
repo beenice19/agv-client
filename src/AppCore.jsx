@@ -1977,7 +1977,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           userId,
           plan,
           roomId: roomId || "main-hall",
-          eventId: selectedEventId || selectedRoomId || "agv-live-session",
+          eventId: roomId || selectedRoomId || "agv-live-session",
         }),
       });
 
