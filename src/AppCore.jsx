@@ -5648,92 +5648,130 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
           ) : null}
         </aside>
-      {/* PASS_VENDOR_FINANCE_DOCK_3C */}
+      {/* PASS_LAUNCH_LOCK_3C1_VENDOR_FINANCIAL_DOCK_CLIENT_ONLY */}
       {vendorFinanceDockOpen ? (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(0,0,0,0.72)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 20,
-          }}
-        >
-          <div
-            style={{
-              width: "min(920px, 96vw)",
-              maxHeight: "86vh",
-              overflowY: "auto",
-              borderRadius: 24,
-              border: "1px solid rgba(212,175,55,0.45)",
-              background: "linear-gradient(135deg, rgba(15,23,42,0.98), rgba(2,6,23,0.98))",
-              boxShadow: "0 30px 90px rgba(0,0,0,0.55)",
-              padding: 22,
-              color: "#f8fafc",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.76)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ width: "min(1080px, 96vw)", maxHeight: "88vh", overflowY: "auto", borderRadius: 26, border: "1px solid rgba(212,175,55,0.50)", background: "linear-gradient(135deg, rgba(15,23,42,0.99), rgba(2,6,23,0.99))", boxShadow: "0 30px 90px rgba(0,0,0,0.60)", padding: 22, color: "#f8fafc" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: 22, fontWeight: 950, color: "#fde68a" }}>
-                  AGV Vendor Financial Docking Station
+                <div style={{ fontSize: 24, fontWeight: 950, color: "#fde68a" }}>AGV Vendor Financial Docking Station</div>
+                <div style={{ marginTop: 6, color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, maxWidth: 720 }}>
+                  Vendor setup, payment gateway readiness, booth-ticket revenue, and AGV's fixed 7% ticket platform fee.
                 </div>
-                <div style={{ marginTop: 6, color: "#cbd5e1", fontSize: 13, lineHeight: 1.5 }}>
-                  Vendor finance setup, deposits, revenue review, payout status, and AGV fee policy.
+              </div>
+              <button onClick={() => setVendorFinanceDockOpen(false)} style={{ border: "1px solid rgba(148,163,184,0.35)", borderRadius: 14, padding: "10px 14px", background: "rgba(15,23,42,0.85)", color: "#e5e7eb", fontWeight: 900, cursor: "pointer" }}>Close</button>
+            </div>
+
+            <div style={{ marginTop: 18, border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", color: "#bbf7d0", borderRadius: 18, padding: 14, fontSize: 13, lineHeight: 1.5, fontWeight: 800 }}>
+              MVP Scope: Vendor profile, payment gateway setup, booth-ticket financial summary, host approval, and AGV's 7% ticket platform fee.
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 14, marginTop: 18 }}>
+              <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Vendor Profile</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  <input style={styles.input} placeholder="Business name" />
+                  <input style={styles.input} placeholder="Contact name" />
+                  <input style={styles.input} placeholder="Vendor email" />
+                  <input style={styles.input} placeholder="Phone number" />
+                  <input style={styles.input} placeholder="Business category" />
+                  <input style={styles.input} placeholder="Website optional" />
+                  <textarea style={{ ...styles.input, minHeight: 82, resize: "vertical" }} placeholder="Vendor description" />
+                  <button onClick={() => setStatus("Vendor profile UI is ready. SERVER save endpoint will connect in PASS 3C.2.")} style={styles.primaryButton}>Save Vendor Profile</button>
                 </div>
               </div>
 
-              <button
-                onClick={() => setVendorFinanceDockOpen(false)}
-                style={{
-                  border: "1px solid rgba(148,163,184,0.35)",
-                  borderRadius: 14,
-                  padding: "10px 14px",
-                  background: "rgba(15,23,42,0.85)",
-                  color: "#e5e7eb",
-                  fontWeight: 900,
-                  cursor: "pointer",
-                }}
-              >
-                Close
-              </button>
-            </div>
+              <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>2. Payment Gateway Setup</div>
+                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Vendor payment connection is required before booth-ticket sales are activated.</div>
+                <div style={{ border: "1px solid rgba(239,68,68,0.32)", background: "rgba(127,29,29,0.18)", borderRadius: 16, padding: 12, marginBottom: 10 }}>
+                  <div style={{ fontWeight: 950, color: "#fecaca" }}>Payment Status</div>
+                  <div style={{ marginTop: 4, color: "#fee2e2", fontSize: 13 }}>Not Connected</div>
+                </div>
+                <button
+                  onClick={async () => {
+                    try {
+                      setStatus("Opening AGV vendor payment setup...");
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 14,
-                marginTop: 20,
-              }}
-            >
-              {[
-                ["Vendor Profile", "Status: Setup Needed. Vendor name, organization, email, and event ownership will live here."],
-                ["Payment Connection", "Stripe, payment link, and deposit status will connect in a later server pass."],
-                ["Deposit Center", "Event deposit amount, paid or unpaid status, and manual review notes will display here."],
-                ["Revenue Summary", "Gross revenue, AGV 7 percent fee, broadcast fee, processing, and vendor net will display here."],
-                ["Payout Status", "Pending, Paid, or Manual Review status will appear here when payment records are connected."],
-                ["Fee Policy", "AGV platform fee, broadcast delivery fee, and payment processing terms will be explained here."]
-              ].map(([title, body]) => (
-                <div
-                  key={title}
-                  style={{
-                    border: "1px solid rgba(212,175,55,0.22)",
-                    borderRadius: 18,
-                    background: "rgba(15,23,42,0.72)",
-                    padding: 16,
+                      const vendorEmail =
+                        storedAccount?.email ||
+                        freeAccount?.email ||
+                        "vendor@agv.local";
+
+                      const vendorBusinessName =
+                        storedAccount?.name ||
+                        freeAccount?.name ||
+                        "AGV Vendor";
+
+                      const response = await fetch("http://127.0.0.1:8795/api/vendor/connect/stripe", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          email: vendorEmail,
+                          businessName: vendorBusinessName,
+                          contactName: vendorBusinessName,
+                          businessCategory: "AGV Event Vendor",
+                          description: "AGV Vendor Financial Docking Station onboarding",
+                        }),
+                      });
+
+                      const data = await response.json();
+
+                      if (!response.ok || !data.ok || !data.onboardingUrl) {
+                        throw new Error(data.error || "Vendor payment setup failed.");
+                      }
+
+                      setStatus("Redirecting to Stripe vendor onboarding...");
+                      window.location.href = data.onboardingUrl;
+                    } catch (error) {
+                      setStatus("Vendor payment setup failed: " + (error.message || "Unknown error"));
+                    }
                   }}
+                  style={styles.primaryButton}
                 >
-                  <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 8 }}>
-                    {title}
+                  Connect Payment Account
+                </button>
+              </div>
+
+              <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>3. Vendor Ticket Sales</div>
+                <div style={{ display: "grid", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Tickets Sold</span><strong style={{ color: "#f8fafc" }}>0</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Ticket Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV Platform Fee 7%</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Vendor Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
+                  <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: "#93c5fd", fontWeight: 900 }}>Booth Status: Closed Until Approved</div>
+                </div>
+              </div>
+
+              <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>4. Financial Dock</div>
+                <div style={{ display: "grid", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: "#fecaca" }}>Not Connected</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: "#fef3c7" }}>Pending</strong></div>
+                </div>
+              </div>
+
+              <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Vendor Status</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  <div style={{ border: "1px solid rgba(250,204,21,0.30)", background: "rgba(113,63,18,0.18)", borderRadius: 16, padding: 12 }}>
+                    <div style={{ color: "#fef3c7", fontWeight: 950 }}>Pending</div>
+                    <div style={{ color: "#fde68a", fontSize: 12, marginTop: 4 }}>Waiting for host approval and payment setup.</div>
                   </div>
-                  <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5 }}>
-                    {body}
+                  <div style={{ border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", borderRadius: 16, padding: 12 }}>
+                    <div style={{ color: "#bbf7d0", fontWeight: 950 }}>Approved</div>
+                    <div style={{ color: "#dcfce7", fontSize: 12, marginTop: 4 }}>Vendor can sell booth tickets when payment is connected.</div>
+                  </div>
+                  <div style={{ border: "1px solid rgba(239,68,68,0.24)", background: "rgba(127,29,29,0.14)", borderRadius: 16, padding: 12 }}>
+                    <div style={{ color: "#fecaca", fontWeight: 950 }}>Suspended</div>
+                    <div style={{ color: "#fee2e2", fontSize: 12, marginTop: 4 }}>Ticket sales disabled by host/admin.</div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
         </div>
