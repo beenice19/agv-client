@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AGV Use Case Guide | Churches &amp; Ministries</title>
+  <style>
+    body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#050816; color:#f8fafc; }
+    .wrap { width:min(920px, calc(100% - 32px)); margin:0 auto; padding:42px 0; }
+    .back { color:#fde68a; text-decoration:none; font-weight:900; }
+    .doc { margin-top:24px; border:1px solid rgba(212,175,55,.35); border-radius:28px; background:linear-gradient(135deg, rgba(15,23,42,.96), rgba(2,6,23,.96)); padding:32px; }
+    h1 { font-size:44px; line-height:1; margin:10px 0 14px; letter-spacing:-.04em; }
+    h2 { color:#fde68a; margin-top:30px; }
+    p, li { color:#cbd5e1; line-height:1.65; font-size:16px; }
+    .badge { display:inline-block; border:1px solid rgba(212,175,55,.42); color:#fde68a; border-radius:999px; padding:8px 12px; font-weight:900; font-size:13px; }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:26px; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; border-radius:14px; padding:12px 16px; font-weight:950; text-decoration:none; }
+    .gold { color:#020617; background:linear-gradient(135deg,#fde68a,#d4af37); }
+    .dark { color:#f8fafc; border:1px solid rgba(148,163,184,.3); background:rgba(15,23,42,.8); }
+    .note { border:1px solid rgba(34,197,94,.25); background:rgba(22,101,52,.12); color:#bbf7d0; border-radius:18px; padding:14px; margin-top:18px; line-height:1.5; }
+    @media print {
+      body { background:white; color:black; }
+      .back, .actions { display:none; }
+      .doc { border:none; padding:0; background:white; }
+      p, li { color:black; }
+      h2 { color:black; }
+      .badge, .note { border:1px solid #999; color:black; background:white; }
+    }
+  
+    .voice-panel { border:1px solid rgba(59,130,246,.35); background:rgba(30,64,175,.14); border-radius:22px; padding:18px; margin-top:22px; }
+    .voice-panel h2 { margin-top:0; color:#93c5fd; }
+    .voice-status { margin-top:12px; color:#cbd5e1; font-size:13px; }
+    button.btn { border:0; cursor:pointer; }
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="/agv-splash.html">← Back to AGV Splash Page</a>
+    <article class="doc">
+      <span class="badge">AGV Use Case Guide</span>
+      <h1>Churches &amp; Ministries</h1>
+      <p><strong>Turn your ministry into a global digital venue.</strong></p>
+      <p>Host worship services, Bible studies, leadership training, ticketed conferences, revivals, youth events, and private ministry rooms with AGV.</p>
+      
+<div class="voice-panel">
+  <h2>Listen To This Use Case</h2>
+  <p>Click below to have AGV read this guide aloud. The page will try to use Microsoft Brian Natural voice when available.</p>
+  <div class="actions">
+    <button class="btn gold" onclick="agvReadUseCaseGuide()">Read Aloud</button>
+    <button class="btn dark" onclick="agvStopUseCaseGuide()">Stop Reading</button>
+  </div>
+  <div id="agvVoiceStatus" class="voice-status">Voice ready.</div>
+</div>
+
+
+      <h2>Best Ways To Use AGV</h2>
+      <ul><li>Live worship and teaching</li><li>Ticketed ministry conferences</li><li>Private leadership rooms</li><li>Global outreach</li></ul>
+      <h2>Example Live Event Setup</h2>
+      <p>
+        Create a main AGV room for the primary presentation, then add supporting rooms for smaller conversations,
+        training, private access, interviews, coaching, or breakout sessions. Use ticketing when the event should
+        generate income, and use private access when the event is for invited guests only.
+      </p>
+      <h2>How This Group Can Grow With AGV</h2>
+      <p>
+        AGV helps this audience move from simple streaming into a structured digital venue. That means the host can
+        build a repeatable event model, invite a community, charge admission when appropriate, and create a professional
+        experience without needing multiple disconnected services.
+      </p>
+      <h2>Suggested AGV Plan</h2>
+      <p>Ministry or Convention</p>
+      <h2>Launch Checklist</h2>
+      <ul>
+        <li>Decide the event title, audience, and purpose.</li>
+        <li>Choose free, private, or ticketed access.</li>
+        <li>Create the live room or event structure.</li>
+        <li>Invite speakers, hosts, students, members, clients, or guests.</li>
+        <li>Go live, engage the audience, and build a repeatable event schedule.</li>
+      </ul>
+      <div class="note">
+        Founder message: AGV was created to give everyday people a professional way to safely display their skills,
+        share their message, and monetize their live experiences.
+      </div>
+      <div class="actions">
+        <a class="btn gold" href="/?src=churches-guide-get-started">Start on AGV</a>
+        <a class="btn dark" href="javascript:window.print()">Print or Save as PDF</a>
+      </div>
+    </article>
+  </div>
+
+<!-- PASS_AGV_SPLASH_LIVE_1D_VOICE_FIX -->
+<script>
+(function () {
+  function getStatus() {
+    return document.getElementById("agvVoiceStatus");
+  }
+  function setStatus(message) {
+    var status = getStatus();
+    if (status) status.textContent = message;
+  }
+  function getGuideText() {
+    var doc = document.querySelector(".doc");
+    if (!doc) return "";
+    var clone = doc.cloneNode(true);
+    clone.querySelectorAll(".actions, .voice-panel, script, style, button, a").forEach(function (el) {
+      el.remove();
+    });
+    return clone.innerText
+      .replace(/\s+/g, " ")
+      .replace(/AGV Use Case Guide/g, "AGV Use Case Guide.")
+      .trim();
+  }
+  function chooseVoice() {
+    var voices = window.speechSynthesis.getVoices() || [];
+    return (
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /brian/i.test(v.name) && /natural/i.test(v.name); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /brain/i.test(v.name) && /natural/i.test(v.name); }) ||
+      voices.find(function (v) { return /brian/i.test(v.name); }) ||
+      voices.find(function (v) { return /brain/i.test(v.name); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /natural/i.test(v.name); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name); }) ||
+      voices.find(function (v) { return /^en/i.test(v.lang || ""); }) ||
+      voices[0] ||
+      null
+    );
+  }
+  function splitText(text) {
+    var sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+    var chunks = [];
+    var current = "";
+    sentences.forEach(function (sentence) {
+      sentence = sentence.trim();
+      if (!sentence) return;
+      if ((current + " " + sentence).length > 240) {
+        if (current) chunks.push(current.trim());
+        current = sentence;
+      } else {
+        current += " " + sentence;
+      }
+    });
+    if (current.trim()) chunks.push(current.trim());
+    return chunks;
+  }
+  var currentChunks = [];
+  var currentIndex = 0;
+  var selectedVoice = null;
+  function speakNextChunk() {
+    if (!currentChunks.length || currentIndex >= currentChunks.length) {
+      setStatus("Finished reading.");
+      return;
+    }
+    var utterance = new SpeechSynthesisUtterance(currentChunks[currentIndex]);
+    if (selectedVoice) utterance.voice = selectedVoice;
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    utterance.onend = function () {
+      currentIndex += 1;
+      speakNextChunk();
+    };
+    utterance.onerror = function (event) {
+      setStatus("Voice error: " + (event.error || "unknown error") + ". Try clicking Read Aloud again.");
+    };
+    window.speechSynthesis.speak(utterance);
+  }
+  window.agvReadUseCaseGuide = function () {
+    if (!("speechSynthesis" in window)) {
+      alert("This browser does not support built-in read aloud from web pages.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    var text = getGuideText();
+    if (!text) {
+      setStatus("Could not find use-case text to read.");
+      return;
+    }
+    selectedVoice = chooseVoice();
+    currentChunks = splitText(text);
+    currentIndex = 0;
+    setStatus(
+      selectedVoice
+        ? "Reading aloud with: " + selectedVoice.name
+        : "Reading aloud with your browser default voice."
+    );
+    speakNextChunk();
+  };
+  window.agvStopUseCaseGuide = function () {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
+    currentChunks = [];
+    currentIndex = 0;
+    setStatus("Reading stopped.");
+  };
+  window.addEventListener("load", function () {
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.onvoiceschanged = function () {
+        var voice = chooseVoice();
+        if (voice) setStatus("Voice ready: " + voice.name);
+      };
+      setTimeout(function () {
+        var voice = chooseVoice();
+        if (voice) setStatus("Voice ready: " + voice.name);
+        else setStatus("Voice ready. Click Read Aloud to start.");
+      }, 600);
+    } else {
+      setStatus("Read aloud is not supported in this browser.");
+    }
+  });
+})();
+</script>
+
+</body>
+</html>
