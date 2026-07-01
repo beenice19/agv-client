@@ -393,6 +393,87 @@
       line-height: 1.55;
       font-weight: 950;
     }
+    .lead-form {
+      border: 1px solid rgba(212,175,55,.32);
+      border-radius: 30px;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(212,175,55,.14), transparent 34%),
+        radial-gradient(circle at 86% 20%, rgba(59,130,246,.14), transparent 34%),
+        linear-gradient(135deg, rgba(15,23,42,.92), rgba(2,6,23,.90));
+      padding: 30px;
+      box-shadow: 0 24px 90px rgba(0,0,0,.30);
+    }
+    .lead-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 20px;
+    }
+    .lead-field {
+      display: grid;
+      gap: 7px;
+    }
+    .lead-field.full {
+      grid-column: 1 / -1;
+    }
+    .lead-field label {
+      color: #fde68a;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: .04em;
+    }
+    .lead-field input,
+    .lead-field select,
+    .lead-field textarea {
+      width: 100%;
+      border: 1px solid rgba(148,163,184,.28);
+      border-radius: 15px;
+      background: rgba(15,23,42,.82);
+      color: #f8fafc;
+      padding: 13px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+    .lead-field textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .lead-field input:focus,
+    .lead-field select:focus,
+    .lead-field textarea:focus {
+      border-color: rgba(212,175,55,.70);
+      box-shadow: 0 0 0 3px rgba(212,175,55,.12);
+    }
+    .lead-note {
+      color: #cbd5e1;
+      line-height: 1.65;
+      margin: 8px 0 0;
+      max-width: 830px;
+    }
+    .lead-confirm {
+      display: none;
+      margin-top: 16px;
+      border: 1px solid rgba(34,197,94,.30);
+      background: rgba(22,101,52,.14);
+      color: #bbf7d0;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 850;
+    }
+    .lead-error {
+      display: none;
+      margin-top: 16px;
+      border: 1px solid rgba(239,68,68,.30);
+      background: rgba(127,29,29,.16);
+      color: #fecaca;
+      border-radius: 18px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      font-weight: 850;
+    }
     .interest-box {
       border: 1px solid rgba(59,130,246,.30);
       border-radius: 30px;
@@ -448,6 +529,7 @@
       .cards { grid-template-columns: repeat(2, 1fr); }
       .steps { grid-template-columns: repeat(2, 1fr); }
       .plan-grid { grid-template-columns: repeat(2, 1fr); }
+      .lead-form-grid { grid-template-columns: 1fr; }
       .interest-box { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
@@ -456,6 +538,7 @@
       .cards { grid-template-columns: 1fr; }
       .steps { grid-template-columns: 1fr; }
       .plan-grid { grid-template-columns: 1fr; }
+      .lead-form-grid { grid-template-columns: 1fr; }
       .stage-tiles { grid-template-columns: 1fr; }
       .agv-card-actions { grid-template-columns: 1fr; }
       .hero { padding-top: 44px; }
@@ -473,6 +556,7 @@
         <a href="#who-benefits">Who Benefits</a>
         <a href="#how-it-works">How It Works</a>
         <a href="/?src=splash-signin">Sign In</a>
+        <a href="#agv-lead-capture">Request Info</a>
         <a href="/?src=splash-enter-platform">Enter AGV Platform</a>
         <a href="/?src=splash-get-started">Get Started Free</a>
       </nav>
@@ -788,6 +872,83 @@
         </div>
       </div>
     </section>
+    <!-- PASS_AGV_SPLASH_LIVE_1G_LEAD_CAPTURE -->
+    <section id="agv-lead-capture" class="section">
+      <div class="wrap">
+        <form class="lead-form" id="agvLeadForm">
+          <div class="badge">AGV Interest Form</div>
+          <h2 style="font-size: clamp(30px, 4.5vw, 52px); letter-spacing:-.05em; margin:14px 0 8px;">Request AGV launch information</h2>
+          <p class="lead-note">
+            Tell us how you would like to use AGV. Your information will be prepared as an email so AGV can follow up with the right use case, plan recommendation, and launch guidance.
+          </p>
+          <div class="lead-form-grid">
+            <div class="lead-field">
+              <label for="agvLeadName">Name *</label>
+              <input id="agvLeadName" name="name" type="text" placeholder="Your name" required />
+            </div>
+            <div class="lead-field">
+              <label for="agvLeadEmail">Email *</label>
+              <input id="agvLeadEmail" name="email" type="email" placeholder="you@example.com" required />
+            </div>
+            <div class="lead-field">
+              <label for="agvLeadOrg">Organization</label>
+              <input id="agvLeadOrg" name="organization" type="text" placeholder="Church, school, company, ministry, brand..." />
+            </div>
+            <div class="lead-field">
+              <label for="agvLeadUseCase">Use Case</label>
+              <select id="agvLeadUseCase" name="useCase">
+                <option value="">Select one</option>
+                <option>Churches & Ministries</option>
+                <option>Education & Training</option>
+                <option>Podcasters</option>
+                <option>Business & Coaches</option>
+                <option>Nonprofits & Fundraisers</option>
+                <option>Events & Conventions</option>
+                <option>Independent Creators</option>
+                <option>Healthcare & Wellness</option>
+                <option>Government & Public Service</option>
+                <option>Real Estate</option>
+                <option>Legal & Financial</option>
+                <option>Sports & Training</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="lead-field">
+              <label for="agvLeadPlan">Plan Interest</label>
+              <select id="agvLeadPlan" name="planInterest">
+                <option value="">Select one</option>
+                <option>Free</option>
+                <option>Creator</option>
+                <option>Ministry</option>
+                <option>Convention</option>
+                <option>Not sure yet</option>
+              </select>
+            </div>
+            <div class="lead-field">
+              <label for="agvLeadTimeline">Launch Timeline</label>
+              <select id="agvLeadTimeline" name="timeline">
+                <option value="">Select one</option>
+                <option>Immediately</option>
+                <option>This week</option>
+                <option>This month</option>
+                <option>Next 90 days</option>
+                <option>Still exploring</option>
+              </select>
+            </div>
+            <div class="lead-field full">
+              <label for="agvLeadMessage">Message</label>
+              <textarea id="agvLeadMessage" name="message" placeholder="Tell us what you want to host, teach, broadcast, sell tickets to, or build with AGV."></textarea>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-gold" type="submit">Submit Interest</button>
+            <a class="btn btn-dark" href="/?src=splash-lead-enter-platform">Enter AGV Platform</a>
+          </div>
+          <div class="lead-confirm" id="agvLeadConfirm"></div>
+          <div class="lead-error" id="agvLeadError"></div>
+        </form>
+      </div>
+    </section>
     <section id="contact-interest" class="section">
       <div class="wrap">
         <div class="interest-box">
@@ -842,5 +1003,102 @@
       © 2026 Avant Global Vision. Everyone deserves a stage.
     </div>
   </footer>
+
+<!-- PASS_AGV_SPLASH_LIVE_1G_LEAD_CAPTURE_SCRIPT -->
+<script>
+(function () {
+  var form = document.getElementById("agvLeadForm");
+  if (!form) return;
+  function $(id) {
+    return document.getElementById(id);
+  }
+  function showMessage(id, message) {
+    var el = $(id);
+    if (!el) return;
+    el.style.display = "block";
+    el.textContent = message;
+  }
+  function hideMessage(id) {
+    var el = $(id);
+    if (!el) return;
+    el.style.display = "none";
+    el.textContent = "";
+  }
+  function getValue(id) {
+    var el = $(id);
+    return el ? String(el.value || "").trim() : "";
+  }
+  function saveLead(lead) {
+    var key = "agv_splash_leads_v1";
+    var existing = [];
+    try {
+      existing = JSON.parse(localStorage.getItem(key) || "[]");
+      if (!Array.isArray(existing)) existing = [];
+    } catch (e) {
+      existing = [];
+    }
+    existing.unshift(lead);
+    localStorage.setItem(key, JSON.stringify(existing.slice(0, 50)));
+  }
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+    hideMessage("agvLeadConfirm");
+    hideMessage("agvLeadError");
+    var lead = {
+      createdAt: new Date().toISOString(),
+      source: "agv-splash",
+      page: window.location.href,
+      name: getValue("agvLeadName"),
+      email: getValue("agvLeadEmail"),
+      organization: getValue("agvLeadOrg"),
+      useCase: getValue("agvLeadUseCase"),
+      planInterest: getValue("agvLeadPlan"),
+      timeline: getValue("agvLeadTimeline"),
+      message: getValue("agvLeadMessage")
+    };
+    if (!lead.name || !lead.email) {
+      showMessage("agvLeadError", "Please enter your name and email before submitting.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(lead.email)) {
+      showMessage("agvLeadError", "Please enter a valid email address.");
+      return;
+    }
+    try {
+      saveLead(lead);
+    } catch (e) {
+      // Keep going even if browser storage is blocked.
+    }
+    var subject = "AGV Launch Interest - " + (lead.useCase || "General Inquiry");
+    var body = [
+      "AGV Launch Interest",
+      "",
+      "Name: " + lead.name,
+      "Email: " + lead.email,
+      "Organization: " + (lead.organization || "Not provided"),
+      "Use Case: " + (lead.useCase || "Not selected"),
+      "Plan Interest: " + (lead.planInterest || "Not selected"),
+      "Launch Timeline: " + (lead.timeline || "Not selected"),
+      "",
+      "Message:",
+      lead.message || "No message provided.",
+      "",
+      "Source Page: " + lead.page,
+      "Submitted: " + lead.createdAt
+    ].join("\n");
+    var mailto = "mailto:byron217@yahoo.com"
+      + "?subject=" + encodeURIComponent(subject)
+      + "&body=" + encodeURIComponent(body);
+    showMessage(
+      "agvLeadConfirm",
+      "Thank you. Your AGV interest request has been prepared. If your email app opens, send the message so AGV can follow up."
+    );
+    setTimeout(function () {
+      window.location.href = mailto;
+    }, 450);
+  });
+})();
+</script>
+
 </body>
 </html>
