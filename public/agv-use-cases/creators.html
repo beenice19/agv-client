@@ -89,9 +89,17 @@
     </article>
   </div>
 
-<!-- PASS_AGV_SPLASH_LIVE_1D_VOICE_FIX -->
+
+
+
+<!-- PASS_AGV_SPLASH_LIVE_1F_REMOTE_VOICE_FIX -->
 <script>
 (function () {
+  var currentChunks = [];
+  var currentIndex = 0;
+  var selectedVoice = null;
+  var triedDefaultFallback = false;
+  var keepAliveTimer = null;
   function getStatus() {
     return document.getElementById("agvVoiceStatus");
   }
@@ -111,28 +119,32 @@
       .replace(/AGV Use Case Guide/g, "AGV Use Case Guide.")
       .trim();
   }
-  function chooseVoice() {
-    var voices = window.speechSynthesis.getVoices() || [];
+  function getVoicesSafe() {
+    if (!("speechSynthesis" in window)) return [];
+    return window.speechSynthesis.getVoices() || [];
+  }
+  function chooseBestVoice() {
+    var voices = getVoicesSafe();
     return (
       voices.find(function (v) { return /microsoft/i.test(v.name) && /brian/i.test(v.name) && /natural/i.test(v.name); }) ||
-      voices.find(function (v) { return /microsoft/i.test(v.name) && /brain/i.test(v.name) && /natural/i.test(v.name); }) ||
-      voices.find(function (v) { return /brian/i.test(v.name); }) ||
-      voices.find(function (v) { return /brain/i.test(v.name); }) ||
-      voices.find(function (v) { return /microsoft/i.test(v.name) && /natural/i.test(v.name); }) ||
-      voices.find(function (v) { return /microsoft/i.test(v.name); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /brian/i.test(v.name); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /natural/i.test(v.name) && /^en/i.test(v.lang || ""); }) ||
+      voices.find(function (v) { return /microsoft/i.test(v.name) && /^en/i.test(v.lang || ""); }) ||
+      voices.find(function (v) { return /^en-US/i.test(v.lang || ""); }) ||
       voices.find(function (v) { return /^en/i.test(v.lang || ""); }) ||
       voices[0] ||
       null
     );
   }
   function splitText(text) {
-    var sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+    var clean = String(text || "").replace(/\s+/g, " ").trim();
+    var sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [clean];
     var chunks = [];
     var current = "";
     sentences.forEach(function (sentence) {
       sentence = sentence.trim();
       if (!sentence) return;
-      if ((current + " " + sentence).length > 240) {
+      if ((current + " " + sentence).length > 160) {
         if (current) chunks.push(current.trim());
         current = sentence;
       } else {
@@ -142,72 +154,125 @@
     if (current.trim()) chunks.push(current.trim());
     return chunks;
   }
-  var currentChunks = [];
-  var currentIndex = 0;
-  var selectedVoice = null;
+  function startKeepAlive() {
+    stopKeepAlive();
+    keepAliveTimer = setInterval(function () {
+      if ("speechSynthesis" in window && window.speechSynthesis.speaking && window.speechSynthesis.paused) {
+        window.speechSynthesis.resume();
+      }
+    }, 1000);
+  }
+  function stopKeepAlive() {
+    if (keepAliveTimer) {
+      clearInterval(keepAliveTimer);
+      keepAliveTimer = null;
+    }
+  }
   function speakNextChunk() {
     if (!currentChunks.length || currentIndex >= currentChunks.length) {
+      stopKeepAlive();
       setStatus("Finished reading.");
       return;
     }
-    var utterance = new SpeechSynthesisUtterance(currentChunks[currentIndex]);
-    if (selectedVoice) utterance.voice = selectedVoice;
-    utterance.rate = 0.9;
+    var chunk = currentChunks[currentIndex];
+    var utterance = new SpeechSynthesisUtterance(chunk);
+    utterance.lang = "en-US";
+    utterance.rate = 0.86;
     utterance.pitch = 1.0;
     utterance.volume = 1.0;
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+      utterance.lang = selectedVoice.lang || "en-US";
+    }
+    utterance.onstart = function () {
+      setStatus(
+        selectedVoice
+          ? "Reading aloud with: " + selectedVoice.name
+          : "Reading aloud with this browser's default voice."
+      );
+    };
     utterance.onend = function () {
       currentIndex += 1;
       speakNextChunk();
     };
     utterance.onerror = function (event) {
-      setStatus("Voice error: " + (event.error || "unknown error") + ". Try clicking Read Aloud again.");
+      var errorName = event && event.error ? event.error : "unknown error";
+      // If Microsoft or chosen voice fails, retry once using browser default voice.
+      if (!triedDefaultFallback && selectedVoice) {
+        triedDefaultFallback = true;
+        selectedVoice = null;
+        window.speechSynthesis.cancel();
+        setTimeout(function () {
+          setStatus("Selected voice failed. Retrying with browser default voice...");
+          speakNextChunk();
+        }, 350);
+        return;
+      }
+      stopKeepAlive();
+      setStatus("Voice error: " + errorName + ". Try Microsoft Edge, confirm computer audio is enabled, then click Read Aloud again.");
     };
-    window.speechSynthesis.speak(utterance);
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      setStatus("Voice failed to start: " + (e.message || "unknown error"));
+    }
   }
   window.agvReadUseCaseGuide = function () {
     if (!("speechSynthesis" in window)) {
-      alert("This browser does not support built-in read aloud from web pages.");
+      alert("This browser does not support built-in web page read aloud.");
       return;
     }
     window.speechSynthesis.cancel();
+    stopKeepAlive();
     var text = getGuideText();
     if (!text) {
       setStatus("Could not find use-case text to read.");
       return;
     }
-    selectedVoice = chooseVoice();
+    triedDefaultFallback = false;
+    selectedVoice = chooseBestVoice();
     currentChunks = splitText(text);
     currentIndex = 0;
-    setStatus(
-      selectedVoice
-        ? "Reading aloud with: " + selectedVoice.name
-        : "Reading aloud with your browser default voice."
-    );
-    speakNextChunk();
+    if (!currentChunks.length) {
+      setStatus("No readable text found.");
+      return;
+    }
+    setStatus("Starting read aloud...");
+    startKeepAlive();
+    // This timeout helps remote browsers finish cancel/reset before starting new speech.
+    setTimeout(function () {
+      speakNextChunk();
+    }, 250);
   };
   window.agvStopUseCaseGuide = function () {
     if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+    stopKeepAlive();
     currentChunks = [];
     currentIndex = 0;
     setStatus("Reading stopped.");
   };
   window.addEventListener("load", function () {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.getVoices();
-      window.speechSynthesis.onvoiceschanged = function () {
-        var voice = chooseVoice();
-        if (voice) setStatus("Voice ready: " + voice.name);
-      };
-      setTimeout(function () {
-        var voice = chooseVoice();
-        if (voice) setStatus("Voice ready: " + voice.name);
-        else setStatus("Voice ready. Click Read Aloud to start.");
-      }, 600);
-    } else {
+    if (!("speechSynthesis" in window)) {
       setStatus("Read aloud is not supported in this browser.");
+      return;
     }
+    window.speechSynthesis.getVoices();
+    setTimeout(function () {
+      var voice = chooseBestVoice();
+      if (voice) {
+        setStatus("Voice ready: " + voice.name + ". Click Read Aloud to start.");
+      } else {
+        setStatus("Voice ready. Click Read Aloud to start.");
+      }
+    }, 800);
+    window.speechSynthesis.onvoiceschanged = function () {
+      var voice = chooseBestVoice();
+      if (voice) {
+        setStatus("Voice ready: " + voice.name + ". Click Read Aloud to start.");
+      }
+    };
   });
 })();
 </script>
