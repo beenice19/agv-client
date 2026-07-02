@@ -32,7 +32,7 @@ const SUBSCRIPTION_API_BASE =
   import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL || "http://127.0.0.1:8792";
 // PASS34C_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
-  import.meta.env.VITE_AGV_TICKET_API_URL || "http://127.0.0.1:8786";
+  import.meta.env.VITE_AGV_TICKET_API_URL || "http://127.0.0.1:8796";
 
 const TICKET_STORAGE_KEY = "agv_ticket_code";
 
@@ -347,6 +347,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const [ticketMessage, setTicketMessage] = useState("");
   const [ticketWorking, setTicketWorking] = useState(false);
+  // PASS_AGV_REVENUE_LOCK_1C_CLIENT_TICKET_CHECKOUT
+  const [ticketCheckoutWorking, setTicketCheckoutWorking] = useState(false);
 
   const [livekitRoom, setLivekitRoom] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
@@ -670,6 +672,82 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     setTicketWorking(false);
   }
 
+
+  // PASS_AGV_REVENUE_LOCK_1C_CLIENT_TICKET_CHECKOUT
+  async function startTicketCheckout(eventItem = selectedLandingEvent) {
+    const eventTitle = String(eventItem?.title || "AGV Live Event").trim();
+    const roomId = String(eventItem?.roomId || selectedRoomId || "main-hall").trim();
+    const rawTicketPrice = String(eventItem?.ticketPrice || "").trim();
+    const numericTicketPrice = Number(rawTicketPrice.replace(/[^0-9.]/g, ""));
+    if (!Number.isFinite(numericTicketPrice) || numericTicketPrice <= 0) {
+      setTicketMessage("This event does not have a paid ticket price set yet.");
+      setStatus("Ticket checkout needs a valid paid ticket price.");
+      return;
+    }
+    const savedName =
+      storedAccount?.name ||
+      storedAccount?.displayName ||
+      freeAccount?.name ||
+      freeAccount?.displayName ||
+      "";
+    const savedEmail =
+      storedAccount?.email ||
+      freeAccount?.email ||
+      "";
+    const buyerName = String(
+      savedName || window.prompt("Enter buyer name for this AGV ticket:", "AGV Viewer") || ""
+    ).trim();
+    const buyerEmail = String(
+      savedEmail || window.prompt("Enter buyer email for this AGV ticket:", "") || ""
+    ).trim().toLowerCase();
+    if (!buyerName || !buyerEmail) {
+      setTicketMessage("Buyer name and email are required before Stripe Checkout.");
+      setStatus("Ticket checkout cancelled. Buyer name and email are required.");
+      return;
+    }
+    const joiner = window.location.search ? "&" : "?";
+    const successUrl =
+      window.location.origin +
+      window.location.pathname +
+      window.location.search +
+      joiner +
+      "agvTicketCheckout=success&sessionId={CHECKOUT_SESSION_ID}";
+    const cancelUrl =
+      window.location.origin +
+      window.location.pathname +
+      window.location.search +
+      joiner +
+      "agvTicketCheckout=cancelled";
+    setTicketCheckoutWorking(true);
+    setTicketMessage("Opening secure Stripe Checkout...");
+    setStatus("Opening secure Stripe Checkout for AGV ticket...");
+    try {
+      const response = await fetch(`${TICKET_API_BASE}/api/tickets/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          buyerName,
+          buyerEmail,
+          eventName: eventTitle,
+          roomId,
+          ticketPrice: numericTicketPrice.toFixed(2),
+          successUrl,
+          cancelUrl,
+        }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data?.ok || !data?.checkoutUrl) {
+        throw new Error(data?.message || data?.error || "Stripe Checkout could not be created.");
+      }
+      setTicketMessage("Stripe Checkout created. Redirecting...");
+      setStatus("Stripe Checkout created for AGV ticket. Redirecting...");
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      setTicketMessage("Ticket checkout error: " + (error?.message || String(error)));
+      setStatus("Ticket checkout failed.");
+      setTicketCheckoutWorking(false);
+    }
+  }
   function clearTicket() {
     window.localStorage.removeItem(TICKET_STORAGE_KEY);
     setTicketCode("");
@@ -3116,7 +3194,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       `Ticket Price: ${price}\n\n` +
       `Description:\n${description}\n\n` +
       `Landing Link:\n${link}\n\n` +
-      `This is a CLIENT-only preview shell. Full public event routing and ticket checkout come in a later SERVER pass.`;
+      `This event landing page now supports secure Stripe ticket checkout. AGV only issues valid tickets after SERVER payment verification.`;
 
     alert(summary);
   }
@@ -3315,8 +3393,24 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                 <div style={{ color: "#cbd5e1", lineHeight: 1.65 }}>
                   This public event page gives viewers a clean place to understand the event before entering the room.
-                  Ticket purchase, ticket code entry, and direct checkout routing can be connected in the next pass.
+                  Buy your ticket through secure Stripe Checkout. AGV will not issue a valid ticket until the SERVER verifies Stripe payment as paid.
                 </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
+                  <button
+                    style={ticketCheckoutWorking ? styles.lockedButton : styles.primaryButton}
+                    onClick={() => startTicketCheckout(selectedLandingEvent)}
+                    disabled={ticketCheckoutWorking || !selectedLandingEvent}
+                  >
+                    {ticketCheckoutWorking ? "Opening Stripe..." : "Buy Ticket with Stripe"}
+                  </button>
+                  <button
+                    style={styles.secondaryButton}
+                    onClick={() => setTicketMessage("Enter your ticket code below, then press Verify Ticket.")}
+                  >
+                    Already Have a Ticket Code
+                  </button>
+                </div>
+                {ticketMessage ? <div style={{ ...styles.ticketMessage, marginTop: 12 }}>{ticketMessage}</div> : null}
               </div>
 
               {!selectedLandingEvent ? (
