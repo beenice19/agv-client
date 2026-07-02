@@ -349,6 +349,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const [ticketWorking, setTicketWorking] = useState(false);
   // PASS_AGV_REVENUE_LOCK_1C_CLIENT_TICKET_CHECKOUT
   const [ticketCheckoutWorking, setTicketCheckoutWorking] = useState(false);
+  // PASS_AGV_REVENUE_LOCK_1D_STRIPE_RETURN_CONFIRM
+  const [issuedTicketCode, setIssuedTicketCode] = useState("");
+  const [ticketReturnWorking, setTicketReturnWorking] = useState(false);
 
   const [livekitRoom, setLivekitRoom] = useState(null);
   const [cameraOn, setCameraOn] = useState(false);
@@ -456,8 +459,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     );
   }, [events, eventIdFromUrl]);
 
+  // PASS_AGV_REVENUE_LOCK_1D_B_TICKET_ENTRY_HARDENING
   const showEventLandingRoute =
-    Boolean(eventIdFromUrl) && !eventLandingDismissed && isViewerOnly;
+    Boolean(eventIdFromUrl) && !eventLandingDismissed;
 
   // PASS31X_OWNER_ROOM_VISIBILITY
   const visibleRooms = useMemo(() => {
@@ -748,6 +752,80 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setTicketCheckoutWorking(false);
     }
   }
+
+  // PASS_AGV_REVENUE_LOCK_1D_STRIPE_RETURN_CONFIRM
+  useEffect(() => {
+    let cancelled = false;
+    async function confirmReturnedStripeTicket() {
+      let params;
+      try {
+        params = new URLSearchParams(window.location.search || "");
+      } catch {
+        return;
+      }
+      const checkoutStatus = String(params.get("agvTicketCheckout") || "").trim().toLowerCase();
+      const sessionId = String(params.get("sessionId") || "").trim();
+      if (checkoutStatus === "cancelled") {
+        setTicketMessage("Stripe ticket checkout was cancelled. No ticket was issued.");
+        setStatus("AGV ticket checkout cancelled.");
+        return;
+      }
+      if (checkoutStatus !== "success" || !sessionId) {
+        return;
+      }
+      const storageKey = "agv_ticket_checkout_confirmed_" + sessionId;
+      // PASS_AGV_REVENUE_LOCK_1D_C_FAILED_RETURN_CLEARS_STALE_TICKET
+      if (window.sessionStorage.getItem(storageKey) === "paid") {
+        return;
+      }
+      window.sessionStorage.setItem(storageKey, "pending");
+      setTicketReturnWorking(true);
+      setTicketCheckoutWorking(true);
+      setTicketMessage("Stripe returned to AGV. Confirming paid checkout with SERVER...");
+      setStatus("Confirming Stripe paid ticket checkout...");
+      try {
+        const response = await fetch(`${TICKET_API_BASE}/api/tickets/confirm-checkout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data?.ok || !data?.ticket?.code) {
+          throw new Error(data?.message || data?.error || "Stripe payment was not confirmed as paid.");
+        }
+        if (cancelled) return;
+        const code = String(data.ticket.code || "").trim().toUpperCase();
+        if (code) {
+          window.localStorage.setItem(TICKET_STORAGE_KEY, code);
+          window.sessionStorage.setItem(storageKey, "paid");
+          setTicketCode(code);
+          setIssuedTicketCode(code);
+          setTicketApproved(true);
+        }
+        setTicketMessage("Payment verified. AGV ticket issued: " + code);
+        setStatus("Stripe payment verified. AGV ticket issued.");
+      } catch (error) {
+        if (cancelled) return;
+        // PASS_AGV_REVENUE_LOCK_1D_C_FAILED_RETURN_CLEARS_STALE_TICKET
+        window.localStorage.removeItem(TICKET_STORAGE_KEY);
+        window.sessionStorage.removeItem(storageKey);
+        setTicketCode("");
+        setIssuedTicketCode("");
+        setTicketApproved(false);
+        setTicketMessage("Ticket confirmation error: " + (error?.message || String(error)));
+        setStatus("Ticket checkout returned, but payment was not confirmed. No ticket was issued.");
+      } finally {
+        if (!cancelled) {
+          setTicketReturnWorking(false);
+          setTicketCheckoutWorking(false);
+        }
+      }
+    }
+    confirmReturnedStripeTicket();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   function clearTicket() {
     window.localStorage.removeItem(TICKET_STORAGE_KEY);
     setTicketCode("");
@@ -2559,12 +2637,16 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
 
   async function joinAsViewer() {
+    // PASS_AGV_REVENUE_LOCK_1D_B_TICKET_ENTRY_HARDENING
+    if (currentPlan !== "FREE" && !ticketApproved) {
+      setStatus("Ticket required before viewer can join the room.");
+      setTicketMessage("Buy a ticket with Stripe or enter a valid AGV ticket code before joining.");
+      return;
+    }
     const usedBroadcastMode = await tryJoinBroadcastViewer(selectedRoomId);
-
     if (usedBroadcastMode) {
       return;
     }
-
     await connectToRoom("viewer", selectedRoomId);
   }
 
@@ -3194,7 +3276,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       `Ticket Price: ${price}\n\n` +
       `Description:\n${description}\n\n` +
       `Landing Link:\n${link}\n\n` +
-      `This event landing page now supports secure Stripe ticket checkout. AGV only issues valid tickets after SERVER payment verification.`;
+      `This event landing page now supports secure Stripe ticket checkout, return confirmation, and ticket-code display. AGV only issues valid tickets after SERVER payment verification.`;
 
     alert(summary);
   }
@@ -3411,6 +3493,29 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   </button>
                 </div>
                 {ticketMessage ? <div style={{ ...styles.ticketMessage, marginTop: 12 }}>{ticketMessage}</div> : null}
+                {issuedTicketCode ? (
+                  <div
+                    style={{
+                      marginTop: 12,
+                      padding: 14,
+                      borderRadius: 16,
+                      border: "1px solid rgba(34,197,94,0.35)",
+                      background: "rgba(34,197,94,0.10)",
+                      color: "#bbf7d0",
+                      fontWeight: 900,
+                    }}
+                  >
+                    Your AGV Ticket Code: <span style={{ color: "#ffffff" }}>{issuedTicketCode}</span>
+                    <div style={{ color: "#dcfce7", fontSize: 12, marginTop: 6 }}>
+                      Save this code. You can enter it below and press Verify Ticket to unlock viewer access.
+                    </div>
+                  </div>
+                ) : null}
+                {ticketReturnWorking ? (
+                  <div style={{ ...styles.helperText, marginTop: 10 }}>
+                    Confirming Stripe payment with AGV SERVER...
+                  </div>
+                ) : null}
               </div>
 
               {!selectedLandingEvent ? (
@@ -3460,6 +3565,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  // PASS_AGV_REVENUE_LOCK_1D_B_TICKET_ENTRY_HARDENING
+                  const numericLandingPrice = Number(String(landingPrice || "").replace(/[^0-9.]/g, ""));
+                  if (Number.isFinite(numericLandingPrice) && numericLandingPrice > 0 && !ticketApproved) {
+                    setTicketMessage("Paid event: buy a ticket with Stripe or verify your AGV ticket code before entering.");
+                    setStatus("Paid event requires a verified ticket before entry.");
+                    return;
+                  }
                   setEventLandingDismissed(true);
                   handleJoinRoom(landingRoomId);
                 }}
@@ -3493,6 +3605,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   cursor: "pointer",
                 }}
                 onClick={() => {
+                  // PASS_AGV_REVENUE_LOCK_1D_B_TICKET_ENTRY_HARDENING
+                  const numericLandingPrice = Number(String(landingPrice || "").replace(/[^0-9.]/g, ""));
+                  if (Number.isFinite(numericLandingPrice) && numericLandingPrice > 0 && !ticketApproved) {
+                    setTicketMessage("Paid event: buy a ticket with Stripe or verify your AGV ticket code before continuing.");
+                    setStatus("Paid event requires a verified ticket before continuing.");
+                    return;
+                  }
                   const url = new URL(window.location.href);
                   url.searchParams.delete("event");
                   window.history.replaceState({}, "", url.toString());
