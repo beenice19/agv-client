@@ -276,3 +276,210 @@
 
   window.addEventListener("load", runCleaner);
 })();
+// AGV CONTROL CENTER TITLE WORDING FIX — DISPLAY ONLY
+// Corrects: Control Center â â  Host Tools
+// To:       Control Center Host Tools
+// This does not touch Stripe, tickets, LiveKit, rooms, vendors, or server data.
+
+(function () {
+  if (window.__AGV_CONTROL_CENTER_TITLE_WORDING_FIX__) return;
+  window.__AGV_CONTROL_CENTER_TITLE_WORDING_FIX__ = true;
+
+  function hasBadEncoding(value) {
+    return /[ÃÂ ]|â€|â€™|â€œ|â€\u009d|â€“|â€”|â€¢|€|¢|š|¬|ƒ|‚|„|œ|™|/.test(String(value || ""));
+  }
+
+  function repairTitleText(value) {
+    let text = String(value || "");
+
+    text = text.replace(
+      /Control\s+Center(?:\s|[^\w])*Host\s+Tools/gi,
+      "Control Center Host Tools"
+    );
+
+    return text;
+  }
+
+  function fixControlCenterTitleNodes(root) {
+    if (!root) return;
+
+    const walker = document.createTreeWalker(
+      root,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          const value = node.nodeValue || "";
+
+          if (
+            value.toLowerCase().includes("control center") &&
+            value.toLowerCase().includes("host tools") &&
+            hasBadEncoding(value)
+          ) {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+
+          return NodeFilter.FILTER_SKIP;
+        },
+      }
+    );
+
+    const nodes = [];
+
+    while (walker.nextNode()) {
+      nodes.push(walker.currentNode);
+    }
+
+    nodes.forEach(function (node) {
+      const fixed = repairTitleText(node.nodeValue);
+
+      if (fixed !== node.nodeValue) {
+        node.nodeValue = fixed;
+      }
+    });
+  }
+
+  function fixShortTitleElements() {
+    document.querySelectorAll("h1, h2, h3, h4, div, span").forEach(function (el) {
+      const text = String(el.textContent || "");
+
+      if (text.length > 140) return;
+
+      if (
+        text.toLowerCase().includes("control center") &&
+        text.toLowerCase().includes("host tools") &&
+        hasBadEncoding(text)
+      ) {
+        el.textContent = "Control Center Host Tools";
+      }
+    });
+  }
+
+  let scheduled = false;
+
+  function scheduleFix() {
+    if (scheduled) return;
+
+    scheduled = true;
+
+    window.requestAnimationFrame(function () {
+      scheduled = false;
+      fixControlCenterTitleNodes(document.body);
+      fixShortTitleElements();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scheduleFix);
+  } else {
+    scheduleFix();
+  }
+
+  window.addEventListener("load", scheduleFix);
+
+  const observer = new MutationObserver(scheduleFix);
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+})();
+// AGV CONTROL CENTER TITLE FINAL OVERRIDE — DISPLAY ONLY
+// Final cleanup for: Control Center â â ▯ Host Tools
+// Replaces the visible title with: Control Center Host Tools
+// This does not touch Stripe, tickets, LiveKit, rooms, vendors, or server data.
+
+(function () {
+  if (window.__AGV_CONTROL_CENTER_TITLE_FINAL_OVERRIDE__) return;
+  window.__AGV_CONTROL_CENTER_TITLE_FINAL_OVERRIDE__ = true;
+
+  function textOf(el) {
+    return String(el && el.textContent || "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function isProtected(el) {
+    if (!el || !el.tagName) return true;
+
+    const tag = el.tagName.toLowerCase();
+
+    return (
+      tag === "html" ||
+      tag === "body" ||
+      el.id === "root"
+    );
+  }
+
+  function hasControls(el) {
+    if (!el || !el.querySelector) return false;
+    return !!el.querySelector("button, input, textarea, select, a, [role='button']");
+  }
+
+  function isBadControlCenterTitle(el) {
+    if (!el || isProtected(el)) return false;
+
+    const text = textOf(el);
+    const lower = text.toLowerCase();
+
+    if (!lower.includes("control center")) return false;
+    if (!lower.includes("host tools")) return false;
+
+    // Do not overwrite the whole card or helper paragraph.
+    if (text.length < 18) return false;
+    if (text.length > 95) return false;
+    if (lower.includes("organized host tools")) return false;
+    if (lower.includes("open vendor financial dock")) return false;
+    if (hasControls(el)) return false;
+
+    return true;
+  }
+
+  function fixTitle() {
+    const candidates = Array.from(
+      document.querySelectorAll("h1, h2, h3, h4, strong, b, div, span")
+    )
+      .filter(isBadControlCenterTitle)
+      .sort(function (a, b) {
+        return textOf(a).length - textOf(b).length;
+      });
+
+    const target = candidates[0];
+
+    if (target) {
+      target.textContent = "Control Center Host Tools";
+      target.setAttribute("data-agv-title-fixed", "control-center-host-tools");
+    }
+  }
+
+  let scheduled = false;
+
+  function scheduleFix() {
+    if (scheduled) return;
+
+    scheduled = true;
+
+    window.requestAnimationFrame(function () {
+      scheduled = false;
+      fixTitle();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scheduleFix);
+  } else {
+    scheduleFix();
+  }
+
+  window.addEventListener("load", scheduleFix);
+
+  const observer = new MutationObserver(scheduleFix);
+
+  observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+
+  setInterval(scheduleFix, 1200);
+})();
