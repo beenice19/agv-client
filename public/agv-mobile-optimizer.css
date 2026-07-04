@@ -1,0 +1,211 @@
+/* AGV MOBILE OPTIMIZER — CLIENT DISPLAY ONLY
+   Makes AGV usable on iPhone/mobile screens.
+   Does not touch Stripe, tickets, LiveKit, rooms, vendors, or server data.
+*/
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas,
+iframe {
+  max-width: 100% !important;
+}
+
+/* iPhone / mobile layout */
+@media screen and (max-width: 900px) {
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  #root {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  main,
+  section,
+  article,
+  aside,
+  header,
+  footer,
+  nav {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  /* Force desktop grid layouts to stack on mobile */
+  [style*="grid-template-columns"],
+  [style*="display: grid"],
+  [style*="display:grid"] {
+    grid-template-columns: 1fr !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Let desktop flex rows wrap instead of pushing right side off-screen */
+  [style*="display: flex"],
+  [style*="display:flex"] {
+    flex-wrap: wrap !important;
+    max-width: 100% !important;
+  }
+
+  /* Common AGV cards / panels / docks should fit the phone screen */
+  [class*="panel"],
+  [class*="Panel"],
+  [class*="card"],
+  [class*="Card"],
+  [class*="dock"],
+  [class*="Dock"],
+  [class*="right"],
+  [class*="Right"],
+  [class*="side"],
+  [class*="Side"],
+  [class*="control"],
+  [class*="Control"] {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Prevent fixed/right panels from disappearing off-screen */
+  aside,
+  [class*="right"],
+  [class*="Right"],
+  [class*="side"],
+  [class*="Side"],
+  [class*="panel"],
+  [class*="Panel"] {
+    position: static !important;
+    inset: auto !important;
+    right: auto !important;
+    left: auto !important;
+    transform: none !important;
+  }
+
+  /* Keep the Bingo floating add-on working */
+  #agv-clean-bingo-addon {
+    position: fixed !important;
+    right: 8px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    z-index: 999999 !important;
+  }
+
+  #agv-clean-bingo-addon-panel {
+    width: calc(100vw - 20px) !important;
+    max-width: 340px !important;
+  }
+
+  /* Stage/video area should shrink to mobile width */
+  video,
+  canvas,
+  iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* Buttons and inputs should wrap instead of overflowing */
+  button,
+  input,
+  textarea,
+  select,
+  a {
+    max-width: 100% !important;
+  }
+
+  button {
+    white-space: normal !important;
+  }
+
+  /* Host tools should be scrollable, not off-screen */
+  .agv-control-center-compact-card {
+    max-height: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+
+  .agv-control-center-toolbar {
+    position: sticky !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  /* Google Drive / Screen Share row should fit on phone */
+  .agv-screenshare-google-drive-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+
+  .agv-google-drive-next-to-screenshare {
+    max-width: 100% !important;
+    width: auto !important;
+  }
+
+  /* Make long text break cleanly */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  div,
+  span {
+    overflow-wrap: break-word !important;
+  }
+}
+
+/* Smaller iPhones */
+@media screen and (max-width: 480px) {
+  body {
+    font-size: 14px !important;
+  }
+
+  h1 {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+    line-height: 1.2 !important;
+  }
+
+  h3 {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-size: 14px !important;
+  }
+}
