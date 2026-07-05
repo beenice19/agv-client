@@ -1,0 +1,1960 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AGV University Pal — PASS 2</title>
+<style>
+  :root{
+    --bg:#050816;
+    --panel:#101827;
+    --panel2:#162033;
+    --gold:#f7b733;
+    --gold2:#ffd76a;
+    --orange:#f97316;
+    --red:#b91c1c;
+    --blue:#2563eb;
+    --green:#16a34a;
+    --text:#f8fafc;
+    --muted:#cbd5e1;
+    --line:rgba(255,255,255,.14);
+    --soft:rgba(255,255,255,.07);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Arial, Helvetica, sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(circle at top left, rgba(247,183,51,.18), transparent 34%),
+      radial-gradient(circle at top right, rgba(37,99,235,.14), transparent 36%),
+      linear-gradient(135deg,#030712,#07111f 42%,#111827);
+    min-height:100vh;
+  }
+  header{
+    padding:22px 24px;
+    border-bottom:1px solid var(--line);
+    background:rgba(0,0,0,.38);
+    position:sticky;
+    top:0;
+    z-index:10;
+    backdrop-filter:blur(10px);
+  }
+  .brand{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+  .logo{
+    width:58px;height:58px;border-radius:20px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--gold),var(--orange));
+    color:#111827;font-weight:1000;font-size:20px;
+    box-shadow:0 12px 30px rgba(0,0,0,.35);
+  }
+  h1,h2,h3,p{margin-top:0}
+  h1{margin-bottom:3px;font-size:28px}
+  .tag{color:var(--muted);font-weight:700;font-size:14px}
+  main{
+    width:min(1380px, calc(100vw - 28px));
+    margin:22px auto 60px;
+    display:grid;
+    grid-template-columns:360px 1fr;
+    gap:18px;
+  }
+  @media(max-width:980px){main{grid-template-columns:1fr}}
+  section,.card{
+    background:rgba(16,24,39,.88);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:18px;
+    box-shadow:0 20px 55px rgba(0,0,0,.30);
+  }
+  .hero{
+    background:
+      linear-gradient(135deg, rgba(247,183,51,.13), rgba(37,99,235,.10)),
+      rgba(16,24,39,.88);
+  }
+  label{
+    display:block;color:var(--gold2);
+    font-size:12px;font-weight:900;
+    text-transform:uppercase;letter-spacing:.06em;
+    margin:12px 0 5px;
+  }
+  input,select,textarea{
+    width:100%;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.28);
+    color:var(--text);
+    border-radius:13px;
+    padding:12px;
+    outline:none;
+    font-weight:700;
+  }
+  textarea{min-height:88px;resize:vertical}
+  button{
+    border:0;border-radius:14px;padding:12px 14px;
+    font-weight:1000;cursor:pointer;transition:.15s ease;
+  }
+  button:hover{transform:translateY(-1px);filter:brightness(1.08)}
+  .primary{background:linear-gradient(135deg,var(--gold),var(--orange));color:#111827}
+  .blue{background:linear-gradient(135deg,#60a5fa,#2563eb);color:white}
+  .green{background:linear-gradient(135deg,#4ade80,#16a34a);color:#052e16}
+  .red{background:linear-gradient(135deg,#f87171,#b91c1c);color:white}
+  .ghost{background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--line)}
+  .wide{width:100%;margin-top:10px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  @media(max-width:760px){.grid2,.grid3{grid-template-columns:1fr}}
+  .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{
+    background:rgba(255,255,255,.07);
+    color:var(--text);
+    border:1px solid var(--line);
+    padding:10px 12px;
+    border-radius:999px;
+  }
+  .tab.active{background:linear-gradient(135deg,var(--gold),var(--orange));color:#111827}
+  .view{display:none}
+  .view.active{display:block}
+  .notice{
+    border:1px solid rgba(247,183,51,.30);
+    background:rgba(247,183,51,.10);
+    color:#fff7cc;
+    padding:12px;
+    border-radius:16px;
+    font-size:13px;
+    line-height:1.45;
+    margin:12px 0;
+  }
+  .status{
+    padding:10px 12px;border-radius:14px;
+    background:rgba(255,255,255,.07);
+    color:var(--muted);
+    font-weight:800;
+    margin-top:10px;
+  }
+  .ok{color:#86efac}.warn{color:#fde68a}.bad{color:#fca5a5}
+  table{width:100%;border-collapse:collapse;margin-top:12px;overflow:hidden;border-radius:14px}
+  th,td{
+    border-bottom:1px solid var(--line);
+    padding:10px 8px;
+    text-align:left;
+    font-size:13px;
+    vertical-align:top;
+  }
+  th{color:var(--gold2);text-transform:uppercase;font-size:11px;letter-spacing:.05em}
+  .socialGrid{display:grid;gap:9px}
+  .social{
+    display:flex;justify-content:space-between;align-items:center;
+    background:rgba(255,255,255,.08);
+    border:1px solid var(--line);
+    color:white;
+  }
+  .pill{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:5px 9px;border-radius:999px;
+    background:rgba(247,183,51,.15);
+    color:var(--gold2);
+    border:1px solid rgba(247,183,51,.25);
+    font-weight:900;font-size:11px;
+  }
+  .miniCards{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:10px;
+    margin:12px 0;
+  }
+  @media(max-width:1050px){.miniCards{grid-template-columns:1fr 1fr}}
+  @media(max-width:520px){.miniCards{grid-template-columns:1fr}}
+  .metric{
+    background:rgba(255,255,255,.07);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+  }
+  .metric b{display:block;color:var(--gold2);font-size:25px}
+  .small{font-size:12px;color:var(--muted);font-weight:800;line-height:1.45}
+  .certificate{
+    background:#fffdf5;color:#111827;
+    border:9px double #b45309;
+    padding:38px;border-radius:10px;
+    text-align:center;min-height:520px;margin-top:14px;
+  }
+  .certificate .certTitle{
+    font-family:Georgia, serif;
+    font-size:36px;color:#92400e;margin-bottom:10px;
+  }
+  .certificate .certName{
+    font-family:Georgia, serif;
+    font-size:34px;font-weight:900;margin:18px 0;color:#111827;
+  }
+  .certificate .certCourse{
+    font-size:24px;color:#7c2d12;font-weight:900;margin:16px 0;
+  }
+  .signatureRow{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:48px}
+  .sig{border-top:2px solid #111827;padding-top:8px;font-weight:900}
+  .portalCard{
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.06);
+    border-radius:18px;
+    padding:14px;
+    margin:10px 0;
+  }
+  @media print{
+    body{background:white}
+    header,main > section:first-child,.tabs,.noPrint{display:none!important}
+    main{display:block;width:100%;margin:0}
+    section,.card{border:0;box-shadow:none;background:white}
+    .certificate{display:block;margin:0;border-radius:0;min-height:96vh}
+  }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script id="agv-up-locked-supabase-config">
+  window.AGV_UP_SUPABASE_URL = "https://jmtaymxsojpvufppfwys.supabase.co";
+  window.AGV_UP_SUPABASE_ANON_KEY = "sb_publishable_VcG2v6NT9bk7WJYp20hhFA_wcC0JBuw";
+  window.AGV_UP_SUPABASE_LOCKED = true;
+</script>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">AGV</div>
+    <div>
+      <h1>AGV University Pal</h1>
+      <div class="tag">Student registration, class catalog, registrar tracking, certificate center, and graduation pathway.</div>
+    </div>
+    <span class="pill">Student Registration System</span>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h2>Fast Student Sign-Up</h2>
+    <p class="small">
+      Use a verified account sign-up first. If no verified account is available,
+      use manual registration. Real Google, Facebook, Microsoft, Apple, and LinkedIn login can connect later through Supabase.
+    </p>
+
+    <div class="socialGrid">
+      <button class="social" data-provider="Google"><span>Continue with Google</span><span>Verified</span></button>
+      <button class="social" data-provider="Facebook"><span>Continue with Facebook</span><span>Verified</span></button>
+      <button class="social" data-provider="Microsoft"><span>Continue with Microsoft</span><span>Verified</span></button>
+      <button class="social" data-provider="Apple"><span>Continue with Apple</span><span>Verified</span></button>
+      <button class="social" data-provider="LinkedIn"><span>Continue with LinkedIn</span><span>Verified</span></button>
+    </div>
+
+    <button class="wide ghost" id="manualBtn">Register Manually</button>
+
+    <div class="notice">
+      <b>AGV University Pal:</b> built to serve theology classes, college students,
+      trade school students, IT students, technical school students, workforce training,
+      and convention classes.
+    </div>
+
+    <div id="profileBox" class="status">No active student selected.</div>
+<div class="notice" id="roleModeNotice">
+  <b>Role Mode:</b> Choose how AGV University Pal should appear for the person using it.
+  Registrar has full control, Instructor can manage class progress, Student sees their own portal,
+  and Public Verifier can only verify certificates.
+</div>
+
+<label>AGV University Pal Role Mode</label>
+<select id="roleModeSelect">
+  <option value="registrar">Registrar / School Admin</option>
+  <option value="instructor">Instructor / Trainer</option>
+  <option value="student">Student</option>
+  <option value="verifier">Public Certificate Verifier</option>
+</select>
+
+<div id="roleModeStatus" class="status">Current role: Registrar / School Admin</div>
+
+
+    <button class="wide blue" id="seedBtn">Load Starter Class Templates</button>
+    <button class="wide blue" id="exportBtn">Export Records Backup</button>
+<button class="wide ghost" id="importBtn">Import Records Backup</button>
+<input id="importFile" type="file" accept="application/json,.json" style="display:none">
+<button class="wide red" id="clearBtn">Clear This Browser’s Saved Records</button>
+
+<div class="notice" id="storageNotice">
+  <b>Storage Notice:</b> Records are currently saved in this browser for preview use.
+  In the full AGV University Pal system, student records, registrations, attendance,
+  certificates, graduation records, and verification IDs will be securely saved to Supabase.
+</div>
+<div class="notice" id="supabaseConnectNotice">
+  <b>Supabase Connection:</b> Use only your Supabase Project URL and publishable/anon key.
+  Do not paste a service-role key, secret key, database password, or private server key into this browser program.
+</div>
+
+<label>Supabase Project URL</label>
+<input id="supabaseUrlInput" placeholder="https://your-project.supabase.co">
+
+<label>Supabase Publishable / Anon Key</label>
+<input id="supabaseAnonKeyInput" placeholder="Paste publishable or anon key only">
+
+<button class="wide green" id="saveSupabaseSettingsBtn">Save Supabase Settings</button>
+<button class="wide blue" id="testSupabaseBtn">Test Supabase Connection</button>
+<button class="wide primary" id="loadSupabaseProgramsBtn">Load Supabase Programs</button>
+
+<div id="supabaseStatus" class="status">Supabase is not connected yet.</div>
+
+  
+<div class="notice" id="supabaseWriteNotice">
+  <b>Supabase Save Mode:</b> These buttons save the active student, active registration,
+  and active certificate record to Supabase.
+</div>
+
+<button class="wide green" id="saveActiveStudentSupabaseBtn">Save Active Student to Supabase</button>
+<button class="wide green" id="saveActiveRegistrationSupabaseBtn">Save Active Registration to Supabase</button>
+<button class="wide green" id="saveActiveCertificateSupabaseBtn">Save Active Certificate to Supabase</button>
+
+<div id="supabaseWriteStatus" class="status">Supabase record saving is ready after connection.</div>
+</section>
+
+  <section>
+    <div class="tabs noPrint">
+      <button class="tab active" data-tab="studentView">Students</button>
+      <button class="tab" data-tab="catalogView">Class Catalog</button>
+      <button class="tab" data-tab="registerView">Register</button>
+      <button class="tab" data-tab="portalView">Student Portal</button>
+      <button class="tab" data-tab="registrarView">Registrar</button>
+      <button class="tab" data-tab="certView">Certificates</button>
+      <button class="tab" data-tab="verifyView">Verify</button>
+    </div>
+
+    <div id="studentView" class="view active">
+      <h2>Student Profile</h2>
+
+      <div class="grid2">
+        <div>
+          <label>First Name</label>
+          <input id="firstName" placeholder="First name">
+        </div>
+        <div>
+          <label>Last Name</label>
+          <input id="lastName" placeholder="Last name">
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Email</label>
+          <input id="email" placeholder="student@email.com">
+        </div>
+        <div>
+          <label>Phone</label>
+          <input id="phone" placeholder="Phone number">
+        </div>
+      </div>
+
+      <label>Mailing Address</label>
+      <input id="address" placeholder="Street address">
+
+      <div class="grid3">
+        <div><label>City</label><input id="city" placeholder="City"></div>
+        <div><label>State</label><input id="stateField" placeholder="State"></div>
+        <div><label>Zip</label><input id="zip" placeholder="Zip"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Emergency Contact</label><input id="emergencyName" placeholder="Emergency contact"></div>
+        <div><label>Emergency Phone</label><input id="emergencyPhone" placeholder="Emergency phone"></div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Student Category</label>
+          <select id="studentCategory">
+            <option>Theology Student</option>
+            <option>College Student</option>
+            <option>Trade School Student</option>
+            <option>IT Student</option>
+            <option>Technical School Student</option>
+            <option>Continuing Education Student</option>
+            <option>Convention Student</option>
+            <option>Guest Learner</option>
+          </select>
+        </div>
+        <div>
+          <label>Verified Account Source</label>
+          <input id="verifiedSource" placeholder="Manual / Google / Facebook / Microsoft">
+        </div>
+      </div>
+
+      <button class="primary wide" id="saveStudentBtn">Save / Update Student</button>
+      <div id="studentStatus" class="status">Student not saved yet.</div>
+
+      <h3 style="margin-top:18px">Saved Students</h3>
+      <table>
+        <thead><tr><th>Student</th><th>Category</th><th>Source</th><th>Action</th></tr></thead>
+        <tbody id="studentBody"></tbody>
+      </table>
+    </div>
+
+    <div id="catalogView" class="view">
+      <h2>Class Catalog Builder</h2>
+
+      <div class="grid2">
+        <div>
+          <label>Program Type</label>
+          <select id="classProgramType">
+            <option>Theology / Ministry Training</option>
+            <option>College Course</option>
+            <option>Trade School Course</option>
+            <option>IT / Technical School Course</option>
+            <option>Workforce Training</option>
+            <option>Continuing Education</option>
+            <option>Certification Prep</option>
+            <option>Seminar / Workshop</option>
+            <option>Convention Class</option>
+            <option>Youth Training</option>
+            <option>Custom Program</option>
+          </select>
+        </div>
+        <div>
+          <label>Delivery Type</label>
+          <select id="classDeliveryType">
+            <option>In Person</option>
+            <option>Online</option>
+            <option>Hybrid</option>
+            <option>Self-Paced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Course / Class Name</label><input id="className" value="Foundations of Leadership and Service"></div>
+        <div><label>Class Code</label><input id="classCode" value="AGV-UP-101"></div>
+      </div>
+
+      <div class="grid2">
+        <div><label>Program / Pathway Name</label><input id="classPathway" value="AGV University Pal Certificate Pathway"></div>
+        <div><label>Instructor / Professor / Trainer</label><input id="classInstructor" value="Instructor Name"></div>
+      </div>
+
+      <div class="grid3">
+        <div><label>Start Date</label><input id="classStartDate" type="date"></div>
+        <div><label>End Date</label><input id="classEndDate" type="date"></div>
+        <div><label>Class Time</label><input id="classTime" value="6:00 PM"></div>
+      </div>
+
+      <div class="grid3">
+        <div><label>Seat Limit</label><input id="seatLimit" type="number" value="30"></div>
+        <div><label>Tuition / Fee</label><input id="tuition" type="number" value="0"></div>
+        <div><label>Required Attendance %</label><input id="attendanceRequired" type="number" value="80"></div>
+      </div>
+
+      <label>Description</label>
+      <textarea id="classDescription">A flexible AGV class that can serve ministry training, college learning, trade school preparation, IT/technical education, or workforce development.</textarea>
+
+      <button class="green wide" id="saveClassBtn">Save Class to Catalog</button>
+
+      <h3 style="margin-top:18px">Available Classes</h3>
+      <table>
+        <thead><tr><th>Class</th><th>Type</th><th>Instructor</th><th>Seats</th><th>Action</th></tr></thead>
+        <tbody id="classBody"></tbody>
+      </table>
+    </div>
+
+    <div id="registerView" class="view">
+      <h2>Register Student for Class</h2>
+
+      <div class="grid2">
+        <div>
+          <label>Student</label>
+          <select id="registerStudentSelect"></select>
+        </div>
+        <div>
+          <label>Class</label>
+          <select id="registerClassSelect"></select>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div>
+          <label>Registration Type</label>
+          <select id="registrationType">
+            <option>Free Registration</option>
+            <option>Paid Registration</option>
+            <option>Scholarship</option>
+            <option>Church Sponsored</option>
+            <option>Employer Sponsored</option>
+            <option>Group Registration</option>
+            <option>Installment Payment</option>
+          </select>
+        </div>
+        <div>
+          <label>Certificate Track</label>
+          <select id="certificateTrack">
+            <option>Certificate of Completion</option>
+            <option>Graduation Certificate</option>
+            <option>Both Completion and Graduation</option>
+            <option>Attendance Only</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Registration Notes</label>
+      <textarea id="registrationNotes" placeholder="Books, sponsor, prerequisites, lab requirements, ministry assignment, etc."></textarea>
+
+      <button class="primary wide" id="registerBtn">Register Now</button>
+      <div id="registerStatus" class="status">No registration submitted yet.</div>
+    </div>
+
+    <div id="portalView" class="view">
+      <h2>Student Portal</h2>
+      <div id="portalSummary" class="status">Select or create a student first.</div>
+      <div id="portalRegistrations"></div>
+    </div>
+
+    <div id="registrarView" class="view">
+      <h2>Registrar Dashboard</h2>
+
+      <div class="miniCards">
+        <div class="metric"><b id="metricStudents">0</b><span class="small">Students</span></div>
+        <div class="metric"><b id="metricClasses">0</b><span class="small">Classes</span></div>
+        <div class="metric"><b id="metricRegs">0</b><span class="small">Registrations</span></div>
+        <div class="metric"><b id="metricComplete">0</b><span class="small">Completed</span></div>
+        <div class="metric"><b id="metricGrad">0</b><span class="small">Graduated</span></div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Class</th>
+            <th>Status</th>
+            <th>Attendance</th>
+            <th>Grade</th>
+            <th>Certificate</th>
+          </tr>
+        </thead>
+        <tbody id="rosterBody"></tbody>
+      </table>
+    </div>
+
+    <div id="certView" class="view">
+      <h2>Certificate Center</h2>
+
+      <div class="grid3 noPrint">
+        <div>
+          <label>Registration</label>
+          <select id="certRegistrationSelect"></select>
+        </div>
+        <div>
+          <label>Certificate Type</label>
+          <select id="certType">
+            <option>Certificate of Completion</option>
+            <option>Graduation Certificate</option>
+          </select>
+        </div>
+        <div>
+          <label>Issue Date</label>
+          <input id="issueDate" type="date">
+        </div>
+      </div>
+
+      <div class="grid2 noPrint">
+        <button class="primary wide" id="generateCertBtn">Generate Certificate</button>
+        <button class="blue wide" id="printCertBtn">Print / Save Certificate</button>
+      </div>
+
+      <div class="grid2 noPrint">
+        <button class="green wide" id="markCompletionBtn">Mark Completed</button>
+        <button class="green wide" id="markGraduatedBtn">Mark Graduated</button>
+      </div>
+
+      <div id="certificatePreview" class="certificate">
+        <div class="certTitle">AGV University Pal</div>
+        <p>Certificate preview will appear here.</p>
+      </div>
+    </div>
+
+    <div id="verifyView" class="view">
+      <h2>Certificate Verification</h2>
+      <p class="small">
+        This certificate lookup checks Supabase first when connected. If Supabase is not connected, it will check this browser's saved records.
+      </p>
+
+      <label>Certificate ID</label>
+      <input id="verifyCertId" placeholder="Example: AGV-COMP-XXXX">
+
+      <button class="primary wide" id="verifyBtn">Verify Certificate in Supabase</button>
+      <div id="verifyResult" class="status">No certificate checked yet.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const STORAGE = "agvUniversityPalPass2";
+  const $ = id => document.getElementById(id);
+
+  const defaultData = {
+    students:[],
+    classes:[],
+    registrations:[],
+    activeStudentId:"",
+    activeClassId:"",
+    activeRegistrationId:""
+  };
+
+  let data = loadData();
+
+  function loadData(){
+    try { return JSON.parse(localStorage.getItem(STORAGE)) || structuredClone(defaultData); }
+    catch(e){ return structuredClone(defaultData); }
+  }
+
+  function saveData(){
+    localStorage.setItem(STORAGE, JSON.stringify(data));
+    renderAll();
+  }
+
+  function uid(prefix){
+    return prefix + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2,7).toUpperCase();
+  }
+
+  function today(){ return new Date().toISOString().slice(0,10); }
+  function money(n){ return "$" + Number(n || 0).toLocaleString(undefined,{maximumFractionDigits:2}); }
+
+  function fullName(s){
+    if (!s) return "";
+    return [s.firstName, s.lastName].filter(Boolean).join(" ").trim();
+  }
+
+  function activeStudent(){ return data.students.find(s => s.id === data.activeStudentId) || data.students[0] || null; }
+  function activeClass(){ return data.classes.find(c => c.id === data.activeClassId) || data.classes[0] || null; }
+  function activeRegistration(){ return data.registrations.find(r => r.id === data.activeRegistrationId) || data.registrations[0] || null; }
+
+  function activateTab(id){
+      function exportRecords(){
+    try {
+      const payload = {
+        app:"AGV University Pal",
+        version:"PASS 3",
+        exportedAt:new Date().toISOString(),
+        storageKey:STORAGE,
+        data:data
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+
+      const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+      a.href = url;
+      a.download = "agv-university-pal-records-" + stamp + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      alert("AGV University Pal records backup exported.");
+    } catch(e) {
+      alert("Could not export records: " + e.message);
+    }
+  }
+
+  function importRecordsFromFile(file){
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(){
+      try {
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        const incoming = parsed.data || parsed;
+
+        if (!incoming || !Array.isArray(incoming.students) || !Array.isArray(incoming.classes) || !Array.isArray(incoming.registrations)) {
+          throw new Error("This does not look like an AGV University Pal records backup.");
+        }
+
+        const ok = confirm("Import this AGV University Pal backup? This will replace the records saved in this browser.");
+        if (!ok) return;
+
+        data = incoming;
+        localStorage.setItem(STORAGE, JSON.stringify(data));
+        renderAll();
+
+        alert("AGV University Pal records imported successfully.");
+      } catch(e) {
+        alert("Import failed: " + e.message);
+      }
+    };
+
+    reader.readAsText(file);
+  }
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
+    document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
+  }
+  function simulateProvider(provider){
+    /*
+      AGV UNIVERSITY PAL CLIENT:
+      This is a production-style sign-up placeholder.
+      It does not create fake names or fake email addresses.
+      Later, real Google/Facebook/Microsoft/Apple/LinkedIn login can fill verified name and email through Supabase Auth.
+    */
+    $("verifiedSource").value = provider + " Account Selected";
+    $("studentStatus").innerHTML = '<span class="ok">' + provider + ' sign-up selected. Complete the student profile and save.</span>';
+    $("firstName").focus();
+    activateTab("studentView");
+  }
+  function saveStudent(){
+    const existingId = data.activeStudentId;
+    const student = {
+      id: existingId || uid("STUDENT"),
+      firstName:$("firstName").value.trim(),
+      lastName:$("lastName").value.trim(),
+      email:$("email").value.trim(),
+      phone:$("phone").value.trim(),
+      address:$("address").value.trim(),
+      city:$("city").value.trim(),
+      state:$("stateField").value.trim(),
+      zip:$("zip").value.trim(),
+      emergencyName:$("emergencyName").value.trim(),
+      emergencyPhone:$("emergencyPhone").value.trim(),
+      studentCategory:$("studentCategory").value,
+      verifiedSource:$("verifiedSource").value.trim() || "Manual",
+      createdAt:new Date().toISOString()
+    };
+
+    if (!student.firstName || !student.lastName || !student.email) {
+      $("studentStatus").innerHTML = '<span class="bad">First name, last name, and email are required.</span>';
+      return;
+    }
+
+    const index = data.students.findIndex(s => s.id === student.id);
+    if (index >= 0) data.students[index] = student;
+    else data.students.unshift(student);
+
+    data.activeStudentId = student.id;
+    saveData();
+    $("studentStatus").innerHTML = '<span class="ok">Student saved and selected.</span>';
+  }
+
+  function selectStudent(id){
+    data.activeStudentId = id;
+    const s = activeStudent();
+    if (s) {
+      $("firstName").value = s.firstName || "";
+      $("lastName").value = s.lastName || "";
+      $("email").value = s.email || "";
+      $("phone").value = s.phone || "";
+      $("address").value = s.address || "";
+      $("city").value = s.city || "";
+      $("stateField").value = s.state || "";
+      $("zip").value = s.zip || "";
+      $("emergencyName").value = s.emergencyName || "";
+      $("emergencyPhone").value = s.emergencyPhone || "";
+      $("studentCategory").value = s.studentCategory || "Theology Student";
+      $("verifiedSource").value = s.verifiedSource || "Manual";
+    }
+    saveData();
+  }
+
+  function saveClass(){
+    const cls = {
+      id: data.activeClassId || uid("CLASS"),
+      programType:$("classProgramType").value,
+      deliveryType:$("classDeliveryType").value,
+      className:$("className").value.trim(),
+      classCode:$("classCode").value.trim(),
+      pathway:$("classPathway").value.trim(),
+      instructor:$("classInstructor").value.trim(),
+      startDate:$("classStartDate").value,
+      endDate:$("classEndDate").value,
+      classTime:$("classTime").value.trim(),
+      seatLimit:Number($("seatLimit").value || 0),
+      tuition:Number($("tuition").value || 0),
+      attendanceRequired:Number($("attendanceRequired").value || 80),
+      description:$("classDescription").value.trim(),
+      createdAt:new Date().toISOString()
+    };
+
+    if (!cls.className || !cls.classCode) {
+      alert("Class name and class code are required.");
+      return;
+    }
+
+    const index = data.classes.findIndex(c => c.id === cls.id);
+    if (index >= 0) data.classes[index] = cls;
+    else data.classes.unshift(cls);
+
+    data.activeClassId = cls.id;
+    saveData();
+    activateTab("catalogView");
+  }
+
+  function selectClass(id){
+    data.activeClassId = id;
+    const c = activeClass();
+    if (c) {
+      $("classProgramType").value = c.programType;
+      $("classDeliveryType").value = c.deliveryType;
+      $("className").value = c.className;
+      $("classCode").value = c.classCode;
+      $("classPathway").value = c.pathway;
+      $("classInstructor").value = c.instructor;
+      $("classStartDate").value = c.startDate || "";
+      $("classEndDate").value = c.endDate || "";
+      $("classTime").value = c.classTime;
+      $("seatLimit").value = c.seatLimit;
+      $("tuition").value = c.tuition;
+      $("attendanceRequired").value = c.attendanceRequired;
+      $("classDescription").value = c.description;
+    }
+    saveData();
+  }
+
+  function registerStudent(){
+    const studentId = $("registerStudentSelect").value;
+    const classId = $("registerClassSelect").value;
+
+    const student = data.students.find(s => s.id === studentId);
+    const cls = data.classes.find(c => c.id === classId);
+
+    if (!student || !cls) {
+      $("registerStatus").innerHTML = '<span class="bad">Please select a student and class.</span>';
+      return;
+    }
+
+    const exists = data.registrations.find(r => r.studentId === student.id && r.classId === cls.id);
+    if (exists) {
+      $("registerStatus").innerHTML = '<span class="warn">This student is already registered for this class.</span>';
+      data.activeRegistrationId = exists.id;
+      saveData();
+      return;
+    }
+
+    const reg = {
+      id:uid("REG"),
+      studentId:student.id,
+      classId:cls.id,
+      studentName:fullName(student),
+      studentEmail:student.email,
+      studentCategory:student.studentCategory,
+      className:cls.className,
+      classCode:cls.classCode,
+      programType:cls.programType,
+      pathway:cls.pathway,
+      instructor:cls.instructor,
+      attendanceRequired:cls.attendanceRequired,
+      registrationType:$("registrationType").value,
+      certificateTrack:$("certificateTrack").value,
+      notes:$("registrationNotes").value.trim(),
+      status:"Registered",
+      attendancePercent:0,
+      grade:"",
+      completionStatus:"In Progress",
+      certificateIssued:false,
+      graduationIssued:false,
+      certificateId:"",
+      graduationId:"",
+      createdAt:new Date().toISOString()
+    };
+
+    data.registrations.unshift(reg);
+    data.activeStudentId = student.id;
+    data.activeClassId = cls.id;
+    data.activeRegistrationId = reg.id;
+    saveData();
+
+    $("registerStatus").innerHTML = '<span class="ok">Registration complete.</span>';
+    activateTab("portalView");
+  }
+
+  function updateReg(id, field, value){
+    const r = data.registrations.find(x => x.id === id);
+    if (!r) return;
+
+    if (field === "attendancePercent") value = Number(value || 0);
+    r[field] = value;
+
+    if (field === "completionStatus") {
+      if (value === "Completed") {
+        r.certificateIssued = true;
+        r.certificateId = r.certificateId || certIdFor(r, "Certificate of Completion");
+      }
+      if (value === "Graduated") {
+        r.certificateIssued = true;
+        r.graduationIssued = true;
+        r.certificateId = r.certificateId || certIdFor(r, "Certificate of Completion");
+        r.graduationId = r.graduationId || certIdFor(r, "Graduation Certificate");
+      }
+    }
+
+    data.activeRegistrationId = id;
+    saveData();
+  }
+
+  function certIdFor(reg,type){
+    if (!reg) return "";
+    const base = type.includes("Graduation") ? "AGV-GRAD" : "AGV-COMP";
+    return base + "-" + reg.id.replace("REG-","").slice(0,11).toUpperCase();
+  }
+
+  function generateCertificate(){
+    const id = $("certRegistrationSelect").value || data.activeRegistrationId;
+    const reg = data.registrations.find(r => r.id === id);
+    if (!reg) {
+      $("certificatePreview").innerHTML = '<div class="certTitle">AGV University Pal</div><p>No registration selected yet.</p>';
+      return;
+    }
+
+    data.activeRegistrationId = reg.id;
+    const type = $("certType").value;
+    const issue = $("issueDate").value || today();
+    const certId = certIdFor(reg,type);
+    const isGrad = type.includes("Graduation");
+
+    if (isGrad) {
+      reg.graduationIssued = true;
+      reg.graduationId = certId;
+    } else {
+      reg.certificateIssued = true;
+      reg.certificateId = certId;
+    }
+
+    localStorage.setItem(STORAGE, JSON.stringify(data));
+
+    $("certificatePreview").innerHTML = `
+      <div class="certTitle">${isGrad ? "Graduation Certificate" : "Certificate of Completion"}</div>
+      <p>This certifies that</p>
+      <div class="certName">${reg.studentName}</div>
+      <p>has successfully ${isGrad ? "completed the full program requirements for" : "completed"}</p>
+      <div class="certCourse">${isGrad ? reg.pathway : reg.className}</div>
+      <p>
+        ${isGrad ? "and is hereby recognized for graduation from" : "under the instruction of"}<br>
+        <b>${isGrad ? "AGV University Pal" : reg.instructor}</b>
+      </p>
+      <p><b>Program Type:</b> ${reg.programType}</p>
+      <p><b>Attendance:</b> ${reg.attendancePercent}% &nbsp; <b>Grade:</b> ${reg.grade || "N/A"}</p>
+      <p><b>Issue Date:</b> ${issue}</p>
+      <p><b>Certificate ID:</b> ${certId}</p>
+      <div class="signatureRow">
+        <div class="sig">Instructor / Trainer</div>
+        <div class="sig">Director / Registrar</div>
+      </div>
+      <p style="margin-top:30px;font-weight:900;color:#92400e;">AGV University Pal</p>
+    `;
+
+    saveData();
+  }
+  async function verifyCertificate(){
+    const certId = $("verifyCertId").value.trim();
+
+    if (!certId) {
+      $("verifyResult").innerHTML = '<span class="bad">Enter a certificate ID.</span>';
+      return;
+    }
+
+    $("verifyResult").innerHTML = '<span class="warn">Checking certificate ID...</span>';
+
+    /*
+      AGV UNIVERSITY PAL CLIENT — PASS 8
+      Supabase-first public certificate verification.
+      Uses anon/publishable key with RLS policy:
+      verification_status = valid and revoked = false.
+    */
+    const client = initSupabaseClient();
+
+    if (client) {
+      const result = await client
+        .from("agv_up_certificates")
+        .select("certificate_id, student_name, certificate_type, certificate_title, class_name, program_name, program_type, issue_date, verification_status, revoked, created_at")
+        .eq("certificate_id", certId)
+        .maybeSingle();
+
+      if (result.error) {
+        $("verifyResult").innerHTML =
+          '<span class="bad">Supabase verification error: ' + result.error.message + '</span>';
+        return;
+      }
+
+      if (result.data) {
+        const c = result.data;
+        $("verifyResult").innerHTML = `
+          <span class="ok">Certificate Valid in Supabase</span><br>
+          <b>${c.student_name || "Student Name Not Listed"}</b><br>
+          ${c.certificate_type || "Certificate"}<br>
+          ${c.class_name || c.program_name || "AGV University Pal"}<br>
+          <span class="small">
+            Program Type: ${c.program_type || "N/A"}<br>
+            Issue Date: ${c.issue_date || "N/A"}<br>
+            Verification Status: ${c.verification_status || "valid"}<br>
+            Certificate ID: ${c.certificate_id}
+          </span>
+        `;
+        return;
+      }
+
+      $("verifyResult").innerHTML =
+        '<span class="bad">Certificate ID was not found as a valid Supabase certificate.</span>';
+      return;
+    }
+
+    // Local fallback when Supabase settings are not connected.
+    const reg = data.registrations.find(r => r.certificateId === certId || r.graduationId === certId);
+
+    if (!reg) {
+      $("verifyResult").innerHTML =
+        '<span class="bad">Certificate not found in this browser record. Supabase is not connected.</span>';
+      return;
+    }
+
+    $("verifyResult").innerHTML = `
+      <span class="ok">Certificate Found in This Browser</span><br>
+      <b>${reg.studentName}</b><br>
+      ${reg.className}<br>
+      ${reg.programType}<br>
+      <span class="small">
+        Local Browser Verification Only<br>
+        ID: ${certId}
+      </span>
+    `;
+  }
+
+  function seedClasses(){
+    const starterTemplates = [
+      ["Theology / Ministry Training","Biblical Leadership Foundations","THEO-101","Ministry Leadership Pathway","Dean / Instructor Name"],
+      ["College Course","Academic Writing and Research","COL-110","College Success Pathway","Professor Name"],
+      ["Trade School Course","Introduction to Electrical Safety","TRD-120","Trade Skills Certificate Pathway","Trade Instructor"],
+      ["IT / Technical School Course","Computer Support Technician Basics","IT-130","IT Technical Certificate Pathway","Technical Instructor"],
+      ["Workforce Training","Customer Service and Workplace Readiness","WRK-140","Workforce Readiness Pathway","Workforce Trainer"]
+    ];
+
+    starterTemplates.forEach(s => {
+      if (data.classes.some(c => c.classCode === s[2])) return;
+      data.classes.push({
+        id:uid("CLASS"),
+        programType:s[0],
+        deliveryType:"Hybrid",
+        className:s[1],
+        classCode:s[2],
+        pathway:s[3],
+        instructor:s[4],
+        startDate:today(),
+        endDate:"",
+        classTime:"6:00 PM",
+        seatLimit:30,
+        tuition:0,
+        attendanceRequired:80,
+        description:"Starter class template for " + s[0] + ".",
+        createdAt:new Date().toISOString()
+      });
+    });
+
+    saveData();
+    activateTab("catalogView");
+  }
+
+  function renderProfileBox(){
+    const s = activeStudent();
+    if (!s) {
+      $("profileBox").innerHTML = "No active student selected.";
+      return;
+    }
+
+    $("profileBox").innerHTML = `
+      <span class="ok">Active Student</span><br>
+      <b>${fullName(s)}</b><br>
+      ${s.email}<br>
+      <span class="small">${s.studentCategory} • ${s.verifiedSource}</span>
+    `;
+  }
+
+  function renderStudents(){
+    const body = $("studentBody");
+    if (!data.students.length) {
+      body.innerHTML = '<tr><td colspan="4" class="small">No saved students yet.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = data.students.map(s => `
+      <tr>
+        <td><b>${fullName(s)}</b><br><span class="small">${s.email}</span></td>
+        <td>${s.studentCategory}</td>
+        <td>${s.verifiedSource}</td>
+        <td><button class="primary" onclick="window.agvUPSelectStudent('${s.id}')">Select</button></td>
+      </tr>
+    `).join("");
+  }
+
+  function renderClasses(){
+    const body = $("classBody");
+    if (!data.classes.length) {
+      body.innerHTML = '<tr><td colspan="5" class="small">No classes in catalog yet. Click Load Starter Class Templates or add one above.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = data.classes.map(c => {
+      const count = data.registrations.filter(r => r.classId === c.id).length;
+      return `
+        <tr>
+          <td><b>${c.className}</b><br><span class="small">${c.classCode}</span></td>
+          <td>${c.programType}<br><span class="small">${c.deliveryType}</span></td>
+          <td>${c.instructor}</td>
+          <td>${count}/${c.seatLimit}</td>
+          <td><button class="primary" onclick="window.agvUPSelectClass('${c.id}')">Select</button></td>
+        </tr>
+      `;
+    }).join("");
+  }
+
+  function renderSelects(){
+    const studentOptions = data.students.map(s => `<option value="${s.id}">${fullName(s)} — ${s.email}</option>`).join("");
+    $("registerStudentSelect").innerHTML = studentOptions || '<option value="">No students yet</option>';
+
+    const classOptions = data.classes.map(c => `<option value="${c.id}">${c.classCode} — ${c.className}</option>`).join("");
+    $("registerClassSelect").innerHTML = classOptions || '<option value="">No classes yet</option>';
+
+    if (data.activeStudentId) $("registerStudentSelect").value = data.activeStudentId;
+    if (data.activeClassId) $("registerClassSelect").value = data.activeClassId;
+
+    const regOptions = data.registrations.map(r => `<option value="${r.id}">${r.studentName} — ${r.classCode}</option>`).join("");
+    $("certRegistrationSelect").innerHTML = regOptions || '<option value="">No registrations yet</option>';
+    if (data.activeRegistrationId) $("certRegistrationSelect").value = data.activeRegistrationId;
+  }
+
+  function renderPortal(){
+    const s = activeStudent();
+    const summary = $("portalSummary");
+    const box = $("portalRegistrations");
+
+    if (!s) {
+      summary.innerHTML = "No active student selected.";
+      box.innerHTML = "";
+      return;
+    }
+
+    const regs = data.registrations.filter(r => r.studentId === s.id);
+    summary.innerHTML = `
+      <span class="ok">Student Portal</span><br>
+      <b>${fullName(s)}</b><br>
+      ${s.email}<br>
+      <span class="small">${regs.length} registration(s)</span>
+    `;
+
+    if (!regs.length) {
+      box.innerHTML = '<div class="portalCard small">This student is not registered for any classes yet.</div>';
+      return;
+    }
+
+    box.innerHTML = regs.map(r => `
+      <div class="portalCard">
+        <h3>${r.className}</h3>
+        <div class="small">${r.programType} • ${r.classCode}</div>
+        <p><b>Status:</b> ${r.completionStatus}</p>
+        <p><b>Attendance:</b> ${r.attendancePercent}% | <b>Grade:</b> ${r.grade || "N/A"}</p>
+        <p><b>Certificate Track:</b> ${r.certificateTrack}</p>
+        <button class="primary" onclick="window.agvUPOpenCertificate('${r.id}')">Open Certificate Center</button>
+      </div>
+    `).join("");
+  }
+
+  function renderRegistrar(){
+    $("metricStudents").textContent = data.students.length;
+    $("metricClasses").textContent = data.classes.length;
+    $("metricRegs").textContent = data.registrations.length;
+    $("metricComplete").textContent = data.registrations.filter(r => r.completionStatus === "Completed").length;
+    $("metricGrad").textContent = data.registrations.filter(r => r.completionStatus === "Graduated").length;
+
+    const body = $("rosterBody");
+    if (!data.registrations.length) {
+      body.innerHTML = '<tr><td colspan="6" class="small">No registrations yet.</td></tr>';
+      return;
+    }
+
+    body.innerHTML = data.registrations.map(r => `
+      <tr>
+        <td><b>${r.studentName}</b><br><span class="small">${r.studentEmail}</span></td>
+        <td><b>${r.className}</b><br><span class="small">${r.classCode} • ${r.programType}</span></td>
+        <td>
+          <select onchange="window.agvUPUpdateReg('${r.id}','completionStatus',this.value)">
+            ${["Registered","In Progress","Completed","Graduated","Failed","Withdrawn"].map(s => `<option ${r.completionStatus===s?"selected":""}>${s}</option>`).join("")}
+          </select>
+        </td>
+        <td><input type="number" value="${r.attendancePercent}" min="0" max="100" onchange="window.agvUPUpdateReg('${r.id}','attendancePercent',this.value)"></td>
+        <td><input value="${r.grade || ""}" placeholder="A / Pass / 95" onchange="window.agvUPUpdateReg('${r.id}','grade',this.value)"></td>
+        <td>
+          <button class="primary" onclick="window.agvUPOpenCertificate('${r.id}')">Certificate</button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  const SUPABASE_SETTINGS_KEY = "agvUniversityPalSupabaseSettings";
+  let agvSupabaseClient = null;
+
+  function setSupabaseStatus(message, type){
+    const el = $("supabaseStatus");
+    if (!el) return;
+    const cls = type === "ok" ? "ok" : type === "bad" ? "bad" : "warn";
+    el.innerHTML = '<span class="' + cls + '">' + message + '</span>';
+  }
+
+  function loadSupabaseSettings(){
+    const lockedUrl = String(window.AGV_UP_SUPABASE_URL || "").trim();
+    const lockedAnonKey = String(window.AGV_UP_SUPABASE_ANON_KEY || "").trim();
+    if (
+      window.AGV_UP_SUPABASE_LOCKED === true &&
+      lockedUrl &&
+      lockedAnonKey &&
+      !lockedUrl.includes("your-project.supabase.co")
+    ) {
+      return {
+        url: lockedUrl,
+        anonKey: lockedAnonKey
+      };
+    }
+    try {
+      return JSON.parse(localStorage.getItem(SUPABASE_SETTINGS_KEY) || "{}") || {};
+    } catch(e) {
+      return {};
+    }
+  }function saveSupabaseSettings(){
+    const settings = {
+      url: ($("supabaseUrlInput")?.value || "").trim(),
+      anonKey: ($("supabaseAnonKeyInput")?.value || "").trim()
+    };
+
+    if (!settings.url || !settings.anonKey) {
+      setSupabaseStatus("Enter the Supabase Project URL and publishable/anon key first.", "bad");
+      return;
+    }
+
+    localStorage.setItem(SUPABASE_SETTINGS_KEY, JSON.stringify(settings));
+    initSupabaseClient();
+    setSupabaseStatus("Supabase settings saved in this browser.", "ok");
+  }
+
+  function initSupabaseClient(){
+    const settings = loadSupabaseSettings();
+
+    if ($("supabaseUrlInput")) $("supabaseUrlInput").value = settings.url || "";
+    if ($("supabaseAnonKeyInput")) $("supabaseAnonKeyInput").value = settings.anonKey || "";
+
+    if (!settings.url || !settings.anonKey) {
+      agvSupabaseClient = null;
+      return null;
+    }
+
+    if (!window.supabase || !window.supabase.createClient) {
+      setSupabaseStatus("Supabase library did not load. Check internet connection.", "bad");
+      return null;
+    }
+
+    agvSupabaseClient = window.supabase.createClient(settings.url, settings.anonKey);
+    return agvSupabaseClient;
+  }
+
+  async function testSupabaseConnection(){
+    const client = initSupabaseClient();
+
+    if (!client) {
+      setSupabaseStatus("Supabase settings are missing.", "bad");
+      return;
+    }
+
+    setSupabaseStatus("Testing Supabase connection...", "warn");
+
+    const result = await client
+      .from("agv_up_programs")
+      .select("id, program_name, program_type, status")
+      .limit(5);
+
+    if (result.error) {
+      setSupabaseStatus("Connection failed: " + result.error.message, "bad");
+      return;
+    }
+
+    setSupabaseStatus("Connected to Supabase. Found " + (result.data || []).length + " program record(s).", "ok");
+  }
+
+  async function loadSupabasePrograms(){
+    const client = initSupabaseClient();
+
+    if (!client) {
+      setSupabaseStatus("Supabase settings are missing.", "bad");
+      return;
+    }
+
+    setSupabaseStatus("Loading Supabase programs...", "warn");
+
+    const result = await client
+      .from("agv_up_programs")
+      .select("program_name, program_type, department, required_attendance_percent, status")
+      .eq("status", "active")
+      .order("program_name");
+
+    if (result.error) {
+      setSupabaseStatus("Could not load Supabase programs: " + result.error.message, "bad");
+      return;
+    }
+
+    const programs = result.data || [];
+
+    programs.forEach(p => {
+      const code = "SUPA-" + String(p.program_name || "PROGRAM")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 18);
+
+      if (data.classes.some(c => c.classCode === code)) return;
+
+      data.classes.push({
+        id:uid("CLASS"),
+        programType:p.program_type || "Custom Program",
+        deliveryType:"Hybrid",
+        className:p.program_name || "Supabase Program",
+        classCode:code,
+        pathway:p.program_name || "AGV University Pal Pathway",
+        instructor:"Instructor / Registrar",
+        startDate:today(),
+        endDate:"",
+        classTime:"To Be Scheduled",
+        seatLimit:30,
+        tuition:0,
+        attendanceRequired:Number(p.required_attendance_percent || 80),
+        description:"Loaded from Supabase program table.",
+        createdAt:new Date().toISOString()
+      });
+    });
+
+    saveData();
+    setSupabaseStatus("Loaded " + programs.length + " Supabase program(s) into the local class catalog.", "ok");
+    activateTab("catalogView");
+  }
+
+  function setSupabaseWriteStatus(message, type){
+    const el = $("supabaseWriteStatus");
+    if (!el) return;
+    const cls = type === "ok" ? "ok" : type === "bad" ? "bad" : "warn";
+    el.innerHTML = '<span class="' + cls + '">' + message + '</span>';
+  }
+
+  function agvUpUuid(){
+    if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c){
+      const r = Math.random() * 16 | 0;
+      const v = c === "x" ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  function requireSupabaseClient(){
+    const client = initSupabaseClient();
+
+    if (!client) {
+      setSupabaseWriteStatus("Supabase is not connected. Save settings and test connection first.", "bad");
+      return null;
+    }
+
+    return client;
+  }
+
+  async function saveActiveStudentToSupabase(){
+    const client = requireSupabaseClient();
+    if (!client) return null;
+
+    const student = activeStudent();
+
+    if (!student) {
+      setSupabaseWriteStatus("No active student selected.", "bad");
+      return null;
+    }
+
+    if (!student.firstName || !student.lastName || !student.email) {
+      setSupabaseWriteStatus("Student needs first name, last name, and email before saving to Supabase.", "bad");
+      return null;
+    }
+
+    student.supabaseId = student.supabaseId || agvUpUuid();
+
+    const payload = {
+      id: student.supabaseId,
+      first_name: student.firstName,
+      last_name: student.lastName,
+      email: student.email,
+      phone: student.phone || null,
+      address: student.address || null,
+      city: student.city || null,
+      state: student.state || null,
+      zip: student.zip || null,
+      emergency_contact_name: student.emergencyName || null,
+      emergency_contact_phone: student.emergencyPhone || null,
+      student_category: student.studentCategory || null,
+      verified_source: student.verifiedSource || null,
+      status: "active",
+      notes: "Saved from AGV University Pal standalone client."
+    };
+
+    setSupabaseWriteStatus("Saving active student to Supabase...", "warn");
+
+    const result = await client
+      .from("agv_up_students")
+      .upsert(payload, { onConflict: "id" });
+
+    if (result.error) {
+      setSupabaseWriteStatus("Student save failed: " + result.error.message, "bad");
+      return null;
+    }
+
+    student.supabaseSavedAt = new Date().toISOString();
+    saveData();
+
+    setSupabaseWriteStatus("Student saved to Supabase: " + fullName(student), "ok");
+    return student.supabaseId;
+  }
+
+  async function saveActiveClassToSupabase(classId){
+    const client = requireSupabaseClient();
+    if (!client) return null;
+
+    const cls = data.classes.find(c => c.id === classId) || activeClass();
+
+    if (!cls) {
+      setSupabaseWriteStatus("No active class selected.", "bad");
+      return null;
+    }
+
+    cls.supabaseId = cls.supabaseId || agvUpUuid();
+
+    const payload = {
+      id: cls.supabaseId,
+      class_name: cls.className || "AGV University Pal Class",
+      class_code: cls.classCode || ("AGV-UP-" + Date.now()),
+      program_type: cls.programType || "Custom Program",
+      delivery_type: cls.deliveryType || "Hybrid",
+      instructor_name: cls.instructor || null,
+      start_date: cls.startDate || null,
+      end_date: cls.endDate || null,
+      class_time: cls.classTime || null,
+      seat_limit: Number(cls.seatLimit || 30),
+      tuition: Number(cls.tuition || 0),
+      attendance_required_percent: Number(cls.attendanceRequired || 80),
+      description: cls.description || "Saved from AGV University Pal standalone client.",
+      status: "active"
+    };
+
+    setSupabaseWriteStatus("Saving active class to Supabase...", "warn");
+
+    const result = await client
+      .from("agv_up_classes")
+      .upsert(payload, { onConflict: "id" });
+
+    if (result.error) {
+      setSupabaseWriteStatus("Class save failed: " + result.error.message, "bad");
+      return null;
+    }
+
+    cls.supabaseSavedAt = new Date().toISOString();
+    saveData();
+
+    setSupabaseWriteStatus("Class saved to Supabase: " + payload.class_name, "ok");
+    return cls.supabaseId;
+  }
+
+  async function saveActiveRegistrationToSupabase(){
+    const client = requireSupabaseClient();
+    if (!client) return null;
+
+    const reg = activeRegistration();
+
+    if (!reg) {
+      setSupabaseWriteStatus("No active registration selected.", "bad");
+      return null;
+    }
+
+    const student = data.students.find(s => s.id === reg.studentId);
+    const cls = data.classes.find(c => c.id === reg.classId);
+
+    if (!student || !cls) {
+      setSupabaseWriteStatus("Registration is missing its student or class record.", "bad");
+      return null;
+    }
+
+    const supabaseStudentId = await saveActiveStudentToSupabase();
+    if (!supabaseStudentId) return null;
+
+    const supabaseClassId = await saveActiveClassToSupabase(cls.id);
+    if (!supabaseClassId) return null;
+
+    reg.supabaseId = reg.supabaseId || agvUpUuid();
+
+    const payload = {
+      id: reg.supabaseId,
+      student_id: supabaseStudentId,
+      class_id: supabaseClassId,
+      registration_type: reg.registrationType || "Free Registration",
+      certificate_track: reg.certificateTrack || "Certificate of Completion",
+      registration_status: String(reg.status || "registered").toLowerCase().replace(/\s+/g, "_"),
+      completion_status: String(reg.completionStatus || "in_progress").toLowerCase().replace(/\s+/g, "_"),
+      attendance_percent: Number(reg.attendancePercent || 0),
+      grade: reg.grade || null,
+      registrar_approved: reg.completionStatus === "Graduated" || reg.completionStatus === "Completed",
+      instructor_approved: reg.completionStatus === "Graduated" || reg.completionStatus === "Completed",
+      notes: reg.notes || null
+    };
+
+    setSupabaseWriteStatus("Saving active registration to Supabase...", "warn");
+
+    const result = await client
+      .from("agv_up_registrations")
+      .upsert(payload, { onConflict: "id" });
+
+    if (result.error) {
+      setSupabaseWriteStatus("Registration save failed: " + result.error.message, "bad");
+      return null;
+    }
+
+    reg.supabaseSavedAt = new Date().toISOString();
+    saveData();
+
+    setSupabaseWriteStatus("Registration saved to Supabase: " + reg.studentName + " / " + reg.className, "ok");
+    return reg.supabaseId;
+  }
+
+  async function saveActiveCertificateToSupabase(){
+    const client = requireSupabaseClient();
+    if (!client) return null;
+
+    const reg = activeRegistration();
+
+    if (!reg) {
+      setSupabaseWriteStatus("No active registration selected for certificate save.", "bad");
+      return null;
+    }
+
+    const registrationId = await saveActiveRegistrationToSupabase();
+    if (!registrationId) return null;
+
+    const student = data.students.find(s => s.id === reg.studentId);
+    const cls = data.classes.find(c => c.id === reg.classId);
+
+    if (!student || !cls || !student.supabaseId || !cls.supabaseId) {
+      setSupabaseWriteStatus("Could not confirm student/class Supabase IDs.", "bad");
+      return null;
+    }
+
+    const certType = $("certType") ? $("certType").value : "Certificate of Completion";
+    const isGraduation = certType.includes("Graduation");
+    const certId = certIdFor(reg, certType);
+
+    if (isGraduation) {
+      reg.graduationId = certId;
+      reg.graduationIssued = true;
+    } else {
+      reg.certificateId = certId;
+      reg.certificateIssued = true;
+    }
+
+    const payload = {
+      id: isGraduation ? (reg.supabaseGraduationCertificateRowId || agvUpUuid()) : (reg.supabaseCertificateRowId || agvUpUuid()),
+      certificate_id: certId,
+      registration_id: registrationId,
+      student_id: student.supabaseId,
+      class_id: cls.supabaseId,
+      certificate_type: certType,
+      certificate_title: certType,
+      student_name: reg.studentName,
+      class_name: reg.className,
+      program_name: reg.pathway || cls.pathway || null,
+      program_type: reg.programType || cls.programType || null,
+      issue_date: $("issueDate") ? ($("issueDate").value || today()) : today(),
+      issued_by: "AGV University Pal",
+      instructor_name: reg.instructor || cls.instructor || null,
+      registrar_name: "Registrar",
+      verification_status: "valid",
+      revoked: false
+    };
+
+    setSupabaseWriteStatus("Saving certificate record to Supabase...", "warn");
+
+    const result = await client
+      .from("agv_up_certificates")
+      .upsert(payload, { onConflict: "certificate_id" });
+
+    if (result.error) {
+      setSupabaseWriteStatus("Certificate save failed: " + result.error.message, "bad");
+      return null;
+    }
+
+    if (isGraduation) {
+      reg.supabaseGraduationCertificateRowId = payload.id;
+      await saveGraduationRecordToSupabase(reg, student, cls, certId);
+    } else {
+      reg.supabaseCertificateRowId = payload.id;
+    }
+
+    reg.supabaseCertificateSavedAt = new Date().toISOString();
+    saveData();
+
+    setSupabaseWriteStatus(certType + " saved to Supabase. ID: " + certId, "ok");
+    return certId;
+  }
+
+  async function saveGraduationRecordToSupabase(reg, student, cls, graduationId){
+    const client = requireSupabaseClient();
+    if (!client) return null;
+
+    reg.supabaseGraduationRowId = reg.supabaseGraduationRowId || agvUpUuid();
+
+    const attendanceMet = Number(reg.attendancePercent || 0) >= Number(reg.attendanceRequired || cls.attendanceRequired || 80);
+    const gradeMet = !!String(reg.grade || "").trim();
+
+    const payload = {
+      id: reg.supabaseGraduationRowId,
+      graduation_id: graduationId,
+      student_id: student.supabaseId,
+      student_name: reg.studentName,
+      program_name: reg.pathway || cls.pathway || "AGV University Pal Program",
+      program_type: reg.programType || cls.programType || "Custom Program",
+      required_courses_completed: true,
+      attendance_requirement_met: attendanceMet,
+      grade_requirement_met: gradeMet,
+      final_project_completed: false,
+      final_exam_passed: false,
+      registrar_approved: true,
+      graduation_status: "approved",
+      graduation_date: $("issueDate") ? ($("issueDate").value || today()) : today(),
+      notes: "Graduation record saved from AGV University Pal standalone client."
+    };
+
+    const result = await client
+      .from("agv_up_graduations")
+      .upsert(payload, { onConflict: "graduation_id" });
+
+    if (result.error) {
+      setSupabaseWriteStatus("Graduation record save failed: " + result.error.message, "bad");
+      return null;
+    }
+
+    reg.supabaseGraduationSavedAt = new Date().toISOString();
+    saveData();
+
+    return graduationId;
+  }
+
+  const AGV_UP_ROLE_KEY = "agvUniversityPalRoleMode";
+
+  function getRoleMode(){
+    return localStorage.getItem(AGV_UP_ROLE_KEY) || "registrar";
+  }
+
+  function roleLabel(role){
+    if (role === "registrar") return "Registrar / School Admin";
+    if (role === "instructor") return "Instructor / Trainer";
+    if (role === "student") return "Student";
+    if (role === "verifier") return "Public Certificate Verifier";
+    return "Registrar / School Admin";
+  }
+
+  function setRoleMode(role){
+    localStorage.setItem(AGV_UP_ROLE_KEY, role);
+    applyRoleMode();
+  }
+
+  function allowedTabsForRole(role){
+    if (role === "registrar") {
+      return ["studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
+    }
+
+    if (role === "instructor") {
+      return ["catalogView","portalView","registrarView","certView","verifyView"];
+    }
+
+    if (role === "student") {
+      return ["studentView","registerView","portalView","certView","verifyView"];
+    }
+
+    if (role === "verifier") {
+      return ["verifyView"];
+    }
+
+    return ["studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
+  }
+
+  function setElementVisible(id, visible){
+    const el = $(id);
+    if (!el) return;
+    el.style.display = visible ? "" : "none";
+  }
+
+  function applyRoleMode(){
+    const role = getRoleMode();
+    const allowedTabs = allowedTabsForRole(role);
+
+    if ($("roleModeSelect")) $("roleModeSelect").value = role;
+    if ($("roleModeStatus")) {
+      $("roleModeStatus").innerHTML = '<span class="ok">Current role: ' + roleLabel(role) + '</span>';
+    }
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      const allowed = allowedTabs.includes(btn.dataset.tab);
+      btn.style.display = allowed ? "" : "none";
+    });
+
+    const activeView = document.querySelector(".view.active");
+    if (activeView && !allowedTabs.includes(activeView.id)) {
+      activateTab(allowedTabs[0]);
+    }
+
+    const canRegistrar = role === "registrar";
+    const canInstructor = role === "instructor" || role === "registrar";
+    const canStudent = role === "student" || role === "registrar";
+
+    // Full record creation controls
+    setElementVisible("saveClassBtn", canRegistrar);
+    setElementVisible("registerBtn", canRegistrar || role === "student");
+
+    // Supabase write controls: Registrar only for now
+    setElementVisible("saveActiveStudentSupabaseBtn", canRegistrar);
+    setElementVisible("saveActiveRegistrationSupabaseBtn", canRegistrar);
+    setElementVisible("saveActiveCertificateSupabaseBtn", canRegistrar);
+
+    // Certificate creation controls: Registrar and Instructor
+    setElementVisible("generateCertBtn", canInstructor);
+    setElementVisible("markCompletionBtn", canInstructor);
+    setElementVisible("markGraduatedBtn", canRegistrar);
+
+    // Backup/storage controls: Registrar only
+    setElementVisible("exportBtn", canRegistrar);
+    setElementVisible("importBtn", canRegistrar);
+    setElementVisible("clearBtn", canRegistrar);
+
+    if ($("supabaseWriteStatus")) {
+      if (canRegistrar) {
+        $("supabaseWriteStatus").innerHTML = '<span class="ok">Registrar mode: Supabase record saving is available.</span>';
+      } else {
+        $("supabaseWriteStatus").innerHTML = '<span class="warn">' + roleLabel(role) + ' mode: Supabase record saving is restricted.</span>';
+      }
+    }
+  }
+
+  function renderAll(){
+    if (!$("classStartDate").value) $("classStartDate").value = today();
+    if (!$("issueDate").value) $("issueDate").value = today();
+
+    renderProfileBox();
+    renderStudents();
+    renderClasses();
+    renderSelects();
+    renderPortal();
+    renderRegistrar();
+  }
+
+  function openCertificate(id){
+    data.activeRegistrationId = id;
+    saveData();
+    activateTab("certView");
+    setTimeout(generateCertificate, 100);
+  }
+
+  function markSelected(status){
+    const reg = activeRegistration();
+    if (!reg) return;
+    updateReg(reg.id, "completionStatus", status);
+    generateCertificate();
+  }
+
+    function exportRecords(){
+    try {
+      const payload = {
+        app:"AGV University Pal",
+        version:"PASS 3",
+        exportedAt:new Date().toISOString(),
+        storageKey:STORAGE,
+        data:data
+      };
+
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+
+      const stamp = new Date().toISOString().replace(/[:.]/g,"-");
+      a.href = url;
+      a.download = "agv-university-pal-records-" + stamp + ".json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+      alert("AGV University Pal records backup exported.");
+    } catch(e) {
+      alert("Could not export records: " + e.message);
+    }
+  }
+
+  function importRecordsFromFile(file){
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function(){
+      try {
+        const parsed = JSON.parse(String(reader.result || "{}"));
+        const incoming = parsed.data || parsed;
+
+        if (!incoming || !Array.isArray(incoming.students) || !Array.isArray(incoming.classes) || !Array.isArray(incoming.registrations)) {
+          throw new Error("This does not look like an AGV University Pal records backup.");
+        }
+
+        const ok = confirm("Import this AGV University Pal backup? This will replace the records saved in this browser.");
+        if (!ok) return;
+
+        data = incoming;
+        localStorage.setItem(STORAGE, JSON.stringify(data));
+        renderAll();
+
+        alert("AGV University Pal records imported successfully.");
+      } catch(e) {
+        alert("Import failed: " + e.message);
+      }
+    };
+
+    reader.readAsText(file);
+  }
+  document.querySelectorAll(".tab").forEach(btn => btn.onclick = () => activateTab(btn.dataset.tab));
+  document.querySelectorAll(".social").forEach(btn => btn.onclick = () => simulateProvider(btn.dataset.provider));
+
+  $("manualBtn").onclick = () => {
+    $("verifiedSource").value = "Manual";
+    $("studentStatus").innerHTML = '<span class="warn">Manual registration selected. Type student information and save.</span>';
+    activateTab("studentView");
+  };
+
+  $("saveStudentBtn").onclick = saveStudent;
+  $("saveClassBtn").onclick = saveClass;
+  $("registerBtn").onclick = registerStudent;
+  $("generateCertBtn").onclick = generateCertificate;
+  $("printCertBtn").onclick = () => window.print();
+  $("verifyBtn").onclick = verifyCertificate;
+  $("seedBtn").onclick = seedClasses;
+
+  $("certType").onchange = generateCertificate;
+  $("issueDate").oninput = generateCertificate;
+  $("certRegistrationSelect").onchange = function(){
+    data.activeRegistrationId = this.value;
+    saveData();
+    generateCertificate();
+  };
+
+  $("markCompletionBtn").onclick = () => markSelected("Completed");
+  $("markGraduatedBtn").onclick = () => markSelected("Graduated");
+  if ($("exportBtn")) $("exportBtn").onclick = exportRecords;
+
+  if ($("importBtn")) $("importBtn").onclick = function(){
+    $("importFile").click();
+  };
+
+  if ($("importFile")) $("importFile").onchange = function(){
+    importRecordsFromFile(this.files && this.files[0]);
+    this.value = "";
+  };
+  if ($("saveSupabaseSettingsBtn")) $("saveSupabaseSettingsBtn").onclick = saveSupabaseSettings;
+  if ($("testSupabaseBtn")) $("testSupabaseBtn").onclick = testSupabaseConnection;
+  if ($("loadSupabaseProgramsBtn")) $("loadSupabaseProgramsBtn").onclick = loadSupabasePrograms;
+  initSupabaseClient();
+  if ($("saveActiveStudentSupabaseBtn")) $("saveActiveStudentSupabaseBtn").onclick = saveActiveStudentToSupabase;
+  if ($("saveActiveRegistrationSupabaseBtn")) $("saveActiveRegistrationSupabaseBtn").onclick = saveActiveRegistrationToSupabase;
+  if ($("saveActiveCertificateSupabaseBtn")) $("saveActiveCertificateSupabaseBtn").onclick = saveActiveCertificateToSupabase;
+
+  $("clearBtn").onclick = () => {
+    if (!confirm("This will clear the AGV University Pal records saved in this browser only. Export a backup first if you need to keep them. Continue?")) return;
+    localStorage.removeItem(STORAGE);
+    location.reload();
+  };
+
+  window.agvUPSelectStudent = selectStudent;
+  window.agvUPSelectClass = selectClass;
+  window.agvUPUpdateReg = updateReg;
+  window.agvUPOpenCertificate = openCertificate;
+
+  
+  function agvUpAttachSupabaseSaveButtons(){
+    if ($("saveActiveStudentSupabaseBtn")) $("saveActiveStudentSupabaseBtn").onclick = saveActiveStudentToSupabase;
+    if ($("saveActiveRegistrationSupabaseBtn")) $("saveActiveRegistrationSupabaseBtn").onclick = saveActiveRegistrationToSupabase;
+    if ($("saveActiveCertificateSupabaseBtn")) $("saveActiveCertificateSupabaseBtn").onclick = saveActiveCertificateToSupabase;
+  }
+
+  agvUpAttachSupabaseSaveButtons();
+
+  
+  if ($("roleModeSelect")) $("roleModeSelect").onchange = function(){
+    setRoleMode(this.value);
+  };
+
+  renderAll();
+  applyRoleMode();
+})();
+
+/* AGV_UP_SUPABASE_LOCKED_UI_START */
+  function applyAgvUniversityPalSupabaseLock(){
+    try {
+      const lockedUrl = String(window.AGV_UP_SUPABASE_URL || "").trim();
+      const lockedAnonKey = String(window.AGV_UP_SUPABASE_ANON_KEY || "").trim();
+      const isLocked = window.AGV_UP_SUPABASE_LOCKED === true && lockedUrl && lockedAnonKey;
+      if (!isLocked) return;
+      const urlInput = document.getElementById("supabaseUrlInput");
+      const keyInput = document.getElementById("supabaseAnonKeyInput");
+      if (urlInput) urlInput.value = lockedUrl;
+      if (keyInput) keyInput.value = lockedAnonKey;
+      [
+        "supabaseConnectNotice",
+        "supabaseUrlInput",
+        "supabaseAnonKeyInput",
+        "saveSupabaseSettingsBtn",
+        "testSupabaseBtn"
+      ].forEach(function(id){
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+      document.querySelectorAll("label").forEach(function(label){
+        const text = String(label.textContent || "").trim().toLowerCase();
+        if (
+          text.includes("supabase project url") ||
+          text.includes("supabase publishable") ||
+          text.includes("anon key")
+        ) {
+          label.style.display = "none";
+        }
+      });
+      try {
+        initSupabaseClient();
+      } catch(e) {}
+      try {
+        setSupabaseStatus("Supabase connected through AGV University Pal locked configuration.", "ok");
+      } catch(e) {
+        const status = document.getElementById("supabaseStatus");
+        if (status) {
+          status.className = "status ok";
+          status.textContent = "Supabase connected through AGV University Pal locked configuration.";
+        }
+      }
+    } catch(e) {
+      console.warn("AGV University Pal Supabase lock could not apply:", e);
+    }
+  }
+  setTimeout(applyAgvUniversityPalSupabaseLock, 0);
+/* AGV_UP_SUPABASE_LOCKED_UI_END */
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
