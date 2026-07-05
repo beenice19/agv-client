@@ -48,13 +48,23 @@ const FREE_TOKEN_API_BASE =
   import.meta.env.VITE_AGV_FREE_TOKEN_API_URL || "http://127.0.0.1:8794";
 
 const DEFAULT_ROOMS = [
-  { id: "main-hall", name: "Main Hall", category: "Convention", isPrivate: false, isLocked: false },
-  { id: "studio-a", name: "Studio A", category: "Media", isPrivate: false, isLocked: false },
-  { id: "radio-room", name: "Radio Room", category: "Broadcast", isPrivate: false, isLocked: false },
-  { id: "classroom-1", name: "Classroom 1", category: "Teaching", isPrivate: false, isLocked: false },
-  { id: "prayer-room", name: "Prayer Room", category: "Community", isPrivate: true, isLocked: true },
-  { id: "green-room", name: "Green Room", category: "Backstage", isPrivate: true, isLocked: true },
+  { id: "main-hall", name: "Main Hall", category: "AGV Stage", isPrivate: false, isLocked: false },
 ];
+const LEGACY_DEFAULT_ROOM_IDS = new Set([
+  "studio-a",
+  "radio-room",
+  "classroom-1",
+  "prayer-room",
+  "green-room",
+]);
+function cleanAgvLegacyRooms(roomList) {
+  if (!Array.isArray(roomList)) return DEFAULT_ROOMS;
+  const cleanedRooms = roomList.filter((room) => {
+    const roomId = String(room?.id || "").trim().toLowerCase();
+    return roomId && !LEGACY_DEFAULT_ROOM_IDS.has(roomId);
+  });
+  return cleanedRooms.length ? cleanedRooms : DEFAULT_ROOMS;
+}
 
 const PLAN_LIMITS = {
   FREE: {
@@ -488,7 +498,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   // PASS31X_OWNER_ROOM_VISIBILITY
   const visibleRooms = useMemo(() => {
-    const roomList = Array.isArray(rooms) ? rooms : [];
+    const roomList = cleanAgvLegacyRooms(Array.isArray(rooms) ? rooms : []);
 
     if (isSuperAdmin) {
       return roomList;
@@ -549,7 +559,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const ownedRoomCount = useMemo(() => {
     const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
 
-    return (Array.isArray(rooms) ? rooms : []).filter((room) => {
+    return cleanAgvLegacyRooms(Array.isArray(rooms) ? rooms : []).filter((room) => {
       const roomOwnerId = String(room.ownerId || room.ownerEmail || room.createdBy || "").trim().toLowerCase();
       const roomOwnerEmail = String(room.ownerEmail || room.createdBy || "").trim().toLowerCase();
 
@@ -6148,6 +6158,7 @@ if (typeof window !== "undefined" && !window.__AGV_CLEAN_SCALE1_HIDE_ENGINEERING
     agvStartEngineeringControlCleaner();
   }
 }
+
 
 
 
