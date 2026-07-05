@@ -653,7 +653,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       setRooms(syncedRooms);
 
-      setStatus(`Plan synced from AGV subscription service: ${PLAN_LIMITS[serverPlan]?.label || serverPlan}`);
+      if (safePlan === serverPlan) {
+        setStatus(`Plan synced from AGV subscription service: ${PLAN_LIMITS[safePlan]?.label || safePlan}`);
+      } else {
+        setStatus(
+          `AGV subscription service returned ${PLAN_LIMITS[serverPlan]?.label || serverPlan}, but active plan is locked to ${PLAN_LIMITS[safePlan]?.label || safePlan} until account or Super Admin authority is verified.`
+        );
+      }
     } catch {
       setStatus(`AGV subscription service offline. Using local plan: ${PLAN_LIMITS[localPlan]?.label || localPlan}`);
     }
@@ -4912,7 +4918,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               Bulletin
             </button>
 
-            {!isViewerOnly ? (
+            {!isViewerOnly && !paidBusinessToolsLocked ? (
               <button
                 style={selectedPanel === "controls" ? styles.tabActive : styles.tab}
                 onClick={() => setSelectedPanel("controls")}
