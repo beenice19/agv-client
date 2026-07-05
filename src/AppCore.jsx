@@ -108,11 +108,8 @@ function normalizePlan(plan) {
 }
 
 function getLocalCurrentPlan() {
-  return normalizePlan(
-    localStorage.getItem("agv_current_plan") ||
-      localStorage.getItem("agv_viewer_plan") ||
-      "FREE"
-  );
+  // Public safety: never promote a visitor from browser storage.
+  return "FREE";
 }
 
 function getRoomFromUrl() {
@@ -182,7 +179,7 @@ function getCurrentOwnerId() {
     return freeAccount.email.trim().toLowerCase();
   }
 
-  if (localStorage.getItem("agv_host_pin_verified") === "true") {
+  if (sessionStorage.getItem("agv_host_pin_verified") === "true") {
     return "agv-super-admin";
   }
 
@@ -413,11 +410,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const isHost = roleMode === "host";
   const isAccountHost = Boolean(freeAccount?.email) && isHost;
   const ownerSuperAdminMode =
-    localStorage.getItem("agv_owner_super_admin_mode") === "true" &&
-    localStorage.getItem("agv_host_pin_verified") === "true";
+    sessionStorage.getItem("agv_owner_super_admin_mode") === "true" &&
+    sessionStorage.getItem("agv_host_pin_verified") === "true";
   const isSuperAdmin =
     isHost &&
-    localStorage.getItem("agv_host_pin_verified") === "true" &&
+    sessionStorage.getItem("agv_host_pin_verified") === "true" &&
     (!isAccountHost || ownerSuperAdminMode);
 
   const hostModeLabel = isViewerOnly
@@ -549,6 +546,23 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const selectedRoomMessages = messagesByRoom[selectedRoomId] || [];
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
+  // AGV public authority storage cleanup
+  useEffect(() => {
+    try {
+      localStorage.removeItem("agv_current_plan");
+      localStorage.removeItem("agv_viewer_plan");
+      localStorage.removeItem("agv_local_plan_lock");
+      localStorage.removeItem("agv_host_pin_verified");
+      localStorage.removeItem("agv_owner_super_admin_mode");
+    } catch {}
+  }, []);
+  // Free Plan control redirect
+  useEffect(() => {
+    if (paidBusinessToolsLocked && selectedPanel === "controls") {
+      setSelectedPanel("chat");
+      setVendorFinanceDockOpen(false);
+    }
+  }, [paidBusinessToolsLocked, selectedPanel]);
 
   useEffect(() => {
     syncPlanFromSubscriptionServer();
@@ -602,14 +616,37 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         return;
       }
 
-      const serverPlan = normalizePlan(data.plan || localPlan);
-
-      localStorage.setItem("agv_current_plan", serverPlan);
-      setCurrentPlan(serverPlan);
-
+      const serverPlan = normalizePlan(data.plan || "FREE");
+      const serverEmail = String(
+        data.email ||
+          data.accountEmail ||
+          data.userEmail ||
+          data.ownerEmail ||
+          data?.account?.email ||
+          ""
+      )
+        .trim()
+        .toLowerCase();
+      const localEmail = String(storedAccount?.email || freeAccount?.email || "")
+        .trim()
+        .toLowerCase();
+      const serverVerifiedPaidPlan =
+        serverPlan !== "FREE" &&
+        Boolean(serverEmail) &&
+        Boolean(localEmail) &&
+        serverEmail === localEmail;
+      const safePlan = isSuperAdmin || serverVerifiedPaidPlan ? serverPlan : "FREE";
+      if (safePlan === "FREE") {
+        localStorage.removeItem("agv_current_plan");
+        localStorage.removeItem("agv_viewer_plan");
+        localStorage.removeItem("agv_local_plan_lock");
+      } else {
+        localStorage.setItem("agv_current_plan", safePlan);
+      }
+      setCurrentPlan(safePlan);
       const syncedRooms = syncRoomsForCurrentPlan(
         rooms,
-        serverPlan,
+        safePlan,
         currentOwnerId,
         freeAccount
       );
@@ -1694,19 +1731,16 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
     if (!freeTokenOk) return;
 
-    await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+    const agvReserveGateOk1 = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
+    if (!agvReserveGateOk1) {
+      setBroadcastWorking(false);
+      return;
+    }
 
     if (!canControlStage) {
       setStatus("Viewer mode: camera controls are locked.");
       return;
     }
-
-    const plan = String(currentPlan || "FREE").toUpperCase();
-    if (plan !== "FREE" && !isSuperAdmin) {
-      const reserveOk = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
-      if (!reserveOk) return;
-    }
-
     const room = livekitRoom || (await connectToRoom("host", selectedRoomId));
     if (!room) return;
 
@@ -2039,25 +2073,66 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E
-  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Free-tier live token wallet helpers.
-  function agvFreeTokenUserId() {
+  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Free-tier live token wallet helpers.  function agvCleanWalletId(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+  function agvFreeTokenUserId(planOverride = currentPlan) {
+    const plan = String(planOverride || currentPlan || "FREE").toUpperCase();
     try {
+      if (plan === "FREE") {
+        const freeEmail = agvCleanWalletId(freeAccount?.email);
+        return freeEmail ? "free:" + freeEmail : "free:local-free-user";
+      }
+      if (isSuperAdmin) return "agv-super-admin";
       return (
-        localStorage.getItem("agv_user_id") ||
-        localStorage.getItem("agvUserId") ||
-        localStorage.getItem("agv_owner_email") ||
-        localStorage.getItem("agv_email") ||
-        "local-free-user"
+        agvCleanWalletId(storedAccount?.email) ||
+        agvCleanWalletId(freeAccount?.email) ||
+        agvCleanWalletId(localStorage.getItem("agv_email")) ||
+        agvCleanWalletId(localStorage.getItem("agv_owner_email")) ||
+        agvCleanWalletId(localStorage.getItem("agv_user_id")) ||
+        agvCleanWalletId(localStorage.getItem("agvUserId")) ||
+        "paid:local-user"
       );
     } catch {
-      return "local-free-user";
+      return plan === "FREE" ? "free:local-free-user" : "paid:local-user";
     }
+  }
+  function acceptAgvWalletForPlan(wallet, planOverride = currentPlan, userIdOverride = "") {
+    const plan = String(planOverride || currentPlan || "FREE").toUpperCase();
+    if (!wallet) {
+      setFreeTokenWallet(null);
+      return null;
+    }
+    const walletPlan = String(wallet.plan || plan || "FREE").toUpperCase();
+    const expectedUserId = agvCleanWalletId(userIdOverride || agvFreeTokenUserId(plan));
+    const walletUserId = agvCleanWalletId(wallet.userId);
+    const liveTokensBalance = Number(wallet.liveTokensBalance ?? wallet.balance ?? 0);
+    const monthlyLiveTokens = Number(wallet.monthlyLiveTokens ?? wallet.startingBalance ?? 0);
+    const broadcastCreditsBalance = Number(wallet.broadcastCreditsBalance ?? 0);
+    if (
+      plan === "FREE" &&
+      (
+        walletPlan !== "FREE" ||
+        liveTokensBalance > 150000 ||
+        monthlyLiveTokens > 150000 ||
+        broadcastCreditsBalance > 0 ||
+        (expectedUserId && walletUserId && walletUserId !== expectedUserId)
+      )
+    ) {
+      setFreeTokenWallet(null);
+      setFreeTokenStatus(
+        "AGV Plan Wallet mismatch blocked. Free Plan wallet must be 150,000 Live Tokens and 0 Broadcast Credits."
+      );
+      return null;
+    }
+    setFreeTokenWallet(wallet);
+    return wallet;
   }
 
   async function refreshFreeTokenWallet(planOverride = currentPlan) {
     try {
       const plan = String(planOverride || currentPlan || "FREE").toUpperCase();
-      const userId = agvFreeTokenUserId();
+      const userId = agvFreeTokenUserId(plan);
 
       const response = await fetch(
         FREE_TOKEN_API_BASE +
@@ -2122,7 +2197,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   async function reserveAgvLiveSessionBeforeCamera(roomId = selectedRoomId || "main-hall") {
     try {
       const plan = String(currentPlan || "FREE").toUpperCase();
-      const userId = agvFreeTokenUserId();
+      const userId = agvFreeTokenUserId(plan);
 
       setFreeTokenStatus("Reserving AGV Live Session from SERVER 8794...");
       setStatus("Checking AGV Plan Wallet before camera starts...");
@@ -2146,7 +2221,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           data?.error ||
           "Go Live blocked. AGV Live Session Reservation failed.";
 
-        if (data?.wallet) setFreeTokenWallet(data.wallet);
+        if (data?.wallet) acceptAgvWalletForPlan(data.wallet);
 
         setFreeTokenStatus(message);
         setStatus(message);
@@ -2155,7 +2230,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       }
 
       if (data.wallet) {
-        setFreeTokenWallet(data.wallet);
+        acceptAgvWalletForPlan(data.wallet);
       }
 
       setFreeTokenSessionId(data.sessionId || "");
@@ -2201,46 +2276,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     return true;
-  }
-
-  async function startFreeTokenLiveSession(roomId = selectedRoomId || "main-hall") {
-    const plan = String(currentPlan || "FREE").toUpperCase();
-
-    if (plan !== "FREE" || isSuperAdmin) {
-      return "";
-    }
-
-    const okToStart = await ensureFreeTokensBeforeBroadcast();
-    if (!okToStart) return "";
-
-    try {
-      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/start-session", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: agvFreeTokenUserId(),
-          plan,
-          roomId,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok || !data?.ok) {
-        setBroadcastStatus(data?.message || "Free token session could not start.");
-        setFreeTokenStatus(data?.message || "Free token session could not start.");
-        return "";
-      }
-
-      setFreeTokenSessionId(data.sessionId || "");
-      setFreeTokenWallet(data.wallet || null);
-      setFreeTokenStatus("Free token session started.");
-
-      return data.sessionId || "";
-    } catch (error) {
-      setFreeTokenStatus("Free token session error: " + (error?.message || String(error)));
-      return "";
-    }
+  }  async function startFreeTokenLiveSession(roomId = selectedRoomId || "main-hall") {
+    // Reserve/gate model only.
+    // This intentionally does not start a heartbeat debit.
+    const reserveOk = await reserveAgvLiveSessionBeforeCamera(roomId);
+    return reserveOk ? freeTokenSessionId || "reserve-gate-session" : "";
   }
 
 
@@ -2271,52 +2311,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setBroadcastStatus(`Direct broadcast status error: ${error?.message || "unknown error"}`);
       return null;
     }
-  }
-  // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_DEBIT_HELPER
-  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â debit Free tokens while the Free user is live.
-  async function debitFreeLiveTokens(seconds = 60, viewerCount = 0, screenShare = false) {
-    const plan = String(currentPlan || "FREE").toUpperCase();
-
-    if (plan !== "FREE" || isSuperAdmin) {
-      return true;
-    }
-
-    try {
-      const response = await fetch(FREE_TOKEN_API_BASE + "/api/free-tokens/debit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: agvFreeTokenUserId(),
-          plan,
-          roomId: selectedRoomId || "main-hall",
-          sessionId: freeTokenSessionId || "client-live-session",
-          seconds,
-          viewerCount,
-          screenShare,
-        }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (data?.wallet) {
-        setFreeTokenWallet(data.wallet);
-      }
-
-      setFreeTokenStatus(data?.message || "Free live tokens updated.");
-
-      if (!response.ok || data?.blocked) {
-        setBroadcastStatus(
-          data?.message || "Free AGV Live Tokens exhausted. Upgrade to continue broadcasting."
-        );
-        return false;
-      }
-
-      return true;
-    } catch (error) {
-      setFreeTokenStatus("Free token live debit error: " + (error?.message || String(error)));
-      return false;
-    }
-  }
+  }  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â debit Free tokens while the Free user is live.
 
   // PASS_FREE_TOKENS_CLIENT_PANEL_1E_AUTOLOAD
   // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â load Free token balance.
@@ -2387,7 +2382,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: agvFreeTokenUserId(),
+          userId: agvFreeTokenUserId(String(currentPlan || "FREE").toUpperCase()),
           plan: String(currentPlan || "FREE").toUpperCase(),
           roomId: selectedRoomId || "main-hall",
           expectedViewers: Number(eventEstimateInputs.expectedViewers || 0),
@@ -2464,7 +2459,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: agvFreeTokenUserId(),
+          userId: agvFreeTokenUserId(String(currentPlan || "FREE").toUpperCase()),
           plan: String(currentPlan || "FREE").toUpperCase(),
           packId: pack.id,
         }),
@@ -2526,7 +2521,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const freeTokenOk = await ensureFreeTokensBeforeBroadcast();
     if (!freeTokenOk) return;
 
-    await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+    const agvReserveGateOk2 = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
+    if (!agvReserveGateOk2) {
+      setBroadcastWorking(false);
+      return;
+    }
 
     if (!cloudflareBroadcastAllowed) {
       setBroadcastStatus("Cloudflare broadcast is available on paid AGV plans only. Upgrade to Creator, Ministry / Pro, or Convention.");
@@ -2568,35 +2567,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setBroadcastWorking(false);
     }
   }
-
-  // PASS_FREE_TOKEN_LIVE_HEARTBEAT_1G_TIMER
-  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â while Free user is live, debit one minute of host stream time every 60 seconds.
-  useEffect(() => {
-    const plan = String(currentPlan || "FREE").toUpperCase();
-
-    if (plan !== "FREE" || isSuperAdmin || !broadcastLive) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const tick = async () => {
-      if (cancelled) return;
-
-      const ok = await debitFreeLiveTokens(60, 0, false);
-
-      if (!ok) {
-        setBroadcastLive(false);
-      }
-    };
-
-    const timerId = setInterval(tick, 60000);
-
-    return () => {
-      cancelled = true;
-      clearInterval(timerId);
-    };
-  }, [currentPlan, isSuperAdmin, broadcastLive, selectedRoomId, freeTokenSessionId]);
 
   async function stopCloudflareBroadcast() {
     if (!isHost) {
@@ -2650,44 +2620,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     await connectToRoom("viewer", selectedRoomId);
   }
 
-  // PASS_FREE_LIVEKIT_CAMERA_TOKEN_HEARTBEAT_1I
-  // PASS_CLIENT_FREE_TOKEN_SCREENSHARE_HEARTBEAT_1A
-  // AGV CLIENT ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â debit Free tokens while host camera is actually live in LiveKit.
-  useEffect(() => {
-    const plan = String(currentPlan || "FREE").toUpperCase();
-    const freeLiveActivityOn = Boolean(cameraOn || screenOn || broadcastLive);
-
-    if (plan !== "FREE" || isSuperAdmin || !freeLiveActivityOn || !livekitRoom) {
-      return;
-    }
-
-    let cancelled = false;
-
-    const tick = async () => {
-      if (cancelled) return;
-
-      const viewerCount = Number(livekitRoom?.remoteParticipants?.size || 0);
-      const ok = await debitFreeLiveTokens(15, viewerCount, Boolean(screenOn));
-
-      if (!ok) {
-        setCameraOn(false);
-        setScreenOn(false);
-        setBroadcastLive(false);
-        setStatus("Free AGV Live Tokens exhausted. Upgrade to continue broadcasting.");
-      }
-    };
-
-    // First debit happens quickly so the on-screen count visibly moves during testing.
-    const firstTick = setTimeout(tick, 5000);
-    const timerId = setInterval(tick, 15000);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(firstTick);
-      clearInterval(timerId);
-    };
-  }, [currentPlan, isSuperAdmin, cameraOn, screenOn, broadcastLive, livekitRoom, selectedRoomId, freeTokenSessionId]);
-
   function disconnectFromLiveKit() {
     cleanupLocalTracks();
 
@@ -2717,6 +2649,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   async function createHostOwnedRoom() {
     if (!isHost) {
       setStatus("Host access required to create rooms.");
+      return;
+    }
+    if (paidBusinessToolsLocked) {
+      setStatus("Custom rooms require a paid AGV plan. Free Plan includes Chat and Bulletin access only.");
       return;
     }
 
@@ -3939,7 +3875,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
             </div>
 
-            <div style={styles.controlBox}>
+            <div style={paidBusinessToolsLocked ? { display: "none" } : styles.controlBox}>
               <div style={styles.controlTitle}>Create Host-Owned Room</div>
 
               <div style={styles.helperText}>
@@ -4284,7 +4220,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           return;
                         }
 
-                        await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+                        const agvReserveGateOk3 = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
+    if (!agvReserveGateOk3) {
+      setBroadcastWorking(false);
+      return;
+    }
 
                         // PASS_EVENT_ESTIMATE_GATE_UI_1C
                         const broadcastCreditsOk = await ensureBroadcastCreditsBeforeCloudflare();
@@ -4609,7 +4549,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           return;
                         }
 
-                        await startFreeTokenLiveSession(selectedRoomId || "main-hall");
+                        const agvReserveGateOk4 = await reserveAgvLiveSessionBeforeCamera(selectedRoomId || "main-hall");
+    if (!agvReserveGateOk4) {
+      setBroadcastWorking(false);
+      return;
+    }
 
                         setBroadcastStatus("Starting LiveKit ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ Cloudflare bridge...");
 
@@ -5040,7 +4984,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
           ) : null}
 
-          {selectedPanel === "controls" && !isViewerOnly ? (
+          {selectedPanel === "controls" && !isViewerOnly && !paidBusinessToolsLocked ? (
             <div style={styles.card}>
                             {/* PASS31U_V2_CONTROL_CENTER_SECTIONS */}
               <div style={styles.panelTitle}>Control Center ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â Host Tools</div>
