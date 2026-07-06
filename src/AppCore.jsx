@@ -323,6 +323,17 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [roleMode] = useState(entryRole === "host" ? "host" : "viewer");
   const [selectedPanel, setSelectedPanel] = useState("chat");
   const [vendorFinanceDockOpen, setVendorFinanceDockOpen] = useState(false); // PASS_VENDOR_FINANCE_DOCK_3A
+  const [vendorDockList, setVendorDockList] = useState([]); // PASS_REAL_VENDOR_DATABASE_DOCK
+  const [vendorDockRecord, setVendorDockRecord] = useState(null); // PASS_REAL_VENDOR_DATABASE_DOCK
+  const [vendorDockForm, setVendorDockForm] = useState({
+    businessName: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    businessCategory: "",
+    website: "",
+    description: "",
+  }); // PASS_REAL_VENDOR_DATABASE_DOCK
 
   const [moderators, setModerators] = useState([]);
   const [moderatorInput, setModeratorInput] = useState("");
@@ -5077,7 +5088,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   cursor: "pointer",
                   boxShadow: "0 14px 34px rgba(0,0,0,0.25)",
                 }}
-                onClick={() => setVendorFinanceDockOpen(true)} // PASS_VENDOR_FINANCE_DOCK_3B
+                onClick={async () => {
+                  setVendorFinanceDockOpen(true);
+                  try {
+                    const response = await fetch("http://127.0.0.1:8795/api/vendor/list");
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok || !data.ok) {
+                      throw new Error(data.error || "Vendor list failed to load.");
+                    }
+                    setVendorDockList(Array.isArray(data.vendors) ? data.vendors : []);
+                    setStatus("Vendor list loaded. Select an existing vendor or create a new vendor profile.");
+                  } catch (error) {
+                    setStatus("Vendor Dock opened, but vendor list did not load: " + (error.message || "Unknown error"));
+                  }
+                }} // PASS_VENDOR_FINANCE_DOCK_3B
               >
                 Open Vendor Financial Dock
               </button>
@@ -5343,268 +5367,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     </div>
                   </div>
 
-                  <div style={styles.controlTitle}>Ticket Revenue Report / 7% AGV Platform Fee Tracking</div>
-                  <div style={styles.helperText}>
-                    Paid hosts who use their own payment gateway can report ticket revenue here.
-                    AGV calculates a 7% ticket platform fee based on net collected ticket revenue after refunds. Broadcast delivery service fees and payment processing are separate.
-                    Official AGV event fee structure: 7% ticket platform fee + broadcast delivery service fee + payment processing.
-                  </div>
 
-                  {paidBusinessToolsLocked ? (
-                    <div style={styles.viewerLockBox}>
-                      Revenue reports are paid-plan tools. Upgrade to Creator, Ministry, or Convention.
-                    </div>
-                  ) : hostVendorAgreementRequired ? (
-                    <div style={styles.viewerLockBox}>
-                      Host/Vendor Agreement required before submitting ticket revenue reports.
-                    </div>
-                  ) : (
-                    <>
-                      <input
-                        style={styles.chatInput}
-                        value={revenueEventName}
-                        onChange={(event) => setRevenueEventName(event.target.value)}
-                        placeholder="Event name"
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueRoomId}
-                        onChange={(event) => setRevenueRoomId(event.target.value)}
-                        placeholder={`Room ID - default: ${selectedRoomId}`}
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueEventDate}
-                        onChange={(event) => setRevenueEventDate(event.target.value)}
-                        placeholder="Event date"
-                        type="date"
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueTicketsSold}
-                        onChange={(event) => setRevenueTicketsSold(event.target.value)}
-                        placeholder="Tickets sold"
-                        type="number"
-                        min="0"
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueGross}
-                        onChange={(event) => setRevenueGross(event.target.value)}
-                        placeholder="Gross collected ticket revenue"
-                        inputMode="decimal"
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueRefunds}
-                        onChange={(event) => setRevenueRefunds(event.target.value)}
-                        placeholder="Refunds issued"
-                        inputMode="decimal"
-                      />
-
-                      <input
-                        style={styles.chatInput}
-                        value={revenueGateway}
-                        onChange={(event) => setRevenueGateway(event.target.value)}
-                        placeholder="Payment gateway used - Stripe, PayPal, Square, Cash App, Eventbrite, etc."
-                      />
-
-                      <textarea
-                        style={styles.textarea}
-                        value={revenueNotes}
-                        onChange={(event) => setRevenueNotes(event.target.value)}
-                        placeholder="Host/vendor notes"
-                      />
-
-                      <div style={styles.ownerSyncBox}>
-                        <div style={styles.ownerSyncTitle}>AGV 7% Ticket Platform Fee Preview</div>
-                        <div style={styles.helperText}>
-                          Gross: {formatMoney(revenueGross)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Refunds: {formatMoney(revenueRefunds)}
-                        </div>
-                        <div style={styles.helperText}>
-                          Net collected revenue: {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)))}
-                        </div>
-                        <div style={styles.helperText}>
-                          AGV 7% ticket platform fee:{" "}
-                          {formatMoney(Math.max(0, moneyValue(revenueGross) - moneyValue(revenueRefunds)) * AGV_TICKET_PLATFORM_FEE_RATE)}
-                        </div>
-                      </div>
-
-                      <div style={styles.buttonRow}>
-                        <button style={styles.primaryButton} onClick={submitRevenueReport}>
-                          Submit Revenue Report
-                        </button>
-
-                        <button style={styles.secondaryButton} onClick={clearRevenueReportsLocal}>
-                          Clear Local Reports
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  <div style={styles.ownerSyncBox}>
-                    <div style={styles.ownerSyncTitle}>Local Revenue Reports</div>
-
-                    {revenueReports.length ? (
-                      <div style={{ display: "grid", gap: 10, marginTop: 8 }}>
-                        {revenueReports.slice(0, 5).map((report) => (
-                          <div key={report.id} style={styles.eventOwnerCard}>
-                            <div style={styles.eventOwnerTitle}>
-                              {report.eventName} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {report.status || "Reported"}
-                            </div>
-                            <div style={styles.helperText}>
-                              Room: {report.roomId || "Not set"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Gateway: {report.gateway || "Not set"}
-                            </div>
-                            <div style={styles.helperText}>
-                              Tickets: {report.ticketsSold || 0} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Net: {formatMoney(report.netRevenue)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ AGV 7% Platform Fee:{" "}
-                              {formatMoney(report.agvFee)}
-                            </div>
-                            <div style={styles.helperText}>
-                              Host: {report.ownerName || "AGV Host"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {report.organization || "Organization not set"}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div style={styles.emptyText}>No local revenue reports submitted yet.</div>
-                    )}
-                                    </div>
-
-                  {isSuperAdmin ? (
-                    <div style={styles.ownerSyncBox}>
-                      <div style={styles.ownerSyncTitle}>Admin Revenue Review Dashboard</div>
-                      <div style={styles.helperText}>
-                        Owner/Admin review area for vendor ticket revenue reports and AGV 7% ticket platform fees.
-                      </div>
-
-                      <div style={styles.ownerSyncBox}>
-                        <div style={styles.ownerSyncTitle}>Revenue Admin PIN</div>
-                        <div style={styles.helperText}>
-                          Enter your private AGV Revenue Admin PIN to load reports and update invoice status.
-                        </div>
-
-                        <input
-                          style={styles.chatInput}
-                          value={revenueAdminPin}
-                          onChange={(event) => setRevenueAdminPin(event.target.value)}
-                          placeholder="Revenue Admin PIN"
-                          type="password"
-                        />
-
-                        <div style={styles.buttonRow}>
-                          <button style={styles.secondaryButton} onClick={saveRevenueAdminPin}>
-                            Save PIN
-                          </button>
-
-                          <button style={styles.dangerButton} onClick={clearRevenueAdminPin}>
-                            Clear PIN
-                          </button>
-                        </div>
-                      </div>
-
-                      <button style={styles.secondaryButton} onClick={loadRevenueReportsFromServer}>
-                        Load Reports From Secure Revenue Server
-                      </button>
-
-                      {revenueReports.length ? (
-                        <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-                          {revenueReports.map((report) => (
-                            <div key={report.id} style={styles.eventOwnerCard}>
-                              <div style={styles.eventOwnerTitle}>
-                                {report.eventName} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {report.status || "Reported"}
-                              </div>
-
-                              <div style={styles.helperText}>
-                                Host: {report.ownerName || "AGV Host"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {report.organization || "Organization not set"}
-                              </div>
-
-                              <div style={styles.helperText}>
-                                Email: {report.ownerEmail || "Not saved"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Plan: {report.plan || "Not saved"}
-                              </div>
-
-                              <div style={styles.helperText}>
-                                Room: {report.roomId || "main-hall"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Date: {report.eventDate || "Not set"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Gateway:{" "}
-                                {report.gateway || "Not reported"}
-                              </div>
-
-                              <div style={styles.helperText}>
-                                Tickets: {report.ticketsSold || 0} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Gross: {formatMoney(report.grossRevenue)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Refunds:{" "}
-                                {formatMoney(report.refunds)}
-                              </div>
-
-                              <div style={styles.helperText}>
-                                Net Revenue: {formatMoney(report.netRevenue)} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ AGV 7% Platform Fee Owed:{" "}
-                                {formatMoney(report.agvFee)}
-                              </div>
-
-                              {report.notes ? (
-                                <div style={styles.helperText}>Host Notes: {report.notes}</div>
-                              ) : null}
-
-                              {report.adminNotes ? (
-                                <div style={styles.helperText}>Admin Notes: {report.adminNotes}</div>
-                              ) : null}
-
-                              <div
-                                style={{
-                                  display: "flex",
-                                  flexWrap: "wrap",
-                                  gap: 8,
-                                  marginTop: 10,
-                                }}
-                              >
-                                <button
-                                  style={styles.secondaryButton}
-                                  onClick={() => updateRevenueReportStatus(report.id, "Reported")}
-                                >
-                                  Reported
-                                </button>
-
-                                <button
-                                  style={styles.secondaryButton}
-                                  onClick={() => updateRevenueReportStatus(report.id, "Invoiced")}
-                                >
-                                  Invoiced
-                                </button>
-
-                                <button
-                                  style={styles.primaryButton}
-                                  onClick={() => updateRevenueReportStatus(report.id, "Paid")}
-                                >
-                                  Paid
-                                </button>
-
-                                <button
-                                  style={styles.secondaryButton}
-                                  onClick={() => updateRevenueReportStatus(report.id, "Disputed")}
-                                >
-                                  Disputed
-                                </button>
-
-                                <button
-                                  style={styles.dangerButton}
-                                  onClick={() => updateRevenueReportStatus(report.id, "Closed")}
-                                >
-                                  Closed
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div style={styles.emptyText}>
-                          No revenue reports loaded yet. Click ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“Load Reports From SERVER 8794.ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â
-                        </div>
-                      )}
-                    </div>
-                  ) : null}
                 </div>
-                
+
               <div
                 style={{
                   marginTop: 14,
@@ -5897,66 +5662,162 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Vendor Profile</div>
                 <div style={{ display: "grid", gap: 10 }}>
-                  <input style={styles.input} placeholder="Business name" />
-                  <input style={styles.input} placeholder="Contact name" />
-                  <input style={styles.input} placeholder="Vendor email" />
-                  <input style={styles.input} placeholder="Phone number" />
-                  <input style={styles.input} placeholder="Business category" />
-                  <input style={styles.input} placeholder="Website optional" />
-                  <textarea style={{ ...styles.input, minHeight: 82, resize: "vertical" }} placeholder="Vendor description" />
-                  <button onClick={() => setStatus("Vendor profile UI is ready. SERVER save endpoint will connect in PASS 3C.2.")} style={styles.primaryButton}>Save Vendor Profile</button>
+                  <select
+                    style={styles.input}
+                    value={vendorDockRecord?.vendorId || ""}
+                    onChange={(event) => {
+                      const selected = vendorDockList.find((vendor) => vendor.vendorId === event.target.value) || null;
+                      setVendorDockRecord(selected);
+                      setVendorDockForm({
+                        businessName: selected?.businessName || "",
+                        contactName: selected?.contactName || "",
+                        email: selected?.email || "",
+                        phone: selected?.phone || "",
+                        businessCategory: selected?.businessCategory || "",
+                        website: selected?.website || "",
+                        description: selected?.description || "",
+                      });
+                      if (selected) setStatus("Loaded vendor profile: " + (selected.businessName || selected.email));
+                    }}
+                  >
+                    <option value="">New vendor / select vendor</option>
+                    {vendorDockList.map((vendor) => (
+                      <option key={vendor.vendorId} value={vendor.vendorId}>
+                        {(vendor.businessName || vendor.email) + " - " + (vendor.gatewayStatus || "NOT_CONNECTED")}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => {
+                      setVendorDockRecord(null);
+                      setVendorDockForm({ businessName: "", contactName: "", email: "", phone: "", businessCategory: "", website: "", description: "" });
+                      setStatus("New vendor form ready. Enter vendor information and save.");
+                    }}
+                    style={styles.primaryButton}
+                  >
+                    New Vendor
+                  </button>
+
+                  <input style={styles.input} placeholder="Business name" value={vendorDockForm.businessName} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, businessName: event.target.value }))} />
+                  <input style={styles.input} placeholder="Contact name" value={vendorDockForm.contactName} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, contactName: event.target.value }))} />
+                  <input style={styles.input} placeholder="Vendor email - required" value={vendorDockForm.email} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, email: event.target.value }))} />
+                  <input style={styles.input} placeholder="Phone number" value={vendorDockForm.phone} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, phone: event.target.value }))} />
+                  <input style={styles.input} placeholder="Business category / Cash App / PayPal / Square / Vendor Booth" value={vendorDockForm.businessCategory} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, businessCategory: event.target.value }))} />
+                  <input style={styles.input} placeholder="Website optional" value={vendorDockForm.website} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, website: event.target.value }))} />
+                  <textarea style={{ ...styles.input, minHeight: 82, resize: "vertical" }} placeholder="Vendor description" value={vendorDockForm.description} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, description: event.target.value }))} />
+
+                  <button
+                    onClick={async () => {
+                      try {
+                        const email = vendorDockForm.email.trim().toLowerCase();
+                        if (!email) {
+                          setStatus("Vendor email is required before saving.");
+                          return;
+                        }
+
+                        const payload = {
+                          vendorId: vendorDockRecord?.vendorId || undefined,
+                          businessName: vendorDockForm.businessName,
+                          contactName: vendorDockForm.contactName,
+                          email,
+                          phone: vendorDockForm.phone,
+                          businessCategory: vendorDockForm.businessCategory,
+                          website: vendorDockForm.website,
+                          description: vendorDockForm.description,
+                        };
+
+                        const route = vendorDockRecord?.vendorId ? "update" : "register";
+                        const response = await fetch("http://127.0.0.1:8795/api/vendor/" + route, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify(payload),
+                        });
+
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok || !data.ok || !data.vendor) {
+                          throw new Error(data.error || "Vendor save failed.");
+                        }
+
+                        setVendorDockRecord(data.vendor);
+                        setVendorDockForm({
+                          businessName: data.vendor.businessName || "",
+                          contactName: data.vendor.contactName || "",
+                          email: data.vendor.email || "",
+                          phone: data.vendor.phone || "",
+                          businessCategory: data.vendor.businessCategory || "",
+                          website: data.vendor.website || "",
+                          description: data.vendor.description || "",
+                        });
+                        setVendorDockList((prev) => [data.vendor, ...prev.filter((vendor) => vendor.vendorId !== data.vendor.vendorId)]);
+                        setStatus("Vendor profile saved to SERVER 8795: " + (data.vendor.businessName || data.vendor.email));
+                      } catch (error) {
+                        setStatus("Vendor save failed: " + (error.message || "Unknown error"));
+                      }
+                    }}
+                    style={styles.primaryButton}
+                  >
+                    Save Vendor Profile
+                  </button>
                 </div>
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>2. Payment Gateway Setup</div>
                 <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Vendor payment connection is required before booth-ticket sales are activated.</div>
-                <div style={{ border: "1px solid rgba(239,68,68,0.32)", background: "rgba(127,29,29,0.18)", borderRadius: 16, padding: 12, marginBottom: 10 }}>
-                  <div style={{ fontWeight: 950, color: "#fecaca" }}>Payment Status</div>
-                  <div style={{ marginTop: 4, color: "#fee2e2", fontSize: 13 }}>Not Connected</div>
+                <div style={{ border: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "1px solid rgba(34,197,94,0.35)" : "1px solid rgba(239,68,68,0.32)", background: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "rgba(22,101,52,0.18)" : "rgba(127,29,29,0.18)", borderRadius: 16, padding: 12, marginBottom: 10 }}>
+                  <div style={{ fontWeight: 950, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>Payment Status</div>
+                  <div style={{ marginTop: 4, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#dcfce7" : "#fee2e2", fontSize: 13 }}>
+                    {vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " - " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No vendor selected"}
+                  </div>
                 </div>
+                <select id="agvVendorGatewayChoice" style={styles.input} defaultValue="agv-gateway">
+                  <option value="agv-gateway">AGV Gateway - AGV collects ticket payments and settles vendor</option>
+                  <option value="manual">Manual / Cash App / Eventbrite settlement review</option>
+                  <option value="paypal">PayPal manual review</option>
+                  <option value="square">Square manual review</option>
+                </select>
                 <button
                   onClick={async () => {
                     try {
-                      setStatus("Opening AGV vendor payment setup...");
-
-                      const vendorEmail =
-                        storedAccount?.email ||
-                        freeAccount?.email ||
-                        "vendor@agv.local";
-
-                      const vendorBusinessName =
-                        storedAccount?.name ||
-                        freeAccount?.name ||
-                        "AGV Vendor";
-
-                      const response = await fetch("http://127.0.0.1:8795/api/vendor/connect/stripe", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                          email: vendorEmail,
-                          businessName: vendorBusinessName,
-                          contactName: vendorBusinessName,
-                          businessCategory: "AGV Event Vendor",
-                          description: "AGV Vendor Financial Docking Station onboarding",
-                        }),
-                      });
-
-                      const data = await response.json();
-
-                      if (!response.ok || !data.ok || !data.onboardingUrl) {
-                        throw new Error(data.error || "Vendor payment setup failed.");
+                      if (!vendorDockRecord?.vendorId) {
+                        setStatus("Save or select a vendor before applying a payment mode.");
+                        return;
                       }
 
-                      setStatus("Redirecting to Stripe vendor onboarding...");
-                      window.location.href = data.onboardingUrl;
+                      const gatewayChoice = document.getElementById("agvVendorGatewayChoice")?.value || "agv-gateway";
+                      const payload = {
+                        vendorId: vendorDockRecord.vendorId,
+                        email: vendorDockRecord.email,
+                        businessName: vendorDockForm.businessName || vendorDockRecord.businessName,
+                        contactName: vendorDockForm.contactName || vendorDockRecord.contactName,
+                        phone: vendorDockForm.phone || vendorDockRecord.phone,
+                        businessCategory: vendorDockForm.businessCategory || vendorDockRecord.businessCategory,
+                        website: vendorDockForm.website || vendorDockRecord.website,
+                        description: vendorDockForm.description || vendorDockRecord.description,
+                      };
+
+                      const response = await fetch("http://127.0.0.1:8795/api/vendor/connect/" + gatewayChoice, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                      });
+
+                      const data = await response.json().catch(() => ({}));
+                      if (!response.ok || !data.ok || !data.vendor) {
+                        throw new Error(data.error || "Payment mode update failed.");
+                      }
+
+                      setVendorDockRecord(data.vendor);
+                      setVendorDockList((prev) => [data.vendor, ...prev.filter((vendor) => vendor.vendorId !== data.vendor.vendorId)]);
+                      setStatus(data.message || "Vendor payment mode updated.");
                     } catch (error) {
-                      setStatus("Vendor payment setup failed: " + (error.message || "Unknown error"));
+                      setStatus("Payment mode update failed: " + (error.message || "Unknown error"));
                     }
                   }}
                   style={styles.primaryButton}
                 >
-                  Connect Payment Account
+                  Apply Payment Mode
                 </button>
               </div>
 
@@ -5967,7 +5828,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Ticket Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV Platform Fee 7%</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Vendor Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
-                  <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: "#93c5fd", fontWeight: 900 }}>Booth Status: Closed Until Approved</div>
+                  <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: vendorDockRecord?.ticketSalesEnabled ? "#bbf7d0" : "#93c5fd", fontWeight: 900 }}>{vendorDockRecord?.ticketSalesEnabled ? "Booth Status: Open - Ticket Sales Enabled" : "Booth Status: Closed Until Approved"}</div>
                 </div>
               </div>
 
@@ -5977,8 +5838,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: "#fecaca" }}>Not Connected</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: "#fef3c7" }}>Pending</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No vendor selected"}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7" }}>{vendorDockRecord?.approvalStatus || "Pending"}</strong></div>
                 </div>
               </div>
 
@@ -5986,8 +5847,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Vendor Status</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <div style={{ border: "1px solid rgba(250,204,21,0.30)", background: "rgba(113,63,18,0.18)", borderRadius: 16, padding: 12 }}>
-                    <div style={{ color: "#fef3c7", fontWeight: 950 }}>Pending</div>
-                    <div style={{ color: "#fde68a", fontSize: 12, marginTop: 4 }}>Waiting for host approval and payment setup.</div>
+                    <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7", fontWeight: 950 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Approved" : "Pending"}</div>
+                    <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#dcfce7" : "#fde68a", fontSize: 12, marginTop: 4 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Vendor is approved. Ticket sales status follows the selected payment mode." : "Waiting for host approval and payment setup."}</div>
                   </div>
                   <div style={{ border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", borderRadius: 16, padding: 12 }}>
                     <div style={{ color: "#bbf7d0", fontWeight: 950 }}>Approved</div>
