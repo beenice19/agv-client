@@ -182,6 +182,38 @@ function getFreeAccount() {
   }
 }
 
+
+function getPublicSplashSignupIntent() {
+  try {
+    if (typeof window === "undefined") return null;
+    const params = new URLSearchParams(window.location.search || "");
+    const publicEntry = String(params.get("publicEntry") || "").trim().toLowerCase();
+    const noAdminCarry = params.get("agvNoAdminCarry") === "1";
+    const rawPlan =
+      params.get("agvSignupPlan") ||
+      params.get("pendingSignupPlan") ||
+      "";
+    const normalizedRawPlan = String(rawPlan || "").trim().toLowerCase();
+    if (publicEntry !== "splash" || !noAdminCarry) return null;
+    const planMap = {
+      trial: "FREE",
+      free: "FREE",
+      creator: "CREATOR",
+      ministry: "MINISTRY",
+      pro: "MINISTRY",
+      convention: "CONVENTION",
+    };
+    const plan = planMap[normalizedRawPlan] || "FREE";
+    return {
+      rawPlan: normalizedRawPlan || "",
+      plan,
+    };
+  } catch {
+    return null;
+  }
+}
+// PASS_SIGNUP_PLAN_LOCK_3B_PUBLIC_SPLASH_INTENT_HELPER
+
 function getStoredAccount() {
   try {
     const account = JSON.parse(localStorage.getItem("agv_account") || "null");
@@ -658,10 +690,39 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }, []);
 
   async function syncPlanFromSubscriptionServer() {
+    const publicSplashIntent = getPublicSplashSignupIntent();
+    if (publicSplashIntent) {
+      const publicPlan = normalizePlan(publicSplashIntent.plan || "FREE");
+      try {
+        localStorage.removeItem("agv_current_plan");
+        localStorage.removeItem("agv_viewer_plan");
+        localStorage.removeItem("agv_local_plan_lock");
+        localStorage.removeItem("agv_host_pin_verified");
+        localStorage.removeItem("agv_owner_super_admin_mode");
+        sessionStorage.removeItem("agv_super_admin_test_plan");
+        sessionStorage.removeItem("agv_owner_super_admin_mode");
+        localStorage.setItem("agv_public_entry", "splash");
+        localStorage.setItem("agv_no_admin_carry", "1");
+        localStorage.setItem("agv_pending_signup_plan", publicSplashIntent.rawPlan || publicPlan.toLowerCase());
+        sessionStorage.setItem("agv_pending_signup_plan", publicSplashIntent.rawPlan || publicPlan.toLowerCase());
+      } catch {}
+      setCurrentPlan(publicPlan);
+      const syncedRooms = syncRoomsForCurrentPlan(
+        rooms,
+        publicPlan,
+        getCurrentOwnerId(),
+        getFreeAccount()
+      );
+      setRooms(syncedRooms);
+      setStatus(
+        publicSplashIntent.rawPlan
+          ? `Public splash signup intent loaded: ${PLAN_LIMITS[publicPlan]?.label || publicPlan}`
+          : "Public AGV entry loaded. Choose or sign into an account to continue."
+      );
+      return;
+    }
     const localPlan = getLocalCurrentPlan();
-
     setCurrentPlan(localPlan);
-
     try {
       const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/subscription`);
       const data = await response.json();
