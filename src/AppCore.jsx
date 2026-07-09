@@ -357,6 +357,9 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [vendorFinanceDockOpen, setVendorFinanceDockOpen] = useState(false); // PASS_VENDOR_FINANCE_DOCK_3A
   const [vendorDockList, setVendorDockList] = useState([]); // PASS_REAL_VENDOR_DATABASE_DOCK
   const [vendorDockRecord, setVendorDockRecord] = useState(null); // PASS_REAL_VENDOR_DATABASE_DOCK
+  const [vendorTicketSalesSummary, setVendorTicketSalesSummary] = useState(null); // PASS_VENDOR_TICKET_SALES_LEDGER_1_V3
+  const [vendorTicketSalesWorking, setVendorTicketSalesWorking] = useState(false); // PASS_VENDOR_TICKET_SALES_LEDGER_1_V3
+  const [vendorTicketSalesMessage, setVendorTicketSalesMessage] = useState(""); // PASS_VENDOR_TICKET_SALES_LEDGER_1_V3
   const [vendorDockForm, setVendorDockForm] = useState({
     businessName: "",
     contactName: "",
@@ -3060,6 +3063,94 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       "x-agv-admin-pin": cleanPin,
     };
   }
+  function formatAgvCents(cents) {
+    const safeCents = Number.isFinite(Number(cents)) ? Number(cents) : 0;
+    return "$" + (safeCents / 100).toFixed(2);
+  }
+  function readTicketRevenueCents(ticket, field, fallback = 0) {
+    const direct = ticket?.revenue?.[field];
+    if (Number.isFinite(Number(direct))) {
+      return Number(direct);
+    }
+    return fallback;
+  }
+  async function loadVendorTicketSalesFromServer() {
+    let cleanPin = String(revenueAdminPin || "").trim();
+    if (!cleanPin) {
+      const promptedPin = window.prompt("Enter AGV ticket admin PIN to load protected ticket sales.");
+      cleanPin = String(promptedPin || "").trim();
+      if (!cleanPin) {
+        setVendorTicketSalesMessage("Ticket sales not loaded. Admin PIN required.");
+        setStatus("Ticket sales not loaded. Admin PIN required.");
+        return;
+      }
+      setRevenueAdminPin(cleanPin);
+      try {
+        localStorage.setItem("agv_revenue_admin_pin", cleanPin);
+      } catch {}
+    }
+    setVendorTicketSalesWorking(true);
+    setVendorTicketSalesMessage("Loading protected ticket sales ledger...");
+    setStatus("Loading protected ticket sales ledger...");
+    try {
+      const response = await fetch(`${TICKET_API_BASE}/api/tickets/list`, {
+        headers: {
+          "x-agv-admin-pin": cleanPin,
+        },
+      });
+      const data = await response.json();
+      if (!response.ok || !data?.ok || !Array.isArray(data.tickets)) {
+        const message = data?.message || data?.error || "Could not load protected ticket sales ledger.";
+        setVendorTicketSalesMessage(message);
+        setStatus(message);
+        setVendorTicketSalesWorking(false);
+        return;
+      }
+      const paidTickets = data.tickets.filter((ticket) => {
+        const paid = String(ticket?.paymentStatus || "").toLowerCase() === "paid";
+        return paid && ticket?.paymentVerified === true;
+      });
+      const summary = paidTickets.reduce(
+        (acc, ticket) => {
+          const grossFallback = Number.isFinite(Number(ticket?.amountTotalCents)) ? Number(ticket.amountTotalCents) : 0;
+          const gross = readTicketRevenueCents(ticket, "grossTicketRevenueCents", grossFallback);
+          const agvFee = readTicketRevenueCents(ticket, "agvPlatformFeeCents", Math.round(gross * 0.07));
+          const deliveryFee = readTicketRevenueCents(ticket, "broadcastDeliveryFeeCents", 0);
+          const processingFee = readTicketRevenueCents(ticket, "paymentProcessingFeeCents", 0);
+          const netFallback = Math.max(gross - agvFee - deliveryFee - processingFee, 0);
+          const net = readTicketRevenueCents(ticket, "hostVendorNetRevenueCents", netFallback);
+          acc.ticketsSold += 1;
+          acc.grossTicketRevenueCents += gross;
+          acc.agvPlatformFeeCents += agvFee;
+          acc.broadcastDeliveryFeeCents += deliveryFee;
+          acc.paymentProcessingFeeCents += processingFee;
+          acc.hostVendorNetRevenueCents += net;
+          if (!acc.latestTicketCode && ticket?.code) {
+            acc.latestTicketCode = ticket.code;
+          }
+          return acc;
+        },
+        {
+          ticketsSold: 0,
+          grossTicketRevenueCents: 0,
+          agvPlatformFeeCents: 0,
+          broadcastDeliveryFeeCents: 0,
+          paymentProcessingFeeCents: 0,
+          hostVendorNetRevenueCents: 0,
+          latestTicketCode: "",
+          loadedAt: new Date().toISOString(),
+        }
+      );
+      setVendorTicketSalesSummary(summary);
+      setVendorTicketSalesMessage("Loaded " + summary.ticketsSold + " paid verified ticket sale(s) from protected ledger.");
+      setStatus("Vendor Dock ticket sales updated from protected ticket ledger.");
+    } catch {
+      setVendorTicketSalesMessage("Ticket sales ledger offline or unreachable.");
+      setStatus("Ticket sales ledger offline or unreachable.");
+    }
+    setVendorTicketSalesWorking(false);
+  }
+
 
   function saveRevenueAdminPin() {
     const cleanPin = String(revenueAdminPin || "").trim();
@@ -5885,10 +5976,21 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>3. Vendor Ticket Sales</div>
                 <div style={{ display: "grid", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Tickets Sold</span><strong style={{ color: "#f8fafc" }}>0</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Ticket Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV Platform Fee 7%</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Vendor Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Tickets Sold</span><strong style={{ color: "#f8fafc" }}>{vendorTicketSalesSummary?.ticketsSold || 0}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Ticket Revenue</span><strong style={{ color: "#f8fafc" }}>{formatAgvCents(vendorTicketSalesSummary?.grossTicketRevenueCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV Platform Fee 7%</span><strong style={{ color: "#fde68a" }}>{formatAgvCents(vendorTicketSalesSummary?.agvPlatformFeeCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Vendor Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Processing</span><strong style={{ color: "#bfdbfe" }}>{formatAgvCents(vendorTicketSalesSummary?.paymentProcessingFeeCents)}</strong></div>
+                  <button
+                    type="button"
+                    onClick={loadVendorTicketSalesFromServer}
+                    disabled={vendorTicketSalesWorking}
+                    style={{ ...styles.primaryButton, marginTop: 8 }}
+                  >
+                    {vendorTicketSalesWorking ? "Loading Ticket Sales..." : "Refresh Ticket Sales"}
+                  </button>
+                  {vendorTicketSalesMessage ? <div style={{ color: "#fde68a", fontWeight: 850 }}>{vendorTicketSalesMessage}</div> : null}
+                  {vendorTicketSalesSummary?.latestTicketCode ? <div style={{ color: "#93c5fd" }}>Latest paid ticket: {vendorTicketSalesSummary.latestTicketCode}</div> : null}
                   <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: vendorDockRecord?.ticketSalesEnabled ? "#bbf7d0" : "#93c5fd", fontWeight: 900 }}>{vendorDockRecord?.ticketSalesEnabled ? "Booth Status: Open - Ticket Sales Enabled" : "Booth Status: Closed Until Approved"}</div>
                 </div>
               </div>
@@ -5896,9 +5998,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>4. Financial Dock</div>
                 <div style={{ display: "grid", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Revenue</span><strong style={{ color: "#f8fafc" }}>$0.00</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>$0.00</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>$0.00</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Revenue</span><strong style={{ color: "#f8fafc" }}>{formatAgvCents(vendorTicketSalesSummary?.grossTicketRevenueCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>{formatAgvCents(vendorTicketSalesSummary?.agvPlatformFeeCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Processing</span><strong style={{ color: "#bfdbfe" }}>{formatAgvCents(vendorTicketSalesSummary?.paymentProcessingFeeCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No vendor selected"}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7" }}>{vendorDockRecord?.approvalStatus || "Pending"}</strong></div>
                 </div>
