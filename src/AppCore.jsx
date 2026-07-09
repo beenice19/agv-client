@@ -5248,8 +5248,34 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     if (!response.ok || !data.ok) {
                       throw new Error(data.error || "Vendor list failed to load.");
                     }
-                    setVendorDockList(Array.isArray(data.vendors) ? data.vendors : []);
-                    setStatus("Vendor list loaded. Select an existing vendor or create a new vendor profile.");
+                    const loadedVendors = Array.isArray(data.vendors) ? data.vendors : [];
+                    setVendorDockList(loadedVendors);
+                    const openVendor =
+                      loadedVendors.find((vendor) =>
+                        vendor?.approvalStatus === "APPROVED" &&
+                        vendor?.ticketSalesEnabled === true &&
+                        (vendor?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendor?.gatewayStatus === "VERIFIED")
+                      ) ||
+                      loadedVendors.find((vendor) => vendor?.approvalStatus === "APPROVED") ||
+                      loadedVendors[0] ||
+                      null;
+                    if (openVendor) {
+                      setVendorDockRecord(openVendor);
+                      setVendorDockForm((prev) => ({
+                        ...prev,
+                        businessName: openVendor.businessName || "",
+                        contactName: openVendor.contactName || "",
+                        email: openVendor.email || "",
+                        phone: openVendor.phone || "",
+                        businessCategory: openVendor.businessCategory || "",
+                        website: openVendor.website || "",
+                        description: openVendor.description || "",
+                      }));
+                      setStatus("Vendor list loaded. Open approved vendor selected for ticket sales."); // PASS_VENDOR_BOOTH_OPEN_1
+                    } else {
+                      setVendorDockRecord(null);
+                      setStatus("Vendor list loaded. Select an existing vendor or create a new vendor profile."); // PASS_VENDOR_BOOTH_OPEN_1
+                    }
                   } catch (error) {
                     setStatus("Vendor Dock opened, but vendor list did not load: " + (error.message || "Unknown error"));
                   }
