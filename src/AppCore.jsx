@@ -33,6 +33,8 @@ const SUBSCRIPTION_API_BASE =
 // PASS34C_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
   import.meta.env.VITE_AGV_TICKET_API_URL || "http://127.0.0.1:8796";
+const VENDOR_API_BASE =
+  import.meta.env.VITE_AGV_VENDOR_API_URL || "http://127.0.0.1:8795"; // PASS_LIVE_ENV_VENDOR_URL_1
 
 const TICKET_STORAGE_KEY = "agv_ticket_code";
 
@@ -5243,7 +5245,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 onClick={async () => {
                   setVendorFinanceDockOpen(true);
                   try {
-                    const response = await fetch("http://127.0.0.1:8795/api/vendor/list");
+                    const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`);
                     const data = await response.json().catch(() => ({}));
                     if (!response.ok || !data.ok) {
                       throw new Error(data.error || "Vendor list failed to load.");
@@ -5906,7 +5908,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         };
 
                         const route = vendorDockRecord?.vendorId ? "update" : "register";
-                        const response = await fetch("http://127.0.0.1:8795/api/vendor/" + route, {
+                        const response = await fetch(`${VENDOR_API_BASE}/api/vendor/${route}`, {
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify(payload),
@@ -5975,7 +5977,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         description: vendorDockForm.description || vendorDockRecord.description,
                       };
 
-                      const response = await fetch("http://127.0.0.1:8795/api/vendor/connect/" + gatewayChoice, {
+                      const response = await fetch(`${VENDOR_API_BASE}/api/vendor/connect/${gatewayChoice}`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify(payload),
