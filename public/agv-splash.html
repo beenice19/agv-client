@@ -290,7 +290,261 @@
       gap: 10px;
       margin-top: 14px;
     }
-    .steps {
+    /* PASS_LAUNCH_110_A2_TRUST_PROOF */
+    /* PASS_LAUNCH_110_A5_PLATFORM_EXPLORER */
+    .explorer-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      padding: 20px;
+      border: 1px solid rgba(212,175,55,.28);
+      border-radius: 28px;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(59,130,246,.14), transparent 34%),
+        linear-gradient(135deg, rgba(15,23,42,.94), rgba(2,6,23,.90));
+      box-shadow: 0 28px 90px rgba(0,0,0,.34);
+    }
+    .explorer-tabs {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+    .explorer-tab {
+      width: 100%;
+      padding: 13px 14px;
+      border: 1px solid rgba(148,163,184,.20);
+      border-radius: 15px;
+      background: rgba(15,23,42,.72);
+      color: #cbd5e1;
+      text-align: left;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 850;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .explorer-tab:hover {
+      transform: translateX(3px);
+      border-color: rgba(212,175,55,.38);
+    }
+    .explorer-tab.active {
+      border-color: rgba(212,175,55,.58);
+      background: linear-gradient(90deg, rgba(212,175,55,.16), rgba(59,130,246,.10));
+      color: #fde68a;
+    }
+    .explorer-panel {
+      min-height: 390px;
+      padding: 28px;
+      border: 1px solid rgba(59,130,246,.18);
+      border-radius: 24px;
+      background: rgba(2,6,23,.68);
+    }
+    .explorer-eyebrow {
+      color: var(--gold2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .explorer-panel h3 {
+      margin: 12px 0 10px;
+      font-size: clamp(28px, 4vw, 44px);
+      letter-spacing: -.045em;
+    }
+    .explorer-panel > p {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .explorer-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .explorer-metric {
+      padding: 16px;
+      border: 1px solid rgba(148,163,184,.18);
+      border-radius: 17px;
+      background: rgba(15,23,42,.76);
+    }
+    .explorer-metric strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #f8fafc;
+      font-size: 15px;
+    }
+    .explorer-metric span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    .explorer-flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 22px;
+    }
+    .explorer-chip {
+      padding: 9px 12px;
+      border: 1px solid rgba(212,175,55,.22);
+      border-radius: 999px;
+      background: rgba(212,175,55,.08);
+      color: #fde68a;
+      font-size: 12px;
+      font-weight: 850;
+    }
+    .explorer-status {
+      margin-top: 22px;
+      padding: 14px 16px;
+      border: 1px solid rgba(34,197,94,.22);
+      border-radius: 16px;
+      background: rgba(34,197,94,.07);
+      color: #d1fae5;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    @media (max-width: 900px) {
+      .explorer-shell { grid-template-columns: 1fr; }
+      .explorer-tabs { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .explorer-tabs { grid-template-columns: 1fr 1fr; }
+      .explorer-metrics { grid-template-columns: 1fr; }
+      .explorer-panel { padding: 20px; }
+    }    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .trust-card {
+      border: 1px solid rgba(212,175,55,.24);
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(15,23,42,.90), rgba(2,6,23,.82));
+      padding: 22px;
+      box-shadow: 0 18px 55px rgba(0,0,0,.22);
+    }
+    .trust-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      background: rgba(212,175,55,.12);
+      border: 1px solid rgba(212,175,55,.28);
+      color: var(--gold2);
+      font-size: 18px;
+      font-weight: 950;
+    }
+    .trust-card h3 {
+      margin: 0 0 9px;
+      font-size: 20px;
+      letter-spacing: -.025em;
+    }
+    .trust-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: 14px;
+    }
+    .trust-note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border: 1px solid rgba(34,197,94,.22);
+      border-radius: 18px;
+      background: rgba(34,197,94,.07);
+      color: #d1fae5;
+      line-height: 1.55;
+      text-align: center;
+    }
+    @media (max-width: 900px) {
+      .trust-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .trust-grid { grid-template-columns: 1fr; }
+    }
+
+    /* PASS_LAUNCH_110_A4_DIFFERENTIATION */
+    .difference-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .difference-card {
+      position: relative;
+      overflow: hidden;
+      min-height: 250px;
+      padding: 24px;
+      border: 1px solid rgba(59,130,246,.22);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(59,130,246,.14), transparent 38%),
+        linear-gradient(135deg, rgba(15,23,42,.92), rgba(2,6,23,.84));
+      box-shadow: 0 18px 60px rgba(0,0,0,.24);
+    }
+    .difference-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -30px -45px auto;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(212,175,55,.06);
+      pointer-events: none;
+    }
+    .difference-number {
+      display: inline-grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(212,175,55,.28);
+      border-radius: 14px;
+      background: rgba(212,175,55,.10);
+      color: var(--gold2);
+      font-size: 14px;
+      font-weight: 950;
+    }
+    .difference-card h3 {
+      margin: 0 0 10px;
+      font-size: 22px;
+      line-height: 1.12;
+      letter-spacing: -.03em;
+    }
+    .difference-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.62;
+    }
+    .difference-summary {
+      margin-top: 20px;
+      padding: 22px;
+      border: 1px solid rgba(212,175,55,.26);
+      border-radius: 22px;
+      background: linear-gradient(90deg, rgba(212,175,55,.08), rgba(59,130,246,.07));
+      text-align: center;
+    }
+    .difference-summary strong {
+      display: block;
+      margin-bottom: 8px;
+      color: #fde68a;
+      font-size: 20px;
+    }
+    .difference-summary p {
+      max-width: 820px;
+      margin: 0 auto;
+      color: #dbeafe;
+      line-height: 1.6;
+    }
+    @media (max-width: 900px) {
+      .difference-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .difference-grid { grid-template-columns: 1fr; }
+    }    .steps {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 14px;
@@ -543,7 +797,120 @@
       .agv-card-actions { grid-template-columns: 1fr; }
       .hero { padding-top: 44px; }
     }
-  </style>
+    /* PASS_LAUNCH_110_A6_ENTERPRISE_POLISH */
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 110px;
+    }
+    .nav {
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 12px 38px rgba(0,0,0,.18);
+      transition: background .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .nav.nav-scrolled {
+      background: rgba(2,6,23,.94);
+      border-bottom-color: rgba(212,175,55,.20);
+      box-shadow: 0 18px 46px rgba(0,0,0,.34);
+    }
+    .nav-links a {
+      position: relative;
+      transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+    }
+    .nav-links a:hover {
+      transform: translateY(-1px);
+    }
+    .nav-links a.active-section {
+      color: #fde68a;
+      border-color: rgba(212,175,55,.38);
+      background: rgba(212,175,55,.09);
+    }
+    .btn,
+    .agv-card,
+    .trust-card,
+    .difference-card,
+    .step,
+    .plan-card,
+    .explorer-metric,
+    .interest-box,
+    .lead-form {
+      transition:
+        transform .22s ease,
+        border-color .22s ease,
+        box-shadow .22s ease,
+        background .22s ease;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(0,0,0,.26);
+    }
+    .agv-card:hover,
+    .trust-card:hover,
+    .difference-card:hover,
+    .step:hover,
+    .plan-card:hover,
+    .explorer-metric:hover {
+      transform: translateY(-4px);
+      border-color: rgba(212,175,55,.40);
+      box-shadow: 0 24px 70px rgba(0,0,0,.32);
+    }
+    .enterprise-reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity .7s cubic-bezier(.2,.7,.2,1),
+        transform .7s cubic-bezier(.2,.7,.2,1);
+      will-change: opacity, transform;
+    }
+    .enterprise-reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .enterprise-reveal[data-reveal-delay="1"] { transition-delay: .06s; }
+    .enterprise-reveal[data-reveal-delay="2"] { transition-delay: .12s; }
+    .enterprise-reveal[data-reveal-delay="3"] { transition-delay: .18s; }
+    .enterprise-reveal[data-reveal-delay="4"] { transition-delay: .24s; }
+    .enterprise-reveal[data-reveal-delay="5"] { transition-delay: .30s; }
+    .enterprise-reveal[data-reveal-delay="6"] { transition-delay: .36s; }
+    :focus-visible {
+      outline: 3px solid rgba(250,204,21,.88);
+      outline-offset: 4px;
+    }
+    .explorer-tab:focus-visible,
+    .btn:focus-visible,
+    .nav-links a:focus-visible {
+      border-radius: 14px;
+    }
+    @media (max-width: 640px) {
+      html { scroll-padding-top: 150px; }
+      .section {
+        padding-top: 58px;
+        padding-bottom: 58px;
+      }
+      .section-title {
+        align-items: flex-start;
+      }
+      .lead-form,
+      .explorer-shell,
+      .final-box,
+      .mission-box {
+        border-radius: 22px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+      .enterprise-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }  </style>
 </head>
 <body>
   <header class="nav">
@@ -567,18 +934,20 @@
     <section class="hero">
       <div class="wrap hero-grid">
         <div>
-          <div class="badge">The Digital Venue Platform</div>
-          <h1>Everyone deserves <span class="gold">a stage.</span></h1>
+          <div class="badge">The AI-Powered Live Experience Operating System</div>
+          <h1>Run your entire <span class="gold">live experience.</span></h1>
           <p>
-            AGV helps churches, educators, podcasters, creators, businesses, nonprofits, and convention hosts
-            launch live digital venues with stage-first broadcasting, multi-room events, ticketing, and audience growth tools.
+            Broadcast live, create multi-room events, sell tickets, manage vendors, engage your audience,
+            and monitor critical operations from one connected platform protected by AGV Sentinel.
           </p>
           <div class="hero-actions">
-            <a class="btn btn-gold" href="/?src=splash-hero-enter-platform&agvLaunch=public&publicEntry=splash&agvNoAdminCarry=1">Enter AGV Platform</a>
-            <a class="btn btn-dark" href="#who-benefits">Choose Your Use Case</a>
-            <a class="btn btn-dark" href="#agv-plans">View Plans</a>
-            <a class="btn btn-dark" href="/agv-revenue-rulebook.html">Revenue Rulebook</a>
+            <a class="btn btn-gold" href="/?src=splash-hero-start-with-agv&agvLaunch=public&publicEntry=splash&agvNoAdminCarry=1">Start With AGV</a>
+            <a class="btn btn-dark" href="#who-benefits">Explore How AGV Works</a>
+            <a class="btn btn-dark" href="#agv-plans">Compare Plans</a>
           </div>
+          <p style="margin-top:18px; font-size:0.92rem; color:#cbd5e1;">
+            Live Broadcasting &bull; Ticketing &bull; Vendors &bull; Fundraising &bull; Education &bull; Protected by AGV Sentinel
+          </p>
         </div>
         <div class="mock-stage" aria-label="AGV platform preview">
           <div class="stage-top">
@@ -618,6 +987,108 @@
         </div>
       </div>
     </section>
+    <!-- PASS_LAUNCH_110_A5_PLATFORM_EXPLORER -->
+    <section id="platform-explorer" class="section">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <div class="badge">Explore the ecosystem</div>
+            <h2>See how AGV works together</h2>
+          </div>
+          <p>
+            Select an area of the platform to preview how AGV supports hosts, guests,
+            vendors, moderators, educators, and live-event operations.
+          </p>
+        </div>
+        <div class="explorer-shell">
+          <div class="explorer-tabs" role="tablist" aria-label="AGV platform explorer">
+            <button class="explorer-tab active" type="button" data-explorer="broadcast">Broadcast Studio</button>
+            <button class="explorer-tab" type="button" data-explorer="ticketing">Ticketing</button>
+            <button class="explorer-tab" type="button" data-explorer="convention">Convention Control</button>
+            <button class="explorer-tab" type="button" data-explorer="vendors">Vendor Center</button>
+            <button class="explorer-tab" type="button" data-explorer="sentinel">AGV Sentinel</button>
+            <button class="explorer-tab" type="button" data-explorer="moderation">Moderator Console</button>
+            <button class="explorer-tab" type="button" data-explorer="university">AGV University</button>
+            <button class="explorer-tab" type="button" data-explorer="viewer">Viewer Experience</button>
+            <button class="explorer-tab" type="button" data-explorer="revenue">Revenue Dashboard</button>
+          </div>
+          <div class="explorer-panel" id="agvExplorerPanel" aria-live="polite">
+            <div class="explorer-eyebrow" id="agvExplorerEyebrow">Live production</div>
+            <h3 id="agvExplorerTitle">Broadcast Studio</h3>
+            <p id="agvExplorerDescription">
+              Run the main stage, manage live rooms, control audience access, and deliver a professional
+              broadcast experience from one connected workspace.
+            </p>
+            <div class="explorer-metrics" id="agvExplorerMetrics">
+              <div class="explorer-metric"><strong>Main Stage</strong><span>Coordinate the primary live experience.</span></div>
+              <div class="explorer-metric"><strong>Multi-Room</strong><span>Support breakout rooms and event tracks.</span></div>
+              <div class="explorer-metric"><strong>Live Control</strong><span>Manage hosts, guests, and broadcast activity.</span></div>
+            </div>
+            <div class="explorer-flow" id="agvExplorerFlow">
+              <span class="explorer-chip">Create Room</span>
+              <span class="explorer-chip">Invite Guests</span>
+              <span class="explorer-chip">Go Live</span>
+              <span class="explorer-chip">Engage Audience</span>
+            </div>
+            <div class="explorer-status" id="agvExplorerStatus">
+              AGV connects the broadcast experience with ticketing, moderation, audience access, revenue, and Sentinel monitoring.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>    <!-- PASS_LAUNCH_110_A2_TRUST_PROOF -->
+    <section id="why-trust-agv" class="section">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <div class="badge">Built for confidence</div>
+            <h2>Why organizations can trust AGV</h2>
+          </div>
+          <p>
+            AGV combines live-event tools with verified payment workflows, operational safeguards,
+            and platform-wide monitoring designed to help hosts run with greater confidence.
+          </p>
+        </div>
+        <div class="trust-grid">
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">01</div>
+            <h3>Verified payment workflows</h3>
+            <p>AGV verifies successful ticket payment before issuing access, helping prevent unpaid or incomplete transactions from unlocking an event.</p>
+          </article>
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">02</div>
+            <h3>Protected by AGV Sentinel</h3>
+            <p>Sentinel monitors critical services, launch readiness, ticketing, payments, infrastructure health, and operational risk from one command center.</p>
+          </article>
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">03</div>
+            <h3>Connected event operations</h3>
+            <p>Broadcasting, multi-room events, ticketing, vendors, fundraising, education, moderation, and revenue tools work within one platform.</p>
+          </article>
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">04</div>
+            <h3>Revenue-aware by design</h3>
+            <p>AGV separates its platform fee, broadcast delivery costs, payment processing, and host net revenue for a clearer financial picture.</p>
+          </article>
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">05</div>
+            <h3>Built to grow with you</h3>
+            <p>Hosts can begin with smaller audiences and grow into ticketed events, vendor participation, convention workflows, and larger broadcasts.</p>
+          </article>
+          <article class="trust-card">
+            <div class="trust-icon" aria-hidden="true">06</div>
+            <h3>Operational safeguards</h3>
+            <p>AGV includes health checks, blocked access for unverified payments, protected public entry, launch audits, and documented recovery planning.</p>
+          </article>
+        </div>
+        <div class="trust-note">
+          <strong>AGV does not rely on promises alone.</strong>
+          Its public experience is backed by working services, tested payment paths,
+          monitored infrastructure, and documented launch safeguards.
+        </div>
+      </div>
+    </section>
+
     <section id="who-benefits" class="section">
       <div class="wrap">
         <div class="section-title">
@@ -969,21 +1440,125 @@
         </div>
       </div>
     </section>
+    <!-- PASS_LAUNCH_110_A3_CUSTOMER_JOURNEY -->
     <section id="how-it-works" class="section">
       <div class="wrap">
         <div class="section-title">
-          <h2>How it works</h2>
-          <p>AGV gives everyday people and organizations a safer, more professional way to present, connect, and monetize.</p>
+          <div>
+            <div class="badge">One connected journey</div>
+            <h2>How AGV works</h2>
+          </div>
+          <p>
+            From the first event idea to the final revenue report, AGV gives hosts one connected path
+            for planning, access, broadcasting, engagement, monitoring, and growth.
+          </p>
         </div>
         <div class="steps">
-          <div class="step"><span>1</span><strong>Choose your audience</strong><p>Start with the group you serve: ministry, education, business, creators, nonprofits, or events.</p></div>
-          <div class="step"><span>2</span><strong>Set up your venue</strong><p>Create the live room, main stage, or multi-room event structure.</p></div>
-          <div class="step"><span>3</span><strong>Invite or sell access</strong><p>Use free access, private access, or ticketed admission depending on the event.</p></div>
-          <div class="step"><span>4</span><strong>Broadcast and grow</strong><p>Use the event to build an audience, community, income stream, or global outreach program.</p></div>
+          <div class="step">
+            <span>1</span>
+            <strong>Create your event</strong>
+            <p>Choose the audience, event purpose, schedule, and experience you want to deliver.</p>
+          </div>
+          <div class="step">
+            <span>2</span>
+            <strong>Build the venue</strong>
+            <p>Set up the main stage, breakout rooms, vendors, moderators, education tools, and event access.</p>
+          </div>
+          <div class="step">
+            <span>3</span>
+            <strong>Invite or sell access</strong>
+            <p>Open the event for free, keep it private, or sell verified tickets through the AGV payment flow.</p>
+          </div>
+          <div class="step">
+            <span>4</span>
+            <strong>Broadcast and engage</strong>
+            <p>Go live, communicate with guests, manage rooms, moderate activity, and keep the audience involved.</p>
+          </div>
+          <div class="step">
+            <span>5</span>
+            <strong>Monitor with Sentinel</strong>
+            <p>Watch service health, ticketing, payments, infrastructure, and launch readiness from the operations center.</p>
+          </div>
+          <div class="step">
+            <span>6</span>
+            <strong>Review and grow</strong>
+            <p>Examine revenue, event performance, vendor activity, and lessons that can strengthen the next experience.</p>
+          </div>
         </div>
       </div>
     </section>
-    <section class="final">
+    <!-- PASS_LAUNCH_110_A4_DIFFERENTIATION -->
+    <section id="why-choose-agv" class="section">
+      <div class="wrap">
+        <div class="section-title">
+          <div>
+            <div class="badge">One platform instead of five</div>
+            <h2>Why organizations choose AGV</h2>
+          </div>
+          <p>
+            Stop stitching together disconnected services. AGV brings the critical parts of a live experience
+            into one connected operating platform.
+          </p>
+        </div>
+        <div class="difference-grid">
+          <article class="difference-card">
+            <div class="difference-number">01</div>
+            <h3>One platform instead of five</h3>
+            <p>
+              Replace separate tools for broadcasting, ticketing, vendors, fundraising, moderation,
+              and engagement with one connected experience.
+            </p>
+          </article>
+          <article class="difference-card">
+            <div class="difference-number">02</div>
+            <h3>Built for live experiences</h3>
+            <p>
+              AGV was designed for conventions, churches, educators, creators, fundraisers,
+              conferences, and organizations running meaningful live events.
+            </p>
+          </article>
+          <article class="difference-card">
+            <div class="difference-number">03</div>
+            <h3>AI operations with Sentinel</h3>
+            <p>
+              AGV Sentinel watches platform health, ticketing, payments, infrastructure,
+              launch readiness, and critical services from one operations center.
+            </p>
+          </article>
+          <article class="difference-card">
+            <div class="difference-number">04</div>
+            <h3>Revenue designed in</h3>
+            <p>
+              Subscriptions, ticket sales, vendor participation, fundraising, broadcast delivery,
+              and financial reporting are part of the platform model.
+            </p>
+          </article>
+          <article class="difference-card">
+            <div class="difference-number">05</div>
+            <h3>Built to scale with you</h3>
+            <p>
+              Start with one room and grow into multi-room events, campuses, ministries,
+              conferences, conventions, and larger broadcast audiences.
+            </p>
+          </article>
+          <article class="difference-card">
+            <div class="difference-number">06</div>
+            <h3>Everything works together</h3>
+            <p>
+              Broadcasts, tickets, payments, vendors, Sentinel, analytics, revenue,
+              and audience growth connect inside one ecosystem.
+            </p>
+          </article>
+        </div>
+        <div class="difference-summary">
+          <strong>AGV is not another disconnected tool.</strong>
+          <p>
+            It was created for organizations that have outgrown fragmented systems and want one platform
+            to manage the complete live experience.
+          </p>
+        </div>
+      </div>
+    </section>    <section class="final">
       <div class="wrap">
         <div class="final-box">
           <h2>The Show Is Now Open</h2>
@@ -1006,7 +1581,186 @@
     </div>
   </footer>
 
-<!-- PASS_AGV_SPLASH_LIVE_1G_LEAD_CAPTURE_SCRIPT -->
+<!-- PASS_LAUNCH_110_A5_PLATFORM_EXPLORER_SCRIPT -->
+<script>
+(function () {
+  var explorerData = {
+    broadcast: {
+      eyebrow: "Live production",
+      title: "Broadcast Studio",
+      description: "Run the main stage, manage live rooms, control audience access, and deliver a professional broadcast experience from one connected workspace.",
+      metrics: [["Main Stage","Coordinate the primary live experience."],["Multi-Room","Support breakout rooms and event tracks."],["Live Control","Manage hosts, guests, and broadcast activity."]],
+      flow: ["Create Room","Invite Guests","Go Live","Engage Audience"],
+      status: "AGV connects broadcasting with ticketing, moderation, audience access, revenue, and Sentinel monitoring."
+    },
+    ticketing: {
+      eyebrow: "Verified access",
+      title: "Ticketing",
+      description: "Create paid event access, verify completed payments, issue tickets, and connect guest admission directly to the event experience.",
+      metrics: [["Paid Access","Support ticketed events and experiences."],["Payment Verification","Confirm successful payment before access."],["Event Entry","Connect ticket status to event admission."]],
+      flow: ["Create Ticket","Open Checkout","Verify Payment","Issue Access"],
+      status: "AGV ticketing is designed to block unpaid or incomplete transactions from unlocking protected event access."
+    },
+    convention: {
+      eyebrow: "Large-event operations",
+      title: "Convention Control",
+      description: "Coordinate stages, breakout rooms, vendors, ticketing, moderators, guests, and event operations across a connected convention environment.",
+      metrics: [["Main Hall","Operate the central convention stage."],["Breakout Rooms","Organize sessions and event tracks."],["Event Oversight","Coordinate multiple operational areas."]],
+      flow: ["Build Schedule","Assign Rooms","Manage Access","Run Convention"],
+      status: "Convention workflows bring multiple live-event functions together without forcing organizers to manage separate platforms."
+    },
+    vendors: {
+      eyebrow: "Commerce and participation",
+      title: "Vendor Center",
+      description: "Manage vendor participation, event approvals, ticket sales permissions, payment readiness, and booth activity from a connected event workflow.",
+      metrics: [["Vendor Profiles","Organize participating businesses and exhibitors."],["Host Approval","Control vendor participation and readiness."],["Sales Access","Connect approved vendors to event commerce."]],
+      flow: ["Register Vendor","Review Status","Approve Access","Track Activity"],
+      status: "AGV gives hosts clearer control over who can participate, sell, and operate inside an event."
+    },
+    sentinel: {
+      eyebrow: "AI operations",
+      title: "AGV Sentinel",
+      description: "Monitor critical AGV services, ticketing, payments, infrastructure health, operational risk, and launch readiness from one command center.",
+      metrics: [["System Health","Watch critical platform services."],["Launch Audit","Review readiness before major events."],["Risk Monitoring","Surface operational warnings and failures."]],
+      flow: ["Run Sweep","Check Services","Review Risk","Protect Event"],
+      status: "Sentinel turns operational monitoring into a visible part of the AGV platform promise."
+    },
+    moderation: {
+      eyebrow: "Audience safety",
+      title: "Moderator Console",
+      description: "Support live-event oversight with room management, audience controls, communication tools, and moderation workflows.",
+      metrics: [["Room Oversight","Monitor event spaces and activity."],["Audience Controls","Manage participation and access."],["Host Support","Help the event team maintain order."]],
+      flow: ["Assign Moderator","Watch Activity","Respond Quickly","Protect Experience"],
+      status: "Moderation is treated as part of the event operation, not an afterthought."
+    },
+    university: {
+      eyebrow: "Learning and guidance",
+      title: "AGV University",
+      description: "Support education, training, platform guidance, and structured learning experiences inside the wider AGV ecosystem.",
+      metrics: [["Training","Guide hosts and participants."],["Education","Support lessons and learning workflows."],["Platform Guidance","Help users understand AGV tools."]],
+      flow: ["Choose Lesson","Learn Workflow","Apply Knowledge","Grow Skills"],
+      status: "AGV University helps turn platform capability into practical confidence."
+    },
+    viewer: {
+      eyebrow: "Guest experience",
+      title: "Viewer Experience",
+      description: "Give guests a clear path from event discovery and ticket purchase to room access, live participation, and audience engagement.",
+      metrics: [["Easy Entry","Create a clear route into the event."],["Live Participation","Connect viewers with hosts and content."],["Audience Engagement","Support interaction throughout the experience."]],
+      flow: ["Discover Event","Get Access","Enter Room","Participate Live"],
+      status: "The viewer experience connects discovery, access, participation, and engagement in one journey."
+    },
+    revenue: {
+      eyebrow: "Financial visibility",
+      title: "Revenue Dashboard",
+      description: "Review ticket sales, platform fees, delivery costs, processing charges, vendor activity, and host net revenue with clearer separation.",
+      metrics: [["Gross Revenue","Track total event sales."],["Fee Visibility","Separate platform and processing costs."],["Host Net","Understand the remaining event revenue."]],
+      flow: ["Sell Access","Process Payment","Separate Fees","Review Net"],
+      status: "AGV is designed to give event operators a clearer picture of how revenue moves through the platform."
+    }
+  };
+  var tabs = document.querySelectorAll(".explorer-tab");
+  var title = document.getElementById("agvExplorerTitle");
+  var eyebrow = document.getElementById("agvExplorerEyebrow");
+  var description = document.getElementById("agvExplorerDescription");
+  var metrics = document.getElementById("agvExplorerMetrics");
+  var flow = document.getElementById("agvExplorerFlow");
+  var status = document.getElementById("agvExplorerStatus");
+  if (!tabs.length || !title || !eyebrow || !description || !metrics || !flow || !status) return;
+  function activate(key, button) {
+    var item = explorerData[key];
+    if (!item) return;
+    tabs.forEach(function (tab) {
+      tab.classList.remove("active");
+      tab.setAttribute("aria-selected", "false");
+    });
+    button.classList.add("active");
+    button.setAttribute("aria-selected", "true");
+    eyebrow.textContent = item.eyebrow;
+    title.textContent = item.title;
+    description.textContent = item.description;
+    metrics.innerHTML = item.metrics.map(function (metric) {
+      return '<div class="explorer-metric"><strong>' + metric[0] + '</strong><span>' + metric[1] + '</span></div>';
+    }).join("");
+    flow.innerHTML = item.flow.map(function (step) {
+      return '<span class="explorer-chip">' + step + '</span>';
+    }).join("");
+    status.textContent = item.status;
+  }
+  tabs.forEach(function (tab) {
+    tab.setAttribute("role", "tab");
+    tab.setAttribute("aria-selected", tab.classList.contains("active") ? "true" : "false");
+    tab.addEventListener("click", function () {
+      activate(tab.getAttribute("data-explorer"), tab);
+    });
+  });
+})();
+</script>
+
+<!-- PASS_LAUNCH_110_A6_ENTERPRISE_POLISH_SCRIPT -->
+<script>
+(function () {
+  var nav = document.querySelector(".nav");
+  var navLinks = Array.prototype.slice.call(
+    document.querySelectorAll('.nav-links a[href^="#"]')
+  );
+  var revealTargets = document.querySelectorAll(
+    ".section-title, .hero-grid > *, .hero-showcase, .explorer-shell, .trust-card, .agv-card, .plan-card, .step, .difference-card, .difference-summary, .mission-box, .lead-form, .interest-box, .final-box"
+  );
+  revealTargets.forEach(function (element, index) {
+    element.classList.add("enterprise-reveal");
+    element.setAttribute("data-reveal-delay", String((index % 6) + 1));
+  });
+  function updateNavState() {
+    if (!nav) return;
+    nav.classList.toggle("nav-scrolled", window.scrollY > 24);
+  }
+  updateNavState();
+  window.addEventListener("scroll", updateNavState, { passive: true });
+  if ("IntersectionObserver" in window) {
+    var revealObserver = new IntersectionObserver(function (entries, observer) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: "0px 0px -40px 0px"
+    });
+    revealTargets.forEach(function (element) {
+      revealObserver.observe(element);
+    });
+  } else {
+    revealTargets.forEach(function (element) {
+      element.classList.add("is-visible");
+    });
+  }
+  var sectionPairs = navLinks.map(function (link) {
+    var selector = link.getAttribute("href");
+    var section = selector ? document.querySelector(selector) : null;
+    return section ? { link: link, section: section } : null;
+  }).filter(Boolean);
+  if ("IntersectionObserver" in window && sectionPairs.length) {
+    var sectionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        sectionPairs.forEach(function (pair) {
+          pair.link.classList.toggle(
+            "active-section",
+            pair.section === entry.target
+          );
+        });
+      });
+    }, {
+      threshold: 0.25,
+      rootMargin: "-18% 0px -58% 0px"
+    });
+    sectionPairs.forEach(function (pair) {
+      sectionObserver.observe(pair.section);
+    });
+  }
+})();
+</script><!-- PASS_AGV_SPLASH_LIVE_1G_LEAD_CAPTURE_SCRIPT -->
 <script>
 (function () {
   var form = document.getElementById("agvLeadForm");

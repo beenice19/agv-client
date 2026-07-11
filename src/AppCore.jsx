@@ -630,20 +630,19 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const selectedRoomMessages = messagesByRoom[selectedRoomId] || [];
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
-  // AGV public authority storage cleanup
+  // PASS_LAUNCH_110_B_FREE_TIER_AUTHORITY_HARDENING
+  // A normal host entry must never inherit stale owner or Super Admin authority.
   useEffect(() => {
     try {
-      if (getAgvOwnerModeFromUrl()) {
+      const explicitOwnerMode = getAgvOwnerModeFromUrl();
+      if (explicitOwnerMode) {
         sessionStorage.setItem("agv_host_pin_verified", "true");
         sessionStorage.setItem("agv_owner_super_admin_mode", "true");
-      }
-      const adminVerified = getAgvSuperAdminVerified();
-      if (!adminVerified) {
-        localStorage.removeItem("agv_current_plan");
-        localStorage.removeItem("agv_viewer_plan");
-        localStorage.removeItem("agv_local_plan_lock");
+      } else {
         localStorage.removeItem("agv_host_pin_verified");
         localStorage.removeItem("agv_owner_super_admin_mode");
+        sessionStorage.removeItem("agv_host_pin_verified");
+        sessionStorage.removeItem("agv_owner_super_admin_mode");
         sessionStorage.removeItem("agv_super_admin_test_plan");
       }
     } catch {}
