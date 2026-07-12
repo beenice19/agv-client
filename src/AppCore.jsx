@@ -3965,70 +3965,166 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
       {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
 
-      {/* AGV UNIVERSITY PAL DASHBOARD PRODUCT CARD */}
+      {/* PASS_SENTINEL_COMPACT_UNIVERSITY_PAL_5E2 */}
       {!isViewerOnly && universityPalAllowed ? (
         <div
           style={{
-            margin: "0 18px 12px 18px",
-            padding: "16px",
-            borderRadius: 18,
-            border: universityPalAllowed
-              ? "1px solid rgba(45, 212, 191, 0.40)"
-              : "1px solid rgba(250, 204, 21, 0.36)",
-            background: universityPalAllowed
-              ? "linear-gradient(135deg, rgba(13, 148, 136, 0.22), rgba(15, 23, 42, 0.94))"
-              : "linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(15, 23, 42, 0.94))",
-            boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
+            margin: "0 18px 8px",
+            padding: "9px 12px",
+            borderRadius: 16,
+            border: "1px solid rgba(45,212,191,0.28)",
+            background: "rgba(15,23,42,0.88)",
             display: "flex",
-            gap: 14,
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 12,
             flexWrap: "wrap",
           }}
         >
-          <div style={{ minWidth: 260, flex: "1 1 360px" }}>
-            <div style={{ fontWeight: 950, color: "#fde68a", fontSize: 16 }}>
-              AGV Education / University Pal
+          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 11,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(45,212,191,0.14)",
+                border: "1px solid rgba(45,212,191,0.24)",
+                color: "#99f6e4",
+                fontWeight: 950,
+              }}
+            >
+              UP
             </div>
-            <div style={{ fontSize: 12, opacity: 0.86, lineHeight: 1.55, marginTop: 4 }}>
-              Registration, class tracking, certificates, graduation records, and public certificate verification for AGV-powered training programs.
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-              <span style={styles.chip}>Plan: {currentPlanLimits.label}</span>
-              <span style={styles.chip}>
-                University Pal Access: Included
-              </span>
-              <span style={styles.chip}>Supabase-ready</span>
-              <span style={styles.chip}>Certificate verification</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: "#fde68a", fontWeight: 950, fontSize: 13 }}>
+                Platform Service • AGV University Pal
+              </div>
+              <div style={{ color: "rgba(226,232,240,0.58)", fontSize: 10, marginTop: 2 }}>
+                Registration, certificates, records, and verification • {currentPlanLimits.label} access included
+              </div>
             </div>
           </div>
-
           <button
-            style={universityPalAllowed ? styles.primaryButton : styles.lockedButton || styles.secondaryButton}
-            onClick={
-              universityPalAllowed
-                ? openAgvUniversityPal
-                : () =>
-                    setStatus(
-                      "AGV University Pal is included with Creator, Ministry / Pro, and Convention plans. Upgrade to unlock registration, certificates, and verification tools."
-                    )
-            }
+            style={{
+              ...styles.secondaryButton,
+              padding: "8px 12px",
+              borderRadius: 12,
+              fontSize: 12,
+            }}
+            onClick={openAgvUniversityPal}
           >
-            Open AGV University Pal
+            Open University Pal
           </button>
         </div>
       ) : null}
 
+      {/* PASS_SENTINEL_OPERATIONS_BAR_5E1 */}
+      {!isViewerOnly ? (
+        <section style={styles.sentinelOperationsBar}>
+          <div style={styles.sentinelOperationsBrand}>
+            <div style={styles.sentinelOperationsIcon}>S</div>
+            <div>
+              <div style={styles.sentinelOperationsTitle}>AGV Sentinel</div>
+              <div style={styles.sentinelOperationsSubtitle}>
+                Operations oversight active
+              </div>
+            </div>
+          </div>
+          <div style={styles.sentinelOperationsMetrics}>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>Sentinel</span>
+              <strong style={styles.sentinelHealthyText}>Watching</strong>
+            </div>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>Broadcast</span>
+              <strong>{broadcastLive ? "Live" : "Standby"}</strong>
+            </div>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>LiveKit</span>
+              <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+            </div>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>Wallet</span>
+              <strong>{freeTokenWallet ? "Loaded" : "Loading"}</strong>
+            </div>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>Tickets</span>
+              <strong>
+                {ticketApproved
+                  ? "Approved"
+                  : selectedRoom?.isTicketOnly
+                    ? "Required"
+                    : "Open"}
+              </strong>
+            </div>
+            <div style={styles.sentinelOperationItem}>
+              <span style={styles.sentinelOperationLabel}>Room</span>
+              <strong>{selectedRoom?.name || selectedRoomId || "Main Hall"}</strong>
+            </div>
+          </div>
+        </section>
+      ) : null}
       <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
-            {/* PASS_SENTINEL_HOST_CONSOLE_CLARITY_5A1 */}
-            <div style={styles.panelTitle}>Host Workspace</div>
-            <div style={{ ...styles.helperText, marginBottom: 12 }}>
-              Rooms, plan capacity, wallet, and event setup.
+            {/* PASS_SENTINEL_HOST_WORKSPACE_5C1 */}
+            <div
+              style={{
+                marginBottom: 16,
+                padding: 16,
+                borderRadius: 20,
+                border: "1px solid rgba(212,175,55,0.38)",
+                background:
+                  "linear-gradient(145deg, rgba(212,175,55,0.18), rgba(15,23,42,0.96) 58%)",
+                boxShadow: "0 18px 44px rgba(0,0,0,0.26)",
+              }}
+            >
+              <div
+                style={{
+                  color: "#facc15",
+                  fontSize: 11,
+                  fontWeight: 950,
+                  letterSpacing: 1.8,
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                Host Workspace
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 950, marginBottom: 4 }}>
+                {selectedRoom?.name || "Main Hall"}
+              </div>
+              <div style={{ ...styles.helperText, marginBottom: 12 }}>
+                {hostModeLabel} • {currentPlanLimits.label} Plan
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Rooms</span>
+                  <strong>{currentPlanLimits.maxRooms}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Viewers</span>
+                  <strong>{currentPlanLimits.maxViewers}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Room Type</span>
+                  <strong>{selectedRoom?.isPrivate ? "Private" : "Public"}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>LiveKit</span>
+                  <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+                </div>
+              </div>
             </div>
-
-            {/* PASS_SENTINEL_HOST_CONSOLE_CLARITY_5A2 */}
             <div style={{ ...styles.controlTitle, marginBottom: 8 }}>Account & Capacity</div>
             <div style={styles.planCardMini}>
               <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
@@ -4202,37 +4298,44 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         ) : null}
 
         <section style={styles.centerPanel}>
-          <div style={styles.identityCard}>
-            <div>
-              <div style={styles.roomHeadline}>{selectedRoom?.name || "Room"}</div>
-              <div style={styles.identityLine}>
-                Mode: {hostModeLabel} • LiveKit Room: {selectedRoomId}
+          {/* PASS_SENTINEL_LIVE_STAGE_5D1 */}
+          <div style={styles.missionHeader}>
+            <div style={{ minWidth: 0 }}>
+              <div style={styles.missionEyebrow}>
+                {broadcastLive ? "Live Mission" : "Mission Standby"}
               </div>
-
+              <div style={styles.missionTitle}>
+                {selectedRoom?.name || "Room"}
+              </div>
+              <div style={styles.missionMeta}>
+                {hostModeLabel} • LiveKit Room: {selectedRoomId}
+              </div>
               {!isViewerOnly ? (
-                <>
-                  <div style={styles.identityLine}>Owner ID: {currentOwnerId}</div>
-                  <div style={styles.identityLine}>
-                    Active Plan: {currentPlanLimits.label} • Rooms: {currentPlanLimits.maxRooms} • Viewers:{" "}
-                    {currentPlanLimits.maxViewers}
-                  </div>
-                  <div style={styles.identityLine}>
-                    Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} •{" "}
-                    {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
-                  </div>
-                </>
+                <div style={styles.missionAccount}>
+                  {storedAccount?.name || freeAccount?.name || "AGV Host"} •{" "}
+                  {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
+                </div>
               ) : null}
             </div>
-
-            <div style={styles.identityChips}>
-              <span style={styles.chip}>{currentPlanLimits.label}</span>
-              <span style={styles.chip}>{selectedRoom?.isPrivate ? "Private" : "Public"}</span>
-              <span style={styles.chip}>{selectedRoom?.isLocked ? "Locked" : "Open"}</span>
-              <span style={styles.chip}>{livekitRoom ? "Connected" : "Standby"}</span>
-              <span style={styles.chip}>{ticketApproved ? "Ticket OK" : "Ticket Needed"}</span>
+            <div style={styles.missionStatusGrid}>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Broadcast</span>
+                <strong>{broadcastLive ? "Live" : "Standby"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>LiveKit</span>
+                <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Access</span>
+                <strong>{selectedRoom?.isPrivate ? "Private" : "Public"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Ticket</span>
+                <strong>{ticketApproved ? "Approved" : "Not Required / Pending"}</strong>
+              </div>
             </div>
           </div>
-
           {viewerNeedsTicket ? (
             <div style={styles.ticketGate}>
               <div style={styles.ticketBadge}>AGV TICKET LOCK</div>
@@ -6079,12 +6182,23 @@ const styles = {
   headerRight: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" },
   statusPill: { padding: "9px 12px", borderRadius: 999, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.22)", color: "#bbf7d0", fontSize: 12, maxWidth: 420 },
   roleSelect: { border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "9px 12px", background: "#0f172a", color: "#f8fafc", fontWeight: 850 },
+  sentinelOperationsBar: { margin: "18px 18px 0", padding: "12px 14px", borderRadius: 20, border: "1px solid rgba(45,212,191,0.28)", background: "linear-gradient(135deg, rgba(13,148,136,0.15), rgba(15,23,42,0.94) 42%, rgba(2,6,23,0.96))", boxShadow: "0 16px 42px rgba(0,0,0,0.24)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" },
+  sentinelOperationsBrand: { display: "flex", alignItems: "center", gap: 10, minWidth: 190 },
+  sentinelOperationsIcon: { width: 38, height: 38, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #2dd4bf, #0f766e)", color: "#031311", fontWeight: 950, fontSize: 17, boxShadow: "0 0 24px rgba(45,212,191,0.24)" },
+  sentinelOperationsTitle: { color: "#99f6e4", fontSize: 13, fontWeight: 950, letterSpacing: 0.8, textTransform: "uppercase" },
+  sentinelOperationsSubtitle: { color: "rgba(204,251,241,0.56)", fontSize: 10, marginTop: 2 },
+  sentinelOperationsMetrics: { display: "grid", gridTemplateColumns: "repeat(6, minmax(95px, 1fr))", gap: 8, flex: "1 1 720px" },
+  sentinelOperationItem: { display: "grid", gap: 3, minWidth: 0, padding: "8px 10px", borderRadius: 13, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.07)", fontSize: 11, overflow: "hidden" },
+  sentinelOperationLabel: { color: "rgba(226,232,240,0.50)", fontSize: 9, fontWeight: 900, letterSpacing: 0.8, textTransform: "uppercase" },
+  sentinelHealthyText: { color: "#99f6e4" },
   mainGrid: { display: "grid", gridTemplateColumns: "280px minmax(520px, 1fr) 360px", gap: 18, padding: 18, alignItems: "start" },
   viewerMainGrid: { display: "grid", gridTemplateColumns: "minmax(520px, 1fr) 360px", gap: 18, padding: 18, alignItems: "start" },
   leftPanel: { background: "rgba(15,23,42,0.72)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, padding: 16, position: "sticky", top: 96 },
   centerPanel: { display: "grid", gap: 16 },
   rightPanel: { background: "rgba(15,23,42,0.72)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, padding: 16, position: "sticky", top: 96, alignSelf: "start", maxHeight: "calc(100vh - 120px)", overflow: "hidden" },
   panelTitle: { fontSize: 16, fontWeight: 950, marginBottom: 12 },
+  workspaceMetric: { display: "grid", gap: 3, padding: "9px 10px", borderRadius: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13 },
+  workspaceMetricLabel: { color: "rgba(248,250,252,0.58)", fontSize: 10, fontWeight: 850, letterSpacing: 0.8, textTransform: "uppercase" },
   planCardMini: { border: "1px solid rgba(212,175,55,0.25)", background: "rgba(212,175,55,0.10)", borderRadius: 18, padding: 14, marginBottom: 14 },
   planMiniTitle: { color: "#facc15", fontWeight: 950, marginBottom: 5 },
   planMiniText: { color: "#cbd5e1", fontSize: 12, lineHeight: 1.4, marginBottom: 10 },
@@ -6094,6 +6208,14 @@ const styles = {
   roomName: { fontSize: 15, fontWeight: 950, marginBottom: 5 },
   roomMeta: { color: "rgba(248,250,252,0.58)", fontSize: 12 },
   roomPlanMeta: { color: "#facc15", fontSize: 11, fontWeight: 950, marginTop: 7, letterSpacing: 0.5 },
+  missionHeader: { padding: "14px 16px", borderRadius: 20, background: "linear-gradient(180deg, rgba(19,27,45,0.92), rgba(10,14,24,0.86))", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" },
+  missionEyebrow: { color: "#facc15", fontSize: 10, fontWeight: 950, letterSpacing: 1.8, textTransform: "uppercase", marginBottom: 4 },
+  missionTitle: { fontSize: 24, fontWeight: 950, lineHeight: 1.05, marginBottom: 5 },
+  missionMeta: { color: "rgba(248,250,252,0.68)", fontSize: 13 },
+  missionAccount: { color: "rgba(248,250,252,0.48)", fontSize: 12, marginTop: 4 },
+  missionStatusGrid: { display: "grid", gridTemplateColumns: "repeat(4, minmax(90px, 1fr))", gap: 8, flex: "1 1 420px", maxWidth: 560 },
+  missionStatusItem: { display: "grid", gap: 3, padding: "9px 10px", borderRadius: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 12 },
+  missionStatusLabel: { color: "rgba(248,250,252,0.52)", fontSize: 9, fontWeight: 900, letterSpacing: 0.8, textTransform: "uppercase" },
   identityCard: { padding: 18, borderRadius: 22, background: "linear-gradient(180deg, rgba(19,27,45,0.92), rgba(10,14,24,0.86))", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" },
   roomHeadline: { fontSize: 24, fontWeight: 900, marginBottom: 5 },
   identityLine: { color: "rgba(248,250,252,0.62)", fontSize: 13, marginTop: 4 },
