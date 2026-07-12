@@ -5280,7 +5280,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`);
                     const data = await response.json().catch(() => ({}));
                     if (!response.ok || !data.ok) {
-                      throw new Error(data.error || "Vendor list failed to load.");
+                      throw new Error(data.error || "Host financial profile list failed to load.");
                     }
                     const loadedVendors = Array.isArray(data.vendors) ? data.vendors : [];
                     setVendorDockList(loadedVendors);
@@ -5305,13 +5305,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         website: openVendor.website || "",
                         description: openVendor.description || "",
                       }));
-                      setStatus("Vendor list loaded. Open approved vendor selected for ticket sales."); // PASS_VENDOR_BOOTH_OPEN_1
+                      setStatus("Host financial profiles loaded. Active approved host payment profile selected for ticket sales."); // PASS_VENDOR_BOOTH_OPEN_1
                     } else {
                       setVendorDockRecord(null);
-                      setStatus("Vendor list loaded. Select an existing vendor or create a new vendor profile."); // PASS_VENDOR_BOOTH_OPEN_1
+                      setStatus("Host financial profiles loaded. Select an existing host profile or create a new host financial profile."); // PASS_VENDOR_BOOTH_OPEN_1
                     }
                   } catch (error) {
-                    setStatus("Vendor Dock opened, but vendor list did not load: " + (error.message || "Unknown error"));
+                    setStatus("Host Financial Dock opened, but host financial profiles did not load: " + (error.message || "Unknown error"));
                   }
                 }} // PASS_VENDOR_FINANCE_DOCK_3B
               >
@@ -5505,7 +5505,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <div style={styles.ownerSyncTitle}>Host Financial Hub</div>
 
                     <div style={styles.helperText}>
-                      Connect vendor payment workflow, track ticket revenue, review AGV's 7% ticket platform fee, track broadcast delivery service fees, account for payment processing, and prepare for future gateway automation.
+                      Connect the host payment workflow, track ticket revenue, review AGV's 7% ticket platform fee, track broadcast delivery service fees, account for payment processing, and prepare for automated host payouts.
                     </div>
 
                     <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
@@ -5520,7 +5520,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         <button
                           style={styles.secondaryButton}
                           onClick={() =>
-                            setStatus("Vendor gateway onboarding shell is ready. SERVER Stripe Connect foundation is the next required step.")
+                            setStatus("Host payment onboarding shell is ready. SERVER Stripe Connect foundation is the next required step.")
                           }
                         >
                           Connect Payment Gateway ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Coming Soon
@@ -5539,7 +5539,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           Refunds / adjustments: {formatMoney(moneyValue(revenueRefunds) || revenueReports?.[0]?.refunds || 0)}
                         </div>
                         <div style={styles.helperText}>
-                          Net vendor receivable:{" "}
+                          Net host receivable:{" "}
                           {formatMoney(
                             Math.max(
                               0,
@@ -5870,12 +5870,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
 
             <div style={{ marginTop: 18, border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", color: "#bbf7d0", borderRadius: 18, padding: 14, fontSize: 13, lineHeight: 1.5, fontWeight: 800 }}>
-              MVP Scope: Vendor profile, payment gateway setup, booth-ticket financial summary, host approval, and AGV's 7% ticket platform fee.
+              MVP Scope: Host financial profile, payment gateway setup, event-ticket financial summary, payment readiness, and AGV's 7% ticket platform fee.
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 14, marginTop: 18 }}>
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Vendor Profile</div>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Host Financial Profile</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <select
                     style={styles.input}
@@ -5892,10 +5892,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         website: selected?.website || "",
                         description: selected?.description || "",
                       });
-                      if (selected) setStatus("Loaded vendor profile: " + (selected.businessName || selected.email));
+                      if (selected) setStatus("Loaded host financial profile: " + (selected.businessName || selected.email));
                     }}
                   >
-                    <option value="">New vendor / select vendor</option>
+                    <option value="">New host profile / select host profile</option>
                     {vendorDockList.map((vendor) => (
                       <option key={vendor.vendorId} value={vendor.vendorId}>
                         {(vendor.businessName || vendor.email) + " - " + (vendor.gatewayStatus || "NOT_CONNECTED")}
@@ -5907,27 +5907,27 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     onClick={() => {
                       setVendorDockRecord(null);
                       setVendorDockForm({ businessName: "", contactName: "", email: "", phone: "", businessCategory: "", website: "", description: "" });
-                      setStatus("New vendor form ready. Enter vendor information and save.");
+                      setStatus("New host financial profile form ready. Enter host information and save.");
                     }}
                     style={styles.primaryButton}
                   >
-                    New Vendor
+                    New Host Profile
                   </button>
 
                   <input style={styles.input} placeholder="Business name" value={vendorDockForm.businessName} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, businessName: event.target.value }))} />
                   <input style={styles.input} placeholder="Contact name" value={vendorDockForm.contactName} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, contactName: event.target.value }))} />
-                  <input style={styles.input} placeholder="Vendor email - required" value={vendorDockForm.email} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, email: event.target.value }))} />
+                  <input style={styles.input} placeholder="Host email - required" value={vendorDockForm.email} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, email: event.target.value }))} />
                   <input style={styles.input} placeholder="Phone number" value={vendorDockForm.phone} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, phone: event.target.value }))} />
-                  <input style={styles.input} placeholder="Business category / Cash App / PayPal / Square / Vendor Booth" value={vendorDockForm.businessCategory} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, businessCategory: event.target.value }))} />
+                  <input style={styles.input} placeholder="Organization type / Cash App / PayPal / Square / Event Operations" value={vendorDockForm.businessCategory} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, businessCategory: event.target.value }))} />
                   <input style={styles.input} placeholder="Website optional" value={vendorDockForm.website} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, website: event.target.value }))} />
-                  <textarea style={{ ...styles.input, minHeight: 82, resize: "vertical" }} placeholder="Vendor description" value={vendorDockForm.description} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, description: event.target.value }))} />
+                  <textarea style={{ ...styles.input, minHeight: 82, resize: "vertical" }} placeholder="Organization description" value={vendorDockForm.description} onChange={(event) => setVendorDockForm((prev) => ({ ...prev, description: event.target.value }))} />
 
                   <button
                     onClick={async () => {
                       try {
                         const email = vendorDockForm.email.trim().toLowerCase();
                         if (!email) {
-                          setStatus("Vendor email is required before saving.");
+                          setStatus("Host email is required before saving.");
                           return;
                         }
 
@@ -5951,7 +5951,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                         const data = await response.json().catch(() => ({}));
                         if (!response.ok || !data.ok || !data.vendor) {
-                          throw new Error(data.error || "Vendor save failed.");
+                          throw new Error(data.error || "Host financial profile save failed.");
                         }
 
                         setVendorDockRecord(data.vendor);
@@ -5965,29 +5965,29 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           description: data.vendor.description || "",
                         });
                         setVendorDockList((prev) => [data.vendor, ...prev.filter((vendor) => vendor.vendorId !== data.vendor.vendorId)]);
-                        setStatus("Vendor profile saved to SERVER 8795: " + (data.vendor.businessName || data.vendor.email));
+                        setStatus("Host financial profile saved to SERVER 8795: " + (data.vendor.businessName || data.vendor.email));
                       } catch (error) {
-                        setStatus("Vendor save failed: " + (error.message || "Unknown error"));
+                        setStatus("Host financial profile save failed: " + (error.message || "Unknown error"));
                       }
                     }}
                     style={styles.primaryButton}
                   >
-                    Save Vendor Profile
+                    Save Host Financial Profile
                   </button>
                 </div>
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
                 <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>2. Payment Gateway Setup</div>
-                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Vendor payment connection is required before booth-ticket sales are activated.</div>
+                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Host payment connection is required before event-ticket sales are activated.</div>
                 <div style={{ border: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "1px solid rgba(34,197,94,0.35)" : "1px solid rgba(239,68,68,0.32)", background: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "rgba(22,101,52,0.18)" : "rgba(127,29,29,0.18)", borderRadius: 16, padding: 12, marginBottom: 10 }}>
                   <div style={{ fontWeight: 950, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>Payment Status</div>
                   <div style={{ marginTop: 4, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#dcfce7" : "#fee2e2", fontSize: 13 }}>
-                    {vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " - " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No vendor selected"}
+                    {vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " - " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No host profile selected"}
                   </div>
                 </div>
                 <select id="agvVendorGatewayChoice" style={styles.input} defaultValue="agv-gateway">
-                  <option value="agv-gateway">AGV Gateway - AGV collects ticket payments and settles vendor</option>
+                  <option value="agv-gateway">AGV Gateway - AGV collects ticket payments and settles host</option>
                   <option value="manual">Manual / Cash App / Eventbrite settlement review</option>
                   <option value="paypal">PayPal manual review</option>
                   <option value="square">Square manual review</option>
@@ -5996,7 +5996,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   onClick={async () => {
                     try {
                       if (!vendorDockRecord?.vendorId) {
-                        setStatus("Save or select a vendor before applying a payment mode.");
+                        setStatus("Save or select a host profile before applying a payment mode.");
                         return;
                       }
 
@@ -6025,7 +6025,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                       setVendorDockRecord(data.vendor);
                       setVendorDockList((prev) => [data.vendor, ...prev.filter((vendor) => vendor.vendorId !== data.vendor.vendorId)]);
-                      setStatus(data.message || "Vendor payment mode updated.");
+                      setStatus(data.message || "Host payment mode updated.");
                     } catch (error) {
                       setStatus("Payment mode update failed: " + (error.message || "Unknown error"));
                     }
@@ -6037,12 +6037,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>3. Vendor Ticket Sales</div>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>3. Host Ticket Revenue</div>
                 <div style={{ display: "grid", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Tickets Sold</span><strong style={{ color: "#f8fafc" }}>{vendorTicketSalesSummary?.ticketsSold || 0}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Gross Ticket Revenue</span><strong style={{ color: "#f8fafc" }}>{formatAgvCents(vendorTicketSalesSummary?.grossTicketRevenueCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV Platform Fee 7%</span><strong style={{ color: "#fde68a" }}>{formatAgvCents(vendorTicketSalesSummary?.agvPlatformFeeCents)}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Vendor Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Host Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Processing</span><strong style={{ color: "#bfdbfe" }}>{formatAgvCents(vendorTicketSalesSummary?.paymentProcessingFeeCents)}</strong></div>
                   <button
                     type="button"
@@ -6054,7 +6054,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   </button>
                   {vendorTicketSalesMessage ? <div style={{ color: "#fde68a", fontWeight: 850 }}>{vendorTicketSalesMessage}</div> : null}
                   {vendorTicketSalesSummary?.latestTicketCode ? <div style={{ color: "#93c5fd" }}>Latest paid ticket: {vendorTicketSalesSummary.latestTicketCode}</div> : null}
-                  <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: vendorDockRecord?.ticketSalesEnabled ? "#bbf7d0" : "#93c5fd", fontWeight: 900 }}>{vendorDockRecord?.ticketSalesEnabled ? "Booth Status: Open - Ticket Sales Enabled" : "Booth Status: Closed Until Approved"}</div>
+                  <div style={{ marginTop: 8, borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: 10, color: vendorDockRecord?.ticketSalesEnabled ? "#bbf7d0" : "#93c5fd", fontWeight: 900 }}>{vendorDockRecord?.ticketSalesEnabled ? "Ticket Sales Status: Open - Enabled" : "Ticket Sales Status: Closed Until Approved"}</div>
                 </div>
               </div>
 
@@ -6065,21 +6065,21 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>{formatAgvCents(vendorTicketSalesSummary?.agvPlatformFeeCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Processing</span><strong style={{ color: "#bfdbfe" }}>{formatAgvCents(vendorTicketSalesSummary?.paymentProcessingFeeCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No vendor selected"}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No host profile selected"}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7" }}>{vendorDockRecord?.approvalStatus || "Pending"}</strong></div>
                 </div>
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Vendor Status</div>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Host Payment Status</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <div style={{ border: "1px solid rgba(250,204,21,0.30)", background: "rgba(113,63,18,0.18)", borderRadius: 16, padding: 12 }}>
                     <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7", fontWeight: 950 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Approved" : "Pending"}</div>
-                    <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#dcfce7" : "#fde68a", fontSize: 12, marginTop: 4 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Vendor is approved. Ticket sales status follows the selected payment mode." : "Waiting for host approval and payment setup."}</div>
+                    <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#dcfce7" : "#fde68a", fontSize: 12, marginTop: 4 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Host payment profile is approved. Ticket sales status follows the selected payment mode." : "Waiting for payment setup and approval."}</div>
                   </div>
                   <div style={{ border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", borderRadius: 16, padding: 12 }}>
                     <div style={{ color: "#bbf7d0", fontWeight: 950 }}>Approved</div>
-                    <div style={{ color: "#dcfce7", fontSize: 12, marginTop: 4 }}>Vendor can sell booth tickets when payment is connected.</div>
+                    <div style={{ color: "#dcfce7", fontSize: 12, marginTop: 4 }}>Host can sell event tickets when payment is connected.</div>
                   </div>
                   <div style={{ border: "1px solid rgba(239,68,68,0.24)", background: "rgba(127,29,29,0.14)", borderRadius: 16, padding: 12 }}>
                     <div style={{ color: "#fecaca", fontWeight: 950 }}>Suspended</div>
