@@ -3821,6 +3821,60 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         </div>
 
         <div style={styles.headerRight}>
+          {/* PASS_SENTINEL_HEADER_INTEGRATION_5E3A */}
+          {!isViewerOnly ? (
+            <div style={styles.sentinelHeaderCluster}>
+              <div style={styles.sentinelHeaderBrand}>
+                <img src="/assets/agv-sentinel-logo.png" alt="AGV Sentinel" style={styles.sentinelHeaderLogo} />
+                <span>Sentinel</span>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Broadcast</span>
+                <strong>{broadcastLive ? "Live" : "Standby"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>LiveKit</span>
+                <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Wallet</span>
+                <strong>{freeTokenWallet ? "Ready" : "Loading"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Tickets</span>
+                <strong>
+                  {ticketApproved
+                    ? "Approved"
+                    : selectedRoom?.isTicketOnly
+                      ? "Required"
+                      : "Open"}
+                </strong>
+              </div>
+            </div>
+          ) : null}
+          {!isViewerOnly && universityPalAllowed ? (
+            <button
+              type="button"
+              onClick={openAgvUniversityPal}
+              style={styles.platformServiceHeaderButton}
+              title="Open AGV University Pal"
+            >
+              <span style={styles.platformServiceHeaderIcon}>UP</span>
+              <span>University Pal</span>
+            </button>
+          ) : null}
+          {!isViewerOnly ? (
+            <button
+              type="button"
+              onClick={copyViewerRoomLink}
+              style={styles.copyViewerHeaderButton}
+            >
+              <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #a855f7, #6d28d9)" }}>
+                2
+              </span>
+              Copy Viewer Link
+            </button>
+          ) : null}
           <div style={styles.statusPill}>{status}</div>
 
           <div style={styles.roleSelect}>
@@ -3832,36 +3886,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           </button>
         </div>
       </header>
-
-      {!isViewerOnly ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: 10,
-            padding: "0 18px 0 18px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={copyViewerRoomLink}
-            style={{
-              border: "1px solid rgba(250, 204, 21, 0.45)",
-              background: "rgba(250, 204, 21, 0.12)",
-              color: "#fde68a",
-              borderRadius: 14,
-              padding: "10px 14px",
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
-          >
-            Copy Viewer Link
-          </button>
-        </div>
-      ) : null}
-
-      {isViewerOnly ? (
+{isViewerOnly ? (
         <div
           style={{
             margin: "0 18px 12px 18px",
@@ -3962,72 +3987,69 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           </div>
         </div>
       ) : null}
-
-      {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
-
-      {/* AGV UNIVERSITY PAL DASHBOARD PRODUCT CARD */}
-      {!isViewerOnly && universityPalAllowed ? (
-        <div
-          style={{
-            margin: "0 18px 12px 18px",
-            padding: "16px",
-            borderRadius: 18,
-            border: universityPalAllowed
-              ? "1px solid rgba(45, 212, 191, 0.40)"
-              : "1px solid rgba(250, 204, 21, 0.36)",
-            background: universityPalAllowed
-              ? "linear-gradient(135deg, rgba(13, 148, 136, 0.22), rgba(15, 23, 42, 0.94))"
-              : "linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(15, 23, 42, 0.94))",
-            boxShadow: "0 18px 45px rgba(0, 0, 0, 0.28)",
-            display: "flex",
-            gap: 14,
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ minWidth: 260, flex: "1 1 360px" }}>
-            <div style={{ fontWeight: 950, color: "#fde68a", fontSize: 16 }}>
-              AGV Education / University Pal
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.86, lineHeight: 1.55, marginTop: 4 }}>
-              Registration, class tracking, certificates, graduation records, and public certificate verification for AGV-powered training programs.
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-              <span style={styles.chip}>Plan: {currentPlanLimits.label}</span>
-              <span style={styles.chip}>
-                University Pal Access: Included
-              </span>
-              <span style={styles.chip}>Supabase-ready</span>
-              <span style={styles.chip}>Certificate verification</span>
-            </div>
-          </div>
-
-          <button
-            style={universityPalAllowed ? styles.primaryButton : styles.lockedButton || styles.secondaryButton}
-            onClick={
-              universityPalAllowed
-                ? openAgvUniversityPal
-                : () =>
-                    setStatus(
-                      "AGV University Pal is included with Creator, Ministry / Pro, and Convention plans. Upgrade to unlock registration, certificates, and verification tools."
-                    )
-            }
-          >
-            Open AGV University Pal
-          </button>
-        </div>
-      ) : null}
-
-      <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
+<main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
-            <div style={styles.panelTitle}>Rooms</div>
-
+            {/* PASS_SENTINEL_HOST_WORKSPACE_5C1 */}
+            <div
+              style={{
+                marginBottom: 16,
+                padding: 16,
+                borderRadius: 20,
+                border: "1px solid rgba(212,175,55,0.38)",
+                background:
+                  "linear-gradient(145deg, rgba(212,175,55,0.18), rgba(15,23,42,0.96) 58%)",
+                boxShadow: "0 18px 44px rgba(0,0,0,0.26)",
+              }}
+            >
+              <div
+                style={{
+                  color: "#facc15",
+                  fontSize: 11,
+                  fontWeight: 950,
+                  letterSpacing: 1.8,
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                Host Workspace
+              </div>
+              <div style={{ fontSize: 20, fontWeight: 950, marginBottom: 4 }}>
+                {selectedRoom?.name || "Main Hall"}
+              </div>
+              <div style={{ ...styles.helperText, marginBottom: 12 }}>
+                {hostModeLabel} • {currentPlanLimits.label} Plan
+              </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 8,
+                }}
+              >
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Rooms</span>
+                  <strong>{currentPlanLimits.maxRooms}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Viewers</span>
+                  <strong>{currentPlanLimits.maxViewers}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>Room Type</span>
+                  <strong>{selectedRoom?.isPrivate ? "Private" : "Public"}</strong>
+                </div>
+                <div style={styles.workspaceMetric}>
+                  <span style={styles.workspaceMetricLabel}>LiveKit</span>
+                  <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+                </div>
+              </div>
+            </div>
+            <div style={{ ...styles.controlTitle, marginBottom: 8 }}>Account & Capacity</div>
             <div style={styles.planCardMini}>
               <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
               <div style={styles.planMiniText}>
-                {currentPlanLimits.maxRooms} rooms ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {currentPlanLimits.maxViewers} viewers
+                {currentPlanLimits.maxRooms} rooms • {currentPlanLimits.maxViewers} viewers
               </div>
               <button
                 style={styles.secondaryButtonFull}
@@ -4109,11 +4131,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
             </div>
 
+            <div style={{ ...styles.controlTitle, marginTop: 4, marginBottom: 8 }}>Room Setup</div>
             <div style={paidBusinessToolsLocked ? { display: "none" } : styles.controlBox}>
-              <div style={styles.controlTitle}>Create Host-Owned Room</div>
+              <div style={{ ...styles.controlTitle, color: "#e2e8f0", fontSize: 13 }}>Create Host-Owned Room</div>
 
               <div style={styles.helperText}>
-                Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Plan: {currentPlanLimits.label}
+                Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used • Plan: {currentPlanLimits.label}
               </div>
 
               {!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1 ? (
@@ -4170,6 +4193,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 </div>
               )}
             </div>
+            <div style={{ ...styles.controlTitle, marginTop: 14, marginBottom: 8 }}>Available Rooms</div>
             <div style={styles.roomList}>
               {visibleRooms.map((room) => (
                 <button
@@ -4179,7 +4203,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 >
                   <div style={styles.roomName}>{room.name}</div>
                   <div style={styles.roomMeta}>
-                    {room.category} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {room.isPrivate ? "Private" : "Public"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢{" "}
+                    {room.category} • {room.isPrivate ? "Private" : "Public"} •{" "}
                     {room.isLocked ? "Locked" : "Open"}
                   </div>
                   {room.ownerId === currentOwnerId ? (
@@ -4194,37 +4218,44 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         ) : null}
 
         <section style={styles.centerPanel}>
-          <div style={styles.identityCard}>
-            <div>
-              <div style={styles.roomHeadline}>{selectedRoom?.name || "Room"}</div>
-              <div style={styles.identityLine}>
-                Mode: {hostModeLabel} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ LiveKit Room: {selectedRoomId}
+          {/* PASS_SENTINEL_LIVE_STAGE_5D1 */}
+          <div style={styles.missionHeader}>
+            <div style={{ minWidth: 0 }}>
+              <div style={styles.missionEyebrow}>
+                {broadcastLive ? "Live Mission" : "Mission Standby"}
               </div>
-
+              <div style={styles.missionTitle}>
+                {selectedRoom?.name || "Room"}
+              </div>
+              <div style={styles.missionMeta}>
+                {hostModeLabel} • LiveKit Room: {selectedRoomId}
+              </div>
               {!isViewerOnly ? (
-                <>
-                  <div style={styles.identityLine}>Owner ID: {currentOwnerId}</div>
-                  <div style={styles.identityLine}>
-                    Active Plan: {currentPlanLimits.label} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Rooms: {currentPlanLimits.maxRooms} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Viewers:{" "}
-                    {currentPlanLimits.maxViewers}
-                  </div>
-                  <div style={styles.identityLine}>
-                    Account: {storedAccount?.name || freeAccount?.name || "AGV Host"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢{" "}
-                    {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
-                  </div>
-                </>
+                <div style={styles.missionAccount}>
+                  {storedAccount?.name || freeAccount?.name || "AGV Host"} •{" "}
+                  {storedAccount?.organization || freeAccount?.organization || "Organization not set"}
+                </div>
               ) : null}
             </div>
-
-            <div style={styles.identityChips}>
-              <span style={styles.chip}>{currentPlanLimits.label}</span>
-              <span style={styles.chip}>{selectedRoom?.isPrivate ? "Private" : "Public"}</span>
-              <span style={styles.chip}>{selectedRoom?.isLocked ? "Locked" : "Open"}</span>
-              <span style={styles.chip}>{livekitRoom ? "Connected" : "Standby"}</span>
-              <span style={styles.chip}>{ticketApproved ? "Ticket OK" : "Ticket Needed"}</span>
+            <div style={styles.missionStatusGrid}>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Broadcast</span>
+                <strong>{broadcastLive ? "Live" : "Standby"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>LiveKit</span>
+                <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Access</span>
+                <strong>{selectedRoom?.isPrivate ? "Private" : "Public"}</strong>
+              </div>
+              <div style={styles.missionStatusItem}>
+                <span style={styles.missionStatusLabel}>Ticket</span>
+                <strong>{ticketApproved ? "Approved" : "Not Required / Pending"}</strong>
+              </div>
             </div>
           </div>
-
           {viewerNeedsTicket ? (
             <div style={styles.ticketGate}>
               <div style={styles.ticketBadge}>AGV TICKET LOCK</div>
@@ -4247,7 +4278,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               {ticketMessage ? <div style={styles.ticketMessage}>{ticketMessage}</div> : null}
             </div>
           ) : null}
-
           <div style={styles.stageShell}>
             <div style={styles.stageTop}>AGV LIVE STAGE</div>
 
@@ -4268,6 +4298,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             {canControlStage ? (
               <div style={styles.stageControls}>
                 <button style={cameraOn ? styles.activeButton : styles.primaryButton} onClick={startHostCamera}>
+                  <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" }}>
+                    1
+                  </span>
                   {cameraOn ? "Camera Live" : "Start Host Camera"}
                 </button>
 
@@ -4467,7 +4500,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           return;
                         }
 
-                        setBroadcastStatus("Starting AGV LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast...");
+                        setBroadcastStatus("Starting AGV LiveKit → Cloudflare broadcast...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/start`, {
@@ -4496,13 +4529,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                                 " | Active Video: " +
                                 (preflight.activeVideoTrackCount ?? "unknown")
                               : "";
-                            throw new Error((data?.error || "LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast start failed.") + detail);
+                            throw new Error((data?.error || "LiveKit → Cloudflare broadcast start failed.") + detail);
                           }
 
                           setBroadcastLive(true);
 
                           setBroadcastStatus(
-                            "LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare Live | Player: " +
+                            "LiveKit → Cloudflare Live | Player: " +
                               (data.playback?.player || "Cloudflare iframe") +
                               " | Egress: " +
                               (data.egressId || data.state?.egressId || data.egress?.egressId || "started") +
@@ -4514,7 +4547,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.state?.viewerMode || "broadcast")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast start error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit → Cloudflare broadcast start error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4528,7 +4561,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Ending AGV LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast...");
+                        setBroadcastStatus("Ending AGV LiveKit → Cloudflare broadcast...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/stop`, {
@@ -4543,13 +4576,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
-                            throw new Error(data?.error || "LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast stop failed.");
+                            throw new Error(data?.error || "LiveKit → Cloudflare broadcast stop failed.");
                           }
 
                           setBroadcastLive(false);
 
                           setBroadcastStatus(
-                            "LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare Ended | Viewer Mode: " +
+                            "LiveKit → Cloudflare Ended | Viewer Mode: " +
                               (data.state?.viewerMode || "livekit") +
                               " | Source: " +
                               (data.source?.status || "standby") +
@@ -4557,7 +4590,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.state?.egressStatus || "state-reset")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast stop error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit → Cloudflare broadcast stop error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4571,14 +4604,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Checking AGV LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast status...");
+                        setBroadcastStatus("Checking AGV LiveKit → Cloudflare broadcast status...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/egress/health`);
                           const data = await response.json().catch(() => null);
 
                           if (!response.ok || !data?.ok) {
-                            throw new Error(data?.error || "LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast status failed.");
+                            throw new Error(data?.error || "LiveKit → Cloudflare broadcast status failed.");
                           }
 
                           setBroadcastLive(data.viewerMode === "broadcast" || data.broadcastStatus === "live");
@@ -4600,7 +4633,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                               (data.egress?.active ? "active" : data.egress?.found ? "found/not active" : "none")
                           );
                         } catch (error) {
-                          setBroadcastStatus("LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare broadcast status error: " + (error?.message || String(error)));
+                          setBroadcastStatus("LiveKit → Cloudflare broadcast status error: " + (error?.message || String(error)));
                         } finally {
                           setBroadcastWorking(false);
                         }
@@ -4730,7 +4763,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Checking LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare bridge health...");
+                        setBroadcastStatus("Checking LiveKit → Cloudflare bridge health...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/health`);
@@ -4789,7 +4822,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       return;
     }
 
-                        setBroadcastStatus("Starting LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare bridge...");
+                        setBroadcastStatus("Starting LiveKit → Cloudflare bridge...");
 
                         try {
                           const response = await fetch(`${ROOM_API_BASE}/api/broadcast/bridge/start`, {
@@ -4845,7 +4878,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       disabled={broadcastWorking}
                       onClick={async () => {
                         setBroadcastWorking(true);
-                        setBroadcastStatus("Stopping LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare bridge...");
+                        setBroadcastStatus("Stopping LiveKit → Cloudflare bridge...");
 
                         try {
                           let currentEgressId = "";
@@ -5032,7 +5065,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <strong>Status:</strong> {broadcastStatus || "Scale backend ready. Click Scale Status."}
                     <div style={{ color: "rgba(255,255,255,0.68)", marginTop: "4px" }}>
                       {/* PASS_SCALE8C_DUAL_BROADCAST_PATH_HELPER_TEXT */}
-                      Scale paths: Supabase registry ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare delivery ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ AGV viewer. Direct Cloudflare source and LiveKit ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Cloudflare bridge are supported.
+                      Scale paths: Supabase registry → Cloudflare delivery → AGV viewer. Direct Cloudflare source and LiveKit → Cloudflare bridge are supported.
                     </div>
                   </div>
                 </div>
@@ -5165,7 +5198,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   selectedRoomMessages.map((message) => (
                     <div key={message.id} style={styles.chatMessage}>
                       <div style={styles.chatMeta}>
-                        {message.sender} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ {message.time}
+                        {message.sender} • {message.time}
                       </div>
                       <div>{message.text}</div>
                     </div>
@@ -5307,13 +5340,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
                 <div style={styles.controlTitle}>Plan Authority</div>
                 <div style={styles.helperText}>
-                  Current Plan: {currentPlanLimits.label} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Host Mode: {hostModeLabel}
+                  Current Plan: {currentPlanLimits.label} • Host Mode: {hostModeLabel}
                 </div>
                 <div style={styles.helperText}>
-                  Room Limit: {currentPlanLimits.maxRooms} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Viewer Limit: {currentPlanLimits.maxViewers}
+                  Room Limit: {currentPlanLimits.maxRooms} • Viewer Limit: {currentPlanLimits.maxViewers}
                 </div>
                 <div style={styles.helperText}>
-                  Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Ticket-Only Rooms:{" "}
+                  Private Rooms: {currentPlanLimits.allowPrivate ? "Allowed" : "Upgrade required"} • Ticket-Only Rooms:{" "}
                   {currentPlanLimits.allowTicketOnly ? "Allowed" : "Upgrade required"}
                 </div>
                 
@@ -5479,7 +5512,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       <div style={styles.eventOwnerCard}>
                         <div style={styles.eventOwnerTitle}>Gateway Connectivity</div>
                         <div style={styles.helperText}>
-                          Status: Manual reporting mode ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Future gateway connection: Ready for SERVER integration
+                          Status: Manual reporting mode • Future gateway connection: Ready for SERVER integration
                         </div>
                         <div style={styles.helperText}>
                           Current reported gateway: {revenueGateway || revenueReports?.[0]?.gateway || "Not connected / not reported"}
@@ -5635,8 +5668,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         <div style={styles.controlTitle}>{item.title}</div>
 
                         <div style={styles.helperText}>
-                          Room: {item.roomId || "main-hall"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Date: {item.eventDate || "Not set"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Time:{" "}
-                          {item.startTime || "Not set"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Price: {item.ticketPrice || "Not set"}
+                          Room: {item.roomId || "main-hall"} • Date: {item.eventDate || "Not set"} • Time:{" "}
+                          {item.startTime || "Not set"} • Price: {item.ticketPrice || "Not set"}
                         </div>
 
                         <div style={styles.eventOwnerCard}>
@@ -5681,7 +5714,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                             </div>
 
                             <div style={styles.helperText}>
-                              Room: {item.roomId || "main-hall"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Date: {item.eventDate || "Not set"} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Time:{" "}
+                              Room: {item.roomId || "main-hall"} • Date: {item.eventDate || "Not set"} • Time:{" "}
                               {item.startTime || "Not set"}
                             </div>
 
@@ -5745,6 +5778,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 </div>
               </div>
               <button style={styles.primaryButton} onClick={copyInviteLink}>
+                <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #22c55e, #15803d)" }}>
+                  2
+                </span>
                 Copy Room Invite
               </button>
 
@@ -6068,15 +6104,35 @@ const styles = {
   logoSmall: { width: 48, height: 48, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #d4af37, #8a6d1d)", color: "#111827", fontSize: 18, fontWeight: 950 },
   title: { margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.4 },
   subtitle: { color: "rgba(248,250,252,0.62)", fontSize: 13, marginTop: 3 },
-  headerRight: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" },
+  headerRight: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" },
+  sentinelHeaderCluster: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", padding: "5px 6px", borderRadius: 15, border: "1px solid rgba(45,212,191,0.24)", background: "rgba(13,148,136,0.10)" },
+  sentinelHeaderBrand: { display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", color: "#99f6e4", fontSize: 11, fontWeight: 950, textTransform: "uppercase", letterSpacing: 0.7 },
+  sentinelHeaderLogo: { width: 30, height: 30, borderRadius: 9, objectFit: "cover", display: "block", border: "1px solid rgba(45,212,191,0.30)", boxShadow: "0 0 18px rgba(45,212,191,0.18)" },
+  sentinelHeaderSignal: { display: "grid", gap: 1, padding: "4px 7px", borderRadius: 10, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, lineHeight: 1.1 },
+  sentinelHeaderLabel: { color: "rgba(226,232,240,0.48)", fontSize: 8, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase" },
+  platformServiceHeaderButton: { display: "flex", alignItems: "center", gap: 6, border: "1px solid rgba(250,204,21,0.30)", borderRadius: 13, padding: "7px 9px", background: "rgba(250,204,21,0.08)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  copyViewerHeaderButton: { display: "flex", alignItems: "center", gap: 6, border: "1px solid rgba(250,204,21,0.42)", borderRadius: 13, padding: "7px 9px", background: "rgba(250,204,21,0.11)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  sentinelStepBadge: { width: 20, height: 20, flex: "0 0 20px", borderRadius: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: 10, fontWeight: 950, boxShadow: "0 5px 12px rgba(0,0,0,0.24)" },
+  platformServiceHeaderIcon: { width: 22, height: 22, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(45,212,191,0.14)", border: "1px solid rgba(45,212,191,0.24)", color: "#99f6e4", fontSize: 8, fontWeight: 950 },
   statusPill: { padding: "9px 12px", borderRadius: 999, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.22)", color: "#bbf7d0", fontSize: 12, maxWidth: 420 },
   roleSelect: { border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "9px 12px", background: "#0f172a", color: "#f8fafc", fontWeight: 850 },
+  sentinelOperationsBar: { margin: "18px 18px 0", padding: "12px 14px", borderRadius: 20, border: "1px solid rgba(45,212,191,0.28)", background: "linear-gradient(135deg, rgba(13,148,136,0.15), rgba(15,23,42,0.94) 42%, rgba(2,6,23,0.96))", boxShadow: "0 16px 42px rgba(0,0,0,0.24)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" },
+  sentinelOperationsBrand: { display: "flex", alignItems: "center", gap: 10, minWidth: 190 },
+  sentinelOperationsIcon: { width: 38, height: 38, borderRadius: 13, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #2dd4bf, #0f766e)", color: "#031311", fontWeight: 950, fontSize: 17, boxShadow: "0 0 24px rgba(45,212,191,0.24)" },
+  sentinelOperationsTitle: { color: "#99f6e4", fontSize: 13, fontWeight: 950, letterSpacing: 0.8, textTransform: "uppercase" },
+  sentinelOperationsSubtitle: { color: "rgba(204,251,241,0.56)", fontSize: 10, marginTop: 2 },
+  sentinelOperationsMetrics: { display: "grid", gridTemplateColumns: "repeat(6, minmax(95px, 1fr))", gap: 8, flex: "1 1 720px" },
+  sentinelOperationItem: { display: "grid", gap: 3, minWidth: 0, padding: "8px 10px", borderRadius: 13, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.07)", fontSize: 11, overflow: "hidden" },
+  sentinelOperationLabel: { color: "rgba(226,232,240,0.50)", fontSize: 9, fontWeight: 900, letterSpacing: 0.8, textTransform: "uppercase" },
+  sentinelHealthyText: { color: "#99f6e4" },
   mainGrid: { display: "grid", gridTemplateColumns: "280px minmax(520px, 1fr) 360px", gap: 18, padding: 18, alignItems: "start" },
   viewerMainGrid: { display: "grid", gridTemplateColumns: "minmax(520px, 1fr) 360px", gap: 18, padding: 18, alignItems: "start" },
   leftPanel: { background: "rgba(15,23,42,0.72)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, padding: 16, position: "sticky", top: 96 },
   centerPanel: { display: "grid", gap: 16 },
   rightPanel: { background: "rgba(15,23,42,0.72)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 22, padding: 16, position: "sticky", top: 96, alignSelf: "start", maxHeight: "calc(100vh - 120px)", overflow: "hidden" },
   panelTitle: { fontSize: 16, fontWeight: 950, marginBottom: 12 },
+  workspaceMetric: { display: "grid", gap: 3, padding: "9px 10px", borderRadius: 13, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 13 },
+  workspaceMetricLabel: { color: "rgba(248,250,252,0.58)", fontSize: 10, fontWeight: 850, letterSpacing: 0.8, textTransform: "uppercase" },
   planCardMini: { border: "1px solid rgba(212,175,55,0.25)", background: "rgba(212,175,55,0.10)", borderRadius: 18, padding: 14, marginBottom: 14 },
   planMiniTitle: { color: "#facc15", fontWeight: 950, marginBottom: 5 },
   planMiniText: { color: "#cbd5e1", fontSize: 12, lineHeight: 1.4, marginBottom: 10 },
@@ -6086,6 +6142,14 @@ const styles = {
   roomName: { fontSize: 15, fontWeight: 950, marginBottom: 5 },
   roomMeta: { color: "rgba(248,250,252,0.58)", fontSize: 12 },
   roomPlanMeta: { color: "#facc15", fontSize: 11, fontWeight: 950, marginTop: 7, letterSpacing: 0.5 },
+  missionHeader: { padding: "14px 16px", borderRadius: 20, background: "linear-gradient(180deg, rgba(19,27,45,0.92), rgba(10,14,24,0.86))", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" },
+  missionEyebrow: { color: "#facc15", fontSize: 10, fontWeight: 950, letterSpacing: 1.8, textTransform: "uppercase", marginBottom: 4 },
+  missionTitle: { fontSize: 24, fontWeight: 950, lineHeight: 1.05, marginBottom: 5 },
+  missionMeta: { color: "rgba(248,250,252,0.68)", fontSize: 13 },
+  missionAccount: { color: "rgba(248,250,252,0.48)", fontSize: 12, marginTop: 4 },
+  missionStatusGrid: { display: "grid", gridTemplateColumns: "repeat(4, minmax(90px, 1fr))", gap: 8, flex: "1 1 420px", maxWidth: 560 },
+  missionStatusItem: { display: "grid", gap: 3, padding: "9px 10px", borderRadius: 13, background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", fontSize: 12 },
+  missionStatusLabel: { color: "rgba(248,250,252,0.52)", fontSize: 9, fontWeight: 900, letterSpacing: 0.8, textTransform: "uppercase" },
   identityCard: { padding: 18, borderRadius: 22, background: "linear-gradient(180deg, rgba(19,27,45,0.92), rgba(10,14,24,0.86))", border: "1px solid rgba(255,255,255,0.08)", display: "flex", justifyContent: "space-between", gap: 16, alignItems: "center", flexWrap: "wrap" },
   roomHeadline: { fontSize: 24, fontWeight: 900, marginBottom: 5 },
   identityLine: { color: "rgba(248,250,252,0.62)", fontSize: 13, marginTop: 4 },
@@ -6097,6 +6161,22 @@ const styles = {
   ticketText: { margin: 0, color: "#cbd5e1" },
   ticketInput: { borderRadius: 15, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.08)", color: "#f8fafc", padding: "13px 14px", fontSize: 16, fontWeight: 850 },
   ticketMessage: { color: "#fde68a", fontWeight: 850 },
+  launchMission: { padding: "12px 14px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.09)", background: "linear-gradient(135deg, rgba(15,23,42,0.94), rgba(9,12,20,0.96))", boxShadow: "0 14px 36px rgba(0,0,0,0.22)" },
+  launchMissionHeading: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" },
+  launchMissionEyebrow: { color: "#99f6e4", fontSize: 9, fontWeight: 950, letterSpacing: 1.4, textTransform: "uppercase" },
+  launchMissionTitle: { fontSize: 14, fontWeight: 950, marginTop: 2 },
+  launchMissionProgress: { padding: "6px 9px", borderRadius: 999, background: "rgba(45,212,191,0.10)", border: "1px solid rgba(45,212,191,0.22)", color: "#99f6e4", fontSize: 10, fontWeight: 900 },
+  launchMissionSteps: { display: "grid", gridTemplateColumns: "repeat(5, minmax(110px, 1fr))", gap: 8 },
+  launchMissionStep: { display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "8px 9px", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" },
+  launchMissionNumber: { width: 28, height: 28, flex: "0 0 28px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: 12, fontWeight: 950, boxShadow: "0 8px 18px rgba(0,0,0,0.20)" },
+  launchMissionNumberBlue: { background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+  launchMissionNumberGreen: { background: "linear-gradient(135deg, #22c55e, #15803d)" },
+  launchMissionNumberGold: { background: "linear-gradient(135deg, #facc15, #a16207)", color: "#111827" },
+  launchMissionNumberPurple: { background: "linear-gradient(135deg, #a855f7, #6d28d9)" },
+  launchMissionNumberRed: { background: "linear-gradient(135deg, #ef4444, #991b1b)" },
+  launchMissionComplete: { display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 16, border: "1px solid rgba(34,197,94,0.28)", background: "rgba(34,197,94,0.10)", color: "#bbf7d0", fontSize: 12, flexWrap: "wrap" },
+  launchMissionCompleteDot: { width: 24, height: 24, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(34,197,94,0.20)", border: "1px solid rgba(34,197,94,0.35)", fontWeight: 950 },
+  launchMissionCompleteText: { color: "rgba(220,252,231,0.62)", fontSize: 10 },
   stageShell: { borderRadius: 28, padding: 18, background: "linear-gradient(180deg, rgba(30,17,12,0.96), rgba(9,8,12,0.95))", border: "1px solid rgba(212,175,55,0.28)", boxShadow: "0 30px 90px rgba(0,0,0,0.35)" },
   stageTop: { textAlign: "center", color: "#facc15", fontWeight: 950, letterSpacing: 4, fontSize: 13, marginBottom: 14 },
   stageViewport: { aspectRatio: "16 / 9", borderRadius: 22, overflow: "hidden", background: "linear-gradient(135deg, #020617, #111827)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" },
