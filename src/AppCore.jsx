@@ -5315,7 +5315,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   }
                 }} // PASS_VENDOR_FINANCE_DOCK_3B
               >
-                Open Vendor Financial Dock
+                Open Host Financial Dock
               </button>
 
               <div style={styles.controlBox}>
@@ -5502,7 +5502,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
                   {/* PASS31Z_VENDOR_FINANCIAL_HUB */}
                   <div style={styles.ownerSyncBox}>
-                    <div style={styles.ownerSyncTitle}>Vendor Financial Hub</div>
+                    <div style={styles.ownerSyncTitle}>Host Financial Hub</div>
 
                     <div style={styles.helperText}>
                       Connect vendor payment workflow, track ticket revenue, review AGV's 7% ticket platform fee, track broadcast delivery service fees, account for payment processing, and prepare for future gateway automation.
@@ -5861,7 +5861,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           <div style={{ width: "min(1080px, 96vw)", maxHeight: "88vh", overflowY: "auto", borderRadius: 26, border: "1px solid rgba(212,175,55,0.50)", background: "linear-gradient(135deg, rgba(15,23,42,0.99), rgba(2,6,23,0.99))", boxShadow: "0 30px 90px rgba(0,0,0,0.60)", padding: 22, color: "#f8fafc" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: 24, fontWeight: 950, color: "#fde68a" }}>AGV Vendor Financial Docking Station</div>
+                <div style={{ fontSize: 24, fontWeight: 950, color: "#fde68a" }}>AGV Host Financial Docking Station</div>
                 <div style={{ marginTop: 6, color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, maxWidth: 720 }}>
                   Vendor setup, payment gateway readiness, booth-ticket revenue, and AGV's fixed 7% ticket platform fee.
                 </div>
