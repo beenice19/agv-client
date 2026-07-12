@@ -3869,6 +3869,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               onClick={copyViewerRoomLink}
               style={styles.copyViewerHeaderButton}
             >
+              <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #a855f7, #6d28d9)" }}>
+                2
+              </span>
               Copy Viewer Link
             </button>
           ) : null}
@@ -4275,7 +4278,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               {ticketMessage ? <div style={styles.ticketMessage}>{ticketMessage}</div> : null}
             </div>
           ) : null}
-
           <div style={styles.stageShell}>
             <div style={styles.stageTop}>AGV LIVE STAGE</div>
 
@@ -4296,6 +4298,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             {canControlStage ? (
               <div style={styles.stageControls}>
                 <button style={cameraOn ? styles.activeButton : styles.primaryButton} onClick={startHostCamera}>
+                  <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" }}>
+                    1
+                  </span>
                   {cameraOn ? "Camera Live" : "Start Host Camera"}
                 </button>
 
@@ -5773,6 +5778,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 </div>
               </div>
               <button style={styles.primaryButton} onClick={copyInviteLink}>
+                <span style={{ ...styles.sentinelStepBadge, background: "linear-gradient(135deg, #22c55e, #15803d)" }}>
+                  2
+                </span>
                 Copy Room Invite
               </button>
 
@@ -6103,7 +6111,8 @@ const styles = {
   sentinelHeaderSignal: { display: "grid", gap: 1, padding: "4px 7px", borderRadius: 10, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, lineHeight: 1.1 },
   sentinelHeaderLabel: { color: "rgba(226,232,240,0.48)", fontSize: 8, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase" },
   platformServiceHeaderButton: { display: "flex", alignItems: "center", gap: 6, border: "1px solid rgba(250,204,21,0.30)", borderRadius: 13, padding: "7px 9px", background: "rgba(250,204,21,0.08)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
-  copyViewerHeaderButton: { border: "1px solid rgba(250,204,21,0.42)", borderRadius: 13, padding: "8px 10px", background: "rgba(250,204,21,0.11)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  copyViewerHeaderButton: { display: "flex", alignItems: "center", gap: 6, border: "1px solid rgba(250,204,21,0.42)", borderRadius: 13, padding: "7px 9px", background: "rgba(250,204,21,0.11)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  sentinelStepBadge: { width: 20, height: 20, flex: "0 0 20px", borderRadius: 7, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: 10, fontWeight: 950, boxShadow: "0 5px 12px rgba(0,0,0,0.24)" },
   platformServiceHeaderIcon: { width: 22, height: 22, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(45,212,191,0.14)", border: "1px solid rgba(45,212,191,0.24)", color: "#99f6e4", fontSize: 8, fontWeight: 950 },
   statusPill: { padding: "9px 12px", borderRadius: 999, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.22)", color: "#bbf7d0", fontSize: 12, maxWidth: 420 },
   roleSelect: { border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "9px 12px", background: "#0f172a", color: "#f8fafc", fontWeight: 850 },
@@ -6152,6 +6161,22 @@ const styles = {
   ticketText: { margin: 0, color: "#cbd5e1" },
   ticketInput: { borderRadius: 15, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.08)", color: "#f8fafc", padding: "13px 14px", fontSize: 16, fontWeight: 850 },
   ticketMessage: { color: "#fde68a", fontWeight: 850 },
+  launchMission: { padding: "12px 14px", borderRadius: 20, border: "1px solid rgba(255,255,255,0.09)", background: "linear-gradient(135deg, rgba(15,23,42,0.94), rgba(9,12,20,0.96))", boxShadow: "0 14px 36px rgba(0,0,0,0.22)" },
+  launchMissionHeading: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 10, flexWrap: "wrap" },
+  launchMissionEyebrow: { color: "#99f6e4", fontSize: 9, fontWeight: 950, letterSpacing: 1.4, textTransform: "uppercase" },
+  launchMissionTitle: { fontSize: 14, fontWeight: 950, marginTop: 2 },
+  launchMissionProgress: { padding: "6px 9px", borderRadius: 999, background: "rgba(45,212,191,0.10)", border: "1px solid rgba(45,212,191,0.22)", color: "#99f6e4", fontSize: 10, fontWeight: 900 },
+  launchMissionSteps: { display: "grid", gridTemplateColumns: "repeat(5, minmax(110px, 1fr))", gap: 8 },
+  launchMissionStep: { display: "flex", alignItems: "center", gap: 8, minWidth: 0, padding: "8px 9px", borderRadius: 14, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" },
+  launchMissionNumber: { width: 28, height: 28, flex: "0 0 28px", borderRadius: 10, display: "inline-flex", alignItems: "center", justifyContent: "center", color: "#ffffff", fontSize: 12, fontWeight: 950, boxShadow: "0 8px 18px rgba(0,0,0,0.20)" },
+  launchMissionNumberBlue: { background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" },
+  launchMissionNumberGreen: { background: "linear-gradient(135deg, #22c55e, #15803d)" },
+  launchMissionNumberGold: { background: "linear-gradient(135deg, #facc15, #a16207)", color: "#111827" },
+  launchMissionNumberPurple: { background: "linear-gradient(135deg, #a855f7, #6d28d9)" },
+  launchMissionNumberRed: { background: "linear-gradient(135deg, #ef4444, #991b1b)" },
+  launchMissionComplete: { display: "flex", alignItems: "center", gap: 9, padding: "9px 12px", borderRadius: 16, border: "1px solid rgba(34,197,94,0.28)", background: "rgba(34,197,94,0.10)", color: "#bbf7d0", fontSize: 12, flexWrap: "wrap" },
+  launchMissionCompleteDot: { width: 24, height: 24, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(34,197,94,0.20)", border: "1px solid rgba(34,197,94,0.35)", fontWeight: 950 },
+  launchMissionCompleteText: { color: "rgba(220,252,231,0.62)", fontSize: 10 },
   stageShell: { borderRadius: 28, padding: 18, background: "linear-gradient(180deg, rgba(30,17,12,0.96), rgba(9,8,12,0.95))", border: "1px solid rgba(212,175,55,0.28)", boxShadow: "0 30px 90px rgba(0,0,0,0.35)" },
   stageTop: { textAlign: "center", color: "#facc15", fontWeight: 950, letterSpacing: 4, fontSize: 13, marginBottom: 14 },
   stageViewport: { aspectRatio: "16 / 9", borderRadius: 22, overflow: "hidden", background: "linear-gradient(135deg, #020617, #111827)", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center" },
