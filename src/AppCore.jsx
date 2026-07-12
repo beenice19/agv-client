@@ -4028,6 +4028,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               Rooms, plan capacity, wallet, and event setup.
             </div>
 
+            {/* PASS_SENTINEL_HOST_CONSOLE_CLARITY_5A2 */}
+            <div style={{ ...styles.controlTitle, marginBottom: 8 }}>Account & Capacity</div>
             <div style={styles.planCardMini}>
               <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
               <div style={styles.planMiniText}>
@@ -4113,6 +4115,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
             </div>
 
+            <div style={{ ...styles.controlTitle, marginTop: 4, marginBottom: 8 }}>Room Setup</div>
             <div style={paidBusinessToolsLocked ? { display: "none" } : styles.controlBox}>
               <div style={styles.controlTitle}>Create Host-Owned Room</div>
 
@@ -4174,6 +4177,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 </div>
               )}
             </div>
+            <div style={{ ...styles.controlTitle, marginTop: 14, marginBottom: 8 }}>Available Rooms</div>
             <div style={styles.roomList}>
               {visibleRooms.map((room) => (
                 <button
