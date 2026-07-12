@@ -3075,6 +3075,56 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
     return fallback;
   }
+  async function openHostFinancialDock() {
+    setVendorFinanceDockOpen(true);
+    try {
+      const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.ok) {
+        throw new Error(data.error || "Host financial profile list failed to load.");
+      }
+      const loadedVendors = Array.isArray(data.vendors) ? data.vendors : [];
+      setVendorDockList(loadedVendors);
+      const openVendor =
+        loadedVendors.find(
+          (vendor) =>
+            vendor?.approvalStatus === "APPROVED" &&
+            vendor?.ticketSalesEnabled === true &&
+            (vendor?.gatewayStatus === "AGV_GATEWAY_ACTIVE" ||
+              vendor?.gatewayStatus === "VERIFIED")
+        ) ||
+        loadedVendors.find((vendor) => vendor?.approvalStatus === "APPROVED") ||
+        loadedVendors[0] ||
+        null;
+      if (openVendor) {
+        setVendorDockRecord(openVendor);
+        setVendorDockForm((prev) => ({
+          ...prev,
+          businessName: openVendor.businessName || "",
+          contactName: openVendor.contactName || "",
+          email: openVendor.email || "",
+          phone: openVendor.phone || "",
+          businessCategory: openVendor.businessCategory || "",
+          website: openVendor.website || "",
+          description: openVendor.description || "",
+        }));
+        setStatus(
+          "Host financial profiles loaded. Active approved host payment profile selected for ticket sales."
+        );
+      } else {
+        setVendorDockRecord(null);
+        setStatus(
+          "Host financial profiles loaded. Select an existing host profile or create a new host financial profile."
+        );
+      }
+    } catch (error) {
+      setStatus(
+        "Host Financial Dock opened, but host financial profiles did not load: " +
+          (error.message || "Unknown error")
+      );
+    }
+  }
+
   async function loadVendorTicketSalesFromServer() {
     let cleanPin = String(revenueAdminPin || "").trim();
     if (!cleanPin) {
@@ -5274,46 +5324,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   cursor: "pointer",
                   boxShadow: "0 14px 34px rgba(0,0,0,0.25)",
                 }}
-                onClick={async () => {
-                  setVendorFinanceDockOpen(true);
-                  try {
-                    const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`);
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok || !data.ok) {
-                      throw new Error(data.error || "Host financial profile list failed to load.");
-                    }
-                    const loadedVendors = Array.isArray(data.vendors) ? data.vendors : [];
-                    setVendorDockList(loadedVendors);
-                    const openVendor =
-                      loadedVendors.find((vendor) =>
-                        vendor?.approvalStatus === "APPROVED" &&
-                        vendor?.ticketSalesEnabled === true &&
-                        (vendor?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendor?.gatewayStatus === "VERIFIED")
-                      ) ||
-                      loadedVendors.find((vendor) => vendor?.approvalStatus === "APPROVED") ||
-                      loadedVendors[0] ||
-                      null;
-                    if (openVendor) {
-                      setVendorDockRecord(openVendor);
-                      setVendorDockForm((prev) => ({
-                        ...prev,
-                        businessName: openVendor.businessName || "",
-                        contactName: openVendor.contactName || "",
-                        email: openVendor.email || "",
-                        phone: openVendor.phone || "",
-                        businessCategory: openVendor.businessCategory || "",
-                        website: openVendor.website || "",
-                        description: openVendor.description || "",
-                      }));
-                      setStatus("Host financial profiles loaded. Active approved host payment profile selected for ticket sales."); // PASS_VENDOR_BOOTH_OPEN_1
-                    } else {
-                      setVendorDockRecord(null);
-                      setStatus("Host financial profiles loaded. Select an existing host profile or create a new host financial profile."); // PASS_VENDOR_BOOTH_OPEN_1
-                    }
-                  } catch (error) {
-                    setStatus("Host Financial Dock opened, but host financial profiles did not load: " + (error.message || "Unknown error"));
-                  }
-                }} // PASS_VENDOR_FINANCE_DOCK_3B
+                onClick={openHostFinancialDock} // PASS_VENDOR_FINANCE_DOCK_3B
               >
                 Open Host Financial Dock
               </button>
@@ -5512,18 +5523,16 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       <div style={styles.eventOwnerCard}>
                         <div style={styles.eventOwnerTitle}>Gateway Connectivity</div>
                         <div style={styles.helperText}>
-                          Status: Manual reporting mode • Future gateway connection: Ready for SERVER integration
+                          Status: Stripe Connect onboarding is available through the Host Financial Dock
                         </div>
                         <div style={styles.helperText}>
                           Current reported gateway: {revenueGateway || revenueReports?.[0]?.gateway || "Not connected / not reported"}
                         </div>
                         <button
                           style={styles.secondaryButton}
-                          onClick={() =>
-                            setStatus("Host payment onboarding shell is ready. SERVER Stripe Connect foundation is the next required step.")
-                          }
+                          onClick={openHostFinancialDock}
                         >
-                          Connect Payment Gateway ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â Coming Soon
+                          Open Host Financial Dock
                         </button>
                       </div>
 
@@ -5987,6 +5996,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   </div>
                 </div>
                 <select id="agvVendorGatewayChoice" style={styles.input} defaultValue="agv-gateway">
+                  <option value="stripe">Stripe Connect - Direct host payment onboarding</option>
                   <option value="agv-gateway">AGV Gateway - AGV collects ticket payments and settles host</option>
                   <option value="manual">Manual / Cash App / Eventbrite settlement review</option>
                   <option value="paypal">PayPal manual review</option>
@@ -6021,6 +6031,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       const data = await response.json().catch(() => ({}));
                       if (!response.ok || !data.ok || !data.vendor) {
                         throw new Error(data.error || "Payment mode update failed.");
+                      }
+
+                      if (data.onboardingUrl) {
+                        setStatus("Stripe Connect onboarding created. Redirecting securely to Stripe...");
+                        window.location.href = data.onboardingUrl;
+                        return;
                       }
 
                       setVendorDockRecord(data.vendor);
