@@ -4022,7 +4022,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
-            <div style={styles.panelTitle}>Rooms</div>
+            {/* PASS_SENTINEL_HOST_CONSOLE_CLARITY_5A1 */}
+            <div style={styles.panelTitle}>Host Workspace</div>
+            <div style={{ ...styles.helperText, marginBottom: 12 }}>
+              Rooms, plan capacity, wallet, and event setup.
+            </div>
 
             <div style={styles.planCardMini}>
               <div style={styles.planMiniTitle}>{currentPlanLimits.label} Plan Active</div>
