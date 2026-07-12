@@ -4117,7 +4117,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
             <div style={{ ...styles.controlTitle, marginTop: 4, marginBottom: 8 }}>Room Setup</div>
             <div style={paidBusinessToolsLocked ? { display: "none" } : styles.controlBox}>
-              <div style={styles.controlTitle}>Create Host-Owned Room</div>
+              <div style={{ ...styles.controlTitle, color: "#e2e8f0", fontSize: 13 }}>Create Host-Owned Room</div>
 
               <div style={styles.helperText}>
                 Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¢ Plan: {currentPlanLimits.label}
