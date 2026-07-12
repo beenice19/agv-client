@@ -1006,6 +1006,116 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       cancelled = true;
     };
   }, []);
+  // PASS_HFD_3B_STRIPE_CONNECT_RETURN
+  useEffect(() => {
+    let cancelled = false;
+    async function handleReturnedStripeConnect() {
+      let params;
+      try {
+        params = new URLSearchParams(window.location.search || "");
+      } catch {
+        return;
+      }
+      const connectReturn = String(params.get("agvVendorGateway") || "")
+        .trim()
+        .toLowerCase();
+      const vendorId = String(params.get("vendorId") || "").trim();
+      if (!["return", "refresh"].includes(connectReturn) || !vendorId) {
+        return;
+      }
+      setVendorFinanceDockOpen(true);
+      setStatus(
+        connectReturn === "refresh"
+          ? "Stripe onboarding link expired. Preparing a secure replacement link..."
+          : "Stripe returned to AGV. Refreshing host payment status..."
+      );
+      try {
+        const statusResponse = await fetch(
+          `${VENDOR_API_BASE}/api/vendor/status?vendorId=${encodeURIComponent(vendorId)}`
+        );
+        const statusData = await statusResponse.json().catch(() => ({}));
+        if (!statusResponse.ok || !statusData.ok || !statusData.vendor) {
+          throw new Error(
+            statusData.error || "Host Stripe payment status could not be refreshed."
+          );
+        }
+        if (cancelled) return;
+        const hostProfile = statusData.vendor;
+        setVendorDockRecord(hostProfile);
+        setVendorDockList((prev) => [
+          hostProfile,
+          ...prev.filter((vendor) => vendor.vendorId !== hostProfile.vendorId),
+        ]);
+        setVendorDockForm({
+          businessName: hostProfile.businessName || "",
+          contactName: hostProfile.contactName || "",
+          email: hostProfile.email || "",
+          phone: hostProfile.phone || "",
+          businessCategory: hostProfile.businessCategory || "",
+          website: hostProfile.website || "",
+          description: hostProfile.description || "",
+        });
+        if (connectReturn === "refresh") {
+          const reconnectResponse = await fetch(
+            `${VENDOR_API_BASE}/api/vendor/connect/stripe`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(hostProfile),
+            }
+          );
+          const reconnectData = await reconnectResponse.json().catch(() => ({}));
+          if (
+            !reconnectResponse.ok ||
+            !reconnectData.ok ||
+            !reconnectData.onboardingUrl
+          ) {
+            throw new Error(
+              reconnectData.error ||
+                "A replacement Stripe onboarding link could not be created."
+            );
+          }
+          if (cancelled) return;
+          setStatus(
+            "Replacement Stripe onboarding link created. Redirecting securely to Stripe..."
+          );
+          window.location.href = reconnectData.onboardingUrl;
+          return;
+        }
+        const gatewayStatus = String(
+          hostProfile.gatewayStatus || "ONBOARDING_REQUIRED"
+        ).toUpperCase();
+        if (gatewayStatus === "VERIFIED") {
+          setStatus(
+            "Stripe Connect verified. Host charges and payouts are enabled."
+          );
+        } else if (gatewayStatus === "PENDING_VERIFICATION") {
+          setStatus(
+            "Stripe onboarding submitted. Stripe verification is still pending."
+          );
+        } else {
+          setStatus(
+            "Stripe onboarding is not complete. Select Stripe Connect to continue."
+          );
+        }
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("agvVendorGateway");
+        cleanUrl.searchParams.delete("vendorId");
+        window.history.replaceState({}, "", cleanUrl.toString());
+      } catch (error) {
+        if (cancelled) return;
+        setStatus(
+          "Stripe Connect return failed: " +
+            (error?.message || "Unknown Stripe return error")
+        );
+      }
+    }
+    handleReturnedStripeConnect();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   function clearTicket() {
     window.localStorage.removeItem(TICKET_STORAGE_KEY);
     setTicketCode("");
