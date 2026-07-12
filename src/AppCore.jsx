@@ -3821,6 +3821,57 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         </div>
 
         <div style={styles.headerRight}>
+          {/* PASS_SENTINEL_HEADER_INTEGRATION_5E3A */}
+          {!isViewerOnly ? (
+            <div style={styles.sentinelHeaderCluster}>
+              <div style={styles.sentinelHeaderBrand}>
+                <img src="/assets/agv-sentinel-logo.png" alt="AGV Sentinel" style={styles.sentinelHeaderLogo} />
+                <span>Sentinel</span>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Broadcast</span>
+                <strong>{broadcastLive ? "Live" : "Standby"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>LiveKit</span>
+                <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Wallet</span>
+                <strong>{freeTokenWallet ? "Ready" : "Loading"}</strong>
+              </div>
+              <div style={styles.sentinelHeaderSignal}>
+                <span style={styles.sentinelHeaderLabel}>Tickets</span>
+                <strong>
+                  {ticketApproved
+                    ? "Approved"
+                    : selectedRoom?.isTicketOnly
+                      ? "Required"
+                      : "Open"}
+                </strong>
+              </div>
+            </div>
+          ) : null}
+          {!isViewerOnly && universityPalAllowed ? (
+            <button
+              type="button"
+              onClick={openAgvUniversityPal}
+              style={styles.platformServiceHeaderButton}
+              title="Open AGV University Pal"
+            >
+              <span style={styles.platformServiceHeaderIcon}>UP</span>
+              <span>University Pal</span>
+            </button>
+          ) : null}
+          {!isViewerOnly ? (
+            <button
+              type="button"
+              onClick={copyViewerRoomLink}
+              style={styles.copyViewerHeaderButton}
+            >
+              Copy Viewer Link
+            </button>
+          ) : null}
           <div style={styles.statusPill}>{status}</div>
 
           <div style={styles.roleSelect}>
@@ -3832,36 +3883,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           </button>
         </div>
       </header>
-
-      {!isViewerOnly ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            alignItems: "center",
-            gap: 10,
-            padding: "0 18px 0 18px",
-          }}
-        >
-          <button
-            type="button"
-            onClick={copyViewerRoomLink}
-            style={{
-              border: "1px solid rgba(250, 204, 21, 0.45)",
-              background: "rgba(250, 204, 21, 0.12)",
-              color: "#fde68a",
-              borderRadius: 14,
-              padding: "10px 14px",
-              fontWeight: 800,
-              cursor: "pointer",
-            }}
-          >
-            Copy Viewer Link
-          </button>
-        </div>
-      ) : null}
-
-      {isViewerOnly ? (
+{isViewerOnly ? (
         <div
           style={{
             margin: "0 18px 12px 18px",
@@ -3962,112 +3984,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           </div>
         </div>
       ) : null}
-
-      {/* OLD AGV COMPANION EDUCATION TOOLKIT HIDDEN ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â UNIVERSITY PAL IS PRIMARY EDUCATION MODULE */}
-
-      {/* PASS_SENTINEL_COMPACT_UNIVERSITY_PAL_5E2 */}
-      {!isViewerOnly && universityPalAllowed ? (
-        <div
-          style={{
-            margin: "0 18px 8px",
-            padding: "9px 12px",
-            borderRadius: 16,
-            border: "1px solid rgba(45,212,191,0.28)",
-            background: "rgba(15,23,42,0.88)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <div
-              style={{
-                width: 34,
-                height: 34,
-                borderRadius: 11,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                background: "rgba(45,212,191,0.14)",
-                border: "1px solid rgba(45,212,191,0.24)",
-                color: "#99f6e4",
-                fontWeight: 950,
-              }}
-            >
-              UP
-            </div>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ color: "#fde68a", fontWeight: 950, fontSize: 13 }}>
-                Platform Service • AGV University Pal
-              </div>
-              <div style={{ color: "rgba(226,232,240,0.58)", fontSize: 10, marginTop: 2 }}>
-                Registration, certificates, records, and verification • {currentPlanLimits.label} access included
-              </div>
-            </div>
-          </div>
-          <button
-            style={{
-              ...styles.secondaryButton,
-              padding: "8px 12px",
-              borderRadius: 12,
-              fontSize: 12,
-            }}
-            onClick={openAgvUniversityPal}
-          >
-            Open University Pal
-          </button>
-        </div>
-      ) : null}
-
-      {/* PASS_SENTINEL_OPERATIONS_BAR_5E1 */}
-      {!isViewerOnly ? (
-        <section style={styles.sentinelOperationsBar}>
-          <div style={styles.sentinelOperationsBrand}>
-            <div style={styles.sentinelOperationsIcon}>S</div>
-            <div>
-              <div style={styles.sentinelOperationsTitle}>AGV Sentinel</div>
-              <div style={styles.sentinelOperationsSubtitle}>
-                Operations oversight active
-              </div>
-            </div>
-          </div>
-          <div style={styles.sentinelOperationsMetrics}>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>Sentinel</span>
-              <strong style={styles.sentinelHealthyText}>Watching</strong>
-            </div>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>Broadcast</span>
-              <strong>{broadcastLive ? "Live" : "Standby"}</strong>
-            </div>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>LiveKit</span>
-              <strong>{livekitRoom ? "Connected" : "Standby"}</strong>
-            </div>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>Wallet</span>
-              <strong>{freeTokenWallet ? "Loaded" : "Loading"}</strong>
-            </div>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>Tickets</span>
-              <strong>
-                {ticketApproved
-                  ? "Approved"
-                  : selectedRoom?.isTicketOnly
-                    ? "Required"
-                    : "Open"}
-              </strong>
-            </div>
-            <div style={styles.sentinelOperationItem}>
-              <span style={styles.sentinelOperationLabel}>Room</span>
-              <strong>{selectedRoom?.name || selectedRoomId || "Main Hall"}</strong>
-            </div>
-          </div>
-        </section>
-      ) : null}
-      <main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
+<main style={isViewerOnly ? styles.viewerMainGrid : styles.mainGrid}>
         {!isViewerOnly ? (
           <aside style={styles.leftPanel}>
             {/* PASS_SENTINEL_HOST_WORKSPACE_5C1 */}
@@ -6179,7 +6096,15 @@ const styles = {
   logoSmall: { width: 48, height: 48, borderRadius: 16, display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg, #d4af37, #8a6d1d)", color: "#111827", fontSize: 18, fontWeight: 950 },
   title: { margin: 0, fontSize: 24, fontWeight: 900, letterSpacing: -0.4 },
   subtitle: { color: "rgba(248,250,252,0.62)", fontSize: 13, marginTop: 3 },
-  headerRight: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "flex-end" },
+  headerRight: { display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" },
+  sentinelHeaderCluster: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", padding: "5px 6px", borderRadius: 15, border: "1px solid rgba(45,212,191,0.24)", background: "rgba(13,148,136,0.10)" },
+  sentinelHeaderBrand: { display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", color: "#99f6e4", fontSize: 11, fontWeight: 950, textTransform: "uppercase", letterSpacing: 0.7 },
+  sentinelHeaderLogo: { width: 30, height: 30, borderRadius: 9, objectFit: "cover", display: "block", border: "1px solid rgba(45,212,191,0.30)", boxShadow: "0 0 18px rgba(45,212,191,0.18)" },
+  sentinelHeaderSignal: { display: "grid", gap: 1, padding: "4px 7px", borderRadius: 10, background: "rgba(255,255,255,0.045)", border: "1px solid rgba(255,255,255,0.06)", fontSize: 10, lineHeight: 1.1 },
+  sentinelHeaderLabel: { color: "rgba(226,232,240,0.48)", fontSize: 8, fontWeight: 900, letterSpacing: 0.6, textTransform: "uppercase" },
+  platformServiceHeaderButton: { display: "flex", alignItems: "center", gap: 6, border: "1px solid rgba(250,204,21,0.30)", borderRadius: 13, padding: "7px 9px", background: "rgba(250,204,21,0.08)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  copyViewerHeaderButton: { border: "1px solid rgba(250,204,21,0.42)", borderRadius: 13, padding: "8px 10px", background: "rgba(250,204,21,0.11)", color: "#fde68a", fontSize: 10, fontWeight: 900, cursor: "pointer", whiteSpace: "nowrap" },
+  platformServiceHeaderIcon: { width: 22, height: 22, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(45,212,191,0.14)", border: "1px solid rgba(45,212,191,0.24)", color: "#99f6e4", fontSize: 8, fontWeight: 950 },
   statusPill: { padding: "9px 12px", borderRadius: 999, background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.22)", color: "#bbf7d0", fontSize: 12, maxWidth: 420 },
   roleSelect: { border: "1px solid rgba(255,255,255,0.14)", borderRadius: 999, padding: "9px 12px", background: "#0f172a", color: "#f8fafc", fontWeight: 850 },
   sentinelOperationsBar: { margin: "18px 18px 0", padding: "12px 14px", borderRadius: 20, border: "1px solid rgba(45,212,191,0.28)", background: "linear-gradient(135deg, rgba(13,148,136,0.15), rgba(15,23,42,0.94) 42%, rgba(2,6,23,0.96))", boxShadow: "0 16px 42px rgba(0,0,0,0.24)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" },
