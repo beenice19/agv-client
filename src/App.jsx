@@ -8,7 +8,7 @@ const TICKET_API_BASE =
   import.meta.env.VITE_AGV_TICKET_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
   "https://agv-server.onrender.com";
-const TEMP_LOCAL_HOST_PIN = "AGV-HOST-2026";
+// CONTROL_LIST_1A1 - Hard-coded CLIENT host PIN bypass removed; SERVER verification required.
 
 const SUBSCRIPTION_API_BASE =
   import.meta.env.VITE_AGV_SUBSCRIPTION_API_URL ||
@@ -1113,12 +1113,6 @@ function HostPinGate({ onApproved, onBack }) {
 
     if (!cleanPin) {
       setMessage("Enter host PIN.");
-      return;
-    }
-
-    if (cleanPin === TEMP_LOCAL_HOST_PIN) {
-      localStorage.setItem("agv_host_pin_verified", "true");
-      onApproved();
       return;
     }
 
