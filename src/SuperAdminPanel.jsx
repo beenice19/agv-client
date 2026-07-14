@@ -114,7 +114,7 @@ function normalizePlan(plan) {
   return "FREE";
 }
 
-export default function SuperAdminPanel({ onBack }) {
+export default function SuperAdminPanel({ onBack, onEnterHost }) {
   const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState("");
   const [pinMessage, setPinMessage] = useState("");
@@ -645,6 +645,15 @@ export default function SuperAdminPanel({ onBack }) {
 
         <button style={styles.secondaryButton} onClick={onBack}>
           Back to Landing
+        </button>
+
+        <button
+          style={styles.primaryButton}
+          onClick={() => {
+            if (typeof onEnterHost === "function") onEnterHost();
+          }}
+        >
+          Enter Host Platform - Founder Override
         </button>
       </header>
 

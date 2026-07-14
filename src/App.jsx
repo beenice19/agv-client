@@ -453,7 +453,15 @@ export default function App() {
   }, []);
 
   if (showSuperAdmin) {
-    return <SuperAdminPanel onBack={() => setShowSuperAdmin(false)} />;
+    return (
+      <SuperAdminPanel
+        onBack={() => setShowSuperAdmin(false)}
+        onEnterHost={() => {
+          setShowSuperAdmin(false);
+          setEntryMode("host-approved");
+        }}
+      />
+    );
   }
 
   if (showTicketAdmin) {
@@ -572,12 +580,9 @@ export default function App() {
       onClearBillingMessage={clearBillingMessage}
       onFreeStart={() => setEntryMode("free-signup")}
       onHostEnter={() => {
-        // PASS_CLIENT_HOST_LOGIN_BYPASS_FIX_1
-        // CLIENT - Always show the Host/Admin login gate before entering the platform.
-        // Forgot Host Password belongs on that login gate, not on the live stage.
+
         setEntryMode("host");
-      }}
-      onViewerEnter={() => {
+      }}      onViewerEnter={() => {
         if (currentPlan === "FREE") {
           localStorage.setItem("agv_ticket_code", "FREE-ROOM");
           localStorage.setItem("agv_ticket_room_id", "main-hall");
@@ -587,7 +592,6 @@ export default function App() {
         setEntryMode("viewer");
       }}
       onAdmin={() => setShowTicketAdmin(true)}
-      onSuperAdmin={() => setShowSuperAdmin(true)}
     />
   );
 }
@@ -1876,7 +1880,6 @@ function AgvLandingPage({
   onHostEnter,
   onViewerEnter,
   onAdmin,
-  onSuperAdmin,
 }) {
   const [billingMessage, setBillingMessage] = useState("");
   // PASS_CLIENT_BROADCAST_PACK_BUTTON_FEEDBACK_2
