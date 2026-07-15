@@ -135,6 +135,16 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
 
   const [planRules, setPlanRules] = useState(FALLBACK_PLAN_LIMITS);
   const [subscriptionPlan, setSubscriptionPlan] = useState("FREE");
+  // PASS_110_H2C_1_OWNER_TESTING_AS_UI
+  // Session-only testing selection. This does not modify the real subscription.
+  const [testPlan, setTestPlan] = useState(() => {
+    const savedTestPlan = String(
+      sessionStorage.getItem("agv_owner_test_plan") || "CONVENTION"
+    ).trim().toUpperCase();
+
+    return FALLBACK_PLAN_LIMITS[savedTestPlan] ? savedTestPlan : "CONVENTION";
+  });
+
   const [subscriptionMessage, setSubscriptionMessage] = useState(
     "Subscription server not checked yet."
   );
@@ -646,6 +656,37 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
         <button style={styles.secondaryButton} onClick={onBack}>
           Back to Landing
         </button>
+
+        <div
+          style={{
+            minWidth: 220,
+            padding: 12,
+            borderRadius: 16,
+            border: "1px solid rgba(250,204,21,0.28)",
+            background: "rgba(250,204,21,0.08)",
+          }}
+        >
+          <label style={{ ...styles.label, marginBottom: 6 }}>
+            Testing As
+          </label>
+          <select
+            value={testPlan}
+            onChange={(event) => {
+              const nextTestPlan = normalizePlan(event.target.value);
+              setTestPlan(nextTestPlan);
+              sessionStorage.setItem("agv_owner_test_plan", nextTestPlan);
+            }}
+            style={styles.input}
+          >
+            <option value="FREE">Free</option>
+            <option value="CREATOR">Creator</option>
+            <option value="MINISTRY">Ministry</option>
+            <option value="CONVENTION">Convention</option>
+          </select>
+          <div style={{ marginTop: 6, fontSize: 12, color: "#cbd5e1" }}>
+            Session-only test tier. Your real account remains Convention.
+          </div>
+        </div>
 
         <button
           style={styles.primaryButton}

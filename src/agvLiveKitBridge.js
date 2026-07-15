@@ -128,33 +128,57 @@ export async function createAgvLiveKitRoom({
       stopLocalTrackOnUnpublish: true,
     });
 
-    room.on(RoomEvent.Connected, () => {
+    // PASS_AGV_LIVEKIT_AWAITED_ROOM_TEARDOWN
+    const handleConnected = () => {
       if (onConnected) onConnected(room, tokenData);
-    });
+    };
 
-    room.on(RoomEvent.Disconnected, () => {
+    const handleDisconnected = () => {
       if (onDisconnected) onDisconnected(room, tokenData);
-    });
+    };
 
-    room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+    const handleTrackSubscribed = (track, publication, participant) => {
       if (onTrackSubscribed) {
         onTrackSubscribed(track, publication, participant, room);
       }
-    });
+    };
 
-    room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+    const handleTrackUnsubscribed = (track, publication, participant) => {
       if (onTrackUnsubscribed) {
         onTrackUnsubscribed(track, publication, participant, room);
       }
-    });
+    };
 
-    room.on(RoomEvent.ParticipantConnected, (participant) => {
+    const handleParticipantConnected = (participant) => {
       if (onParticipantConnected) onParticipantConnected(participant, room);
-    });
+    };
 
-    room.on(RoomEvent.ParticipantDisconnected, (participant) => {
-      if (onParticipantDisconnected) onParticipantDisconnected(participant, room);
-    });
+    const handleParticipantDisconnected = (participant) => {
+      if (onParticipantDisconnected) {
+        onParticipantDisconnected(participant, room);
+      }
+    };
+
+    room.on(RoomEvent.Connected, handleConnected);
+    room.on(RoomEvent.Disconnected, handleDisconnected);
+    room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+    room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    room.on(RoomEvent.ParticipantDisconnected, handleParticipantDisconnected);
+
+    room.__agvCleanupListeners = () => {
+      try {
+        room.off?.(RoomEvent.Connected, handleConnected);
+        room.off?.(RoomEvent.Disconnected, handleDisconnected);
+        room.off?.(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+        room.off?.(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+        room.off?.(RoomEvent.ParticipantConnected, handleParticipantConnected);
+        room.off?.(
+          RoomEvent.ParticipantDisconnected,
+          handleParticipantDisconnected
+        );
+      } catch {}
+    };
 
     await room.connect(tokenData.server_url, tokenData.participant_token, {
       autoSubscribe: true,
@@ -283,8 +307,17 @@ export async function stopAgvScreenShare(room) {
   };
 }
 
-export function disconnectAgvLiveKitRoom(room) {
-  if (!room) return;
+export async function disconnectAgvLiveKitRoom(room) {
+  if (!room) {
+    return {
+      ok: true,
+      alreadyDisconnected: true,
+    };
+  }
+
+  try {
+    room.__agvCleanupListeners?.();
+  } catch {}
 
   try {
     const publications = Array.from(
@@ -293,19 +326,33 @@ export function disconnectAgvLiveKitRoom(room) {
 
     for (const publication of publications) {
       const track = publication?.track;
+
+      if (!track) continue;
+
       try {
-        room.localParticipant.unpublishTrack(track);
+        await room.localParticipant.unpublishTrack(track);
       } catch {}
+
       try {
-        track?.stop?.();
+        track.detach?.();
       } catch {}
+
       try {
-        track?.mediaStreamTrack?.stop?.();
+        track.stop?.();
+      } catch {}
+
+      try {
+        track.mediaStreamTrack?.stop?.();
       } catch {}
     }
   } catch {}
 
   try {
-    room.disconnect();
+    await room.disconnect();
   } catch {}
+
+  return {
+    ok: true,
+    alreadyDisconnected: false,
+  };
 }

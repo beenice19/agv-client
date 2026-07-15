@@ -1,0 +1,2011 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>AGV Network Live Stage | Avant Global Vision</title>
+  <meta
+    name="description"
+    content="Explore public live channels and bring them to the AGV Network Stage."
+  />
+  <meta name="theme-color" content="#050816" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="robots" content="index,follow" />
+  <!-- Leave blank until the deployed AGV Chat URL is confirmed. -->
+  <meta name="agv-chat-api-base" content="" />
+  <link rel="icon" href="/favicon.svg" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      style-src 'self' 'unsafe-inline';
+      script-src 'self' 'unsafe-inline';
+      frame-src https://www.youtube-nocookie.com;
+      connect-src 'self'
+        http://127.0.0.1:8788
+        http://localhost:8788
+        https:;
+      img-src 'self' data: https://i.ytimg.com;
+      font-src 'self' data:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      frame-ancestors 'self';
+    "
+  />
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #050816;
+      --page-blue: #071426;
+      --panel: rgba(15, 23, 42, 0.84);
+      --panel-deep: rgba(4, 10, 24, 0.92);
+      --panel-soft: rgba(22, 32, 52, 0.82);
+      --line: rgba(148, 163, 184, 0.18);
+      --line-gold: rgba(212, 175, 55, 0.5);
+      --gold: #d4af37;
+      --gold-light: #facc15;
+      --gold-deep: #8f6712;
+      --white: #f8fafc;
+      --muted: #aeb9ca;
+      --green: #4ade80;
+      --danger: #f87171;
+      --shadow: 0 26px 80px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      min-height: 100%;
+      background: var(--page);
+    }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--white);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      background:
+        radial-gradient(
+          circle at 15% 8%,
+          rgba(212, 175, 55, 0.15),
+          transparent 30%
+        ),
+        radial-gradient(
+          circle at 88% 20%,
+          rgba(37, 99, 235, 0.13),
+          transparent 34%
+        ),
+        linear-gradient(135deg, #050816 0%, #07111f 55%, #020611 100%);
+    }
+    button,
+    input {
+      font: inherit;
+    }
+    button,
+    a {
+      -webkit-tap-highlight-color: transparent;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .page-shell {
+      width: min(1840px, 100%);
+      margin: 0 auto;
+      padding: 0 28px 28px;
+    }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 98px;
+      margin: 0 -28px;
+      padding: 18px 48px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(3, 8, 20, 0.88);
+      backdrop-filter: blur(22px);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+    .brand-mark {
+      display: grid;
+      width: 66px;
+      height: 66px;
+      flex: 0 0 66px;
+      place-items: center;
+      border: 1px solid rgba(250, 204, 21, 0.55);
+      border-radius: 20px;
+      color: #101827;
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      background:
+        linear-gradient(145deg, #f6d04d 0%, #d4af37 55%, #9b6d12 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.35),
+        0 14px 35px rgba(212, 175, 55, 0.18);
+    }
+    .brand-name {
+      overflow: hidden;
+      color: var(--white);
+      font-size: clamp(20px, 2vw, 31px);
+      font-weight: 800;
+      line-height: 1.05;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .brand-tagline {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+    .lobby-button,
+    .outline-button,
+    .gold-button {
+      display: inline-flex;
+      min-height: 48px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 999px;
+      padding: 12px 20px;
+      cursor: pointer;
+      transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        background 160ms ease;
+    }
+    .lobby-button,
+    .outline-button {
+      border: 1px solid rgba(250, 204, 21, 0.58);
+      color: var(--gold-light);
+      background: rgba(15, 23, 42, 0.58);
+    }
+    .gold-button {
+      border: 1px solid rgba(250, 204, 21, 0.72);
+      color: #111827;
+      font-weight: 800;
+      background: linear-gradient(135deg, #facc15, #d4af37);
+    }
+    .lobby-button:hover,
+    .outline-button:hover,
+    .gold-button:hover {
+      transform: translateY(-1px);
+    }
+    .hero {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 30px;
+      padding: 34px 2px 22px;
+    }
+    .eyebrow {
+      color: var(--gold-light);
+      font-size: 15px;
+      font-weight: 900;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 10px 0 12px;
+      font-size: clamp(36px, 5vw, 64px);
+      line-height: 1;
+      letter-spacing: -0.04em;
+    }
+    .public-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(250, 204, 21, 0.36);
+      border-radius: 999px;
+      padding: 8px 14px;
+      color: var(--gold-light);
+      font-size: 14px;
+      font-weight: 800;
+      background: rgba(212, 175, 55, 0.08);
+    }
+    .hero-copy {
+      max-width: 480px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(16px, 1.5vw, 20px);
+      line-height: 1.55;
+      text-align: right;
+    }
+    .station-grid {
+      display: grid;
+      grid-template-columns: minmax(250px, 330px) minmax(520px, 1fr) minmax(290px, 360px);
+      gap: 22px;
+      align-items: stretch;
+    }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(
+          145deg,
+          rgba(18, 29, 48, 0.9),
+          rgba(4, 10, 24, 0.88)
+        );
+      box-shadow: var(--shadow);
+    }
+    .details-panel,
+    .chat-panel {
+      min-height: 640px;
+      padding: 22px;
+    }
+    .panel-heading,
+    .stage-heading {
+      color: var(--gold-light);
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .detail-list {
+      margin-top: 18px;
+    }
+    .detail-row {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 13px;
+      align-items: center;
+      padding: 17px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-row:last-child {
+      border-bottom: 0;
+    }
+    .detail-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      border-radius: 50%;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.08);
+    }
+    .detail-label {
+      color: #8996aa;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .detail-value {
+      margin-top: 4px;
+      color: var(--white);
+      font-size: 17px;
+      font-weight: 650;
+    }
+    .source-note {
+      margin-top: 18px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 17px;
+      padding: 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+      background: rgba(2, 6, 23, 0.38);
+    }
+    /* PASS_AGV_NETWORK_MULTI_STAGE_1_CHANNEL_RAIL */
+    .channel-panel {
+      display: flex;
+      min-width: 0;
+      min-height: 640px;
+      flex-direction: column;
+      padding: 18px;
+      overflow: hidden;
+    }
+    .channel-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--line);
+    }
+    .channel-panel-copy {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .channel-count {
+      flex: 0 0 auto;
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      border-radius: 999px;
+      padding: 6px 9px;
+      color: var(--gold-light);
+      font-size: 11px;
+      font-weight: 900;
+      background: rgba(212, 175, 55, 0.08);
+    }
+    /* PASS_AGV_NETWORK_STATION_CATEGORIES_1 */
+    .category-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 156px;
+      margin-top: 14px;
+      padding: 0 4px 10px 0;
+      overflow-y: auto;
+      border-bottom: 1px solid var(--line);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(250, 204, 21, 0.42) transparent;
+    }
+    .category-button {
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 999px;
+      padding: 7px 10px;
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 850;
+      line-height: 1.2;
+      cursor: pointer;
+      background: rgba(2, 6, 23, 0.56);
+      transition:
+        border-color 150ms ease,
+        color 150ms ease,
+        background 150ms ease;
+    }
+    .category-button:hover,
+    .category-button:focus-visible {
+      border-color: rgba(250, 204, 21, 0.52);
+      color: var(--gold-light);
+      outline: none;
+    }
+    .category-button.active {
+      border-color: var(--gold-light);
+      color: #111827;
+      background: var(--gold-light);
+    }
+    .category-button-count {
+      display: inline-block;
+      margin-left: 5px;
+      opacity: 0.72;
+    }
+    .category-summary {
+      margin-top: 10px;
+      color: #94a3b8;
+      font-size: 11px;
+      line-height: 1.45;
+    }
+    .channel-empty {
+      display: grid;
+      min-height: 210px;
+      place-items: center;
+      border: 1px dashed rgba(250, 204, 21, 0.28);
+      border-radius: 16px;
+      padding: 24px;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.55;
+      background: rgba(2, 6, 23, 0.38);
+    }
+    .channel-empty strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--gold-light);
+      font-size: 15px;
+    }
+    .channel-list {
+      display: grid;
+      min-height: 0;
+      gap: 12px;
+      margin-top: 15px;
+      padding-right: 5px;
+      overflow-x: hidden;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(250, 204, 21, 0.46) transparent;
+    }
+    .channel-card {
+      display: block;
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 16px;
+      padding: 0;
+      overflow: hidden;
+      color: var(--white);
+      text-align: left;
+      cursor: pointer;
+      background: rgba(2, 6, 23, 0.58);
+      transition:
+        transform 160ms ease,
+        border-color 160ms ease,
+        box-shadow 160ms ease;
+    }
+    .channel-card:hover,
+    .channel-card:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(250, 204, 21, 0.5);
+      outline: none;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+    }
+    .channel-card.active {
+      border-color: var(--gold-light);
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.2),
+        0 12px 30px rgba(0, 0, 0, 0.38);
+      background: rgba(212, 175, 55, 0.09);
+    }
+    .channel-preview {
+      position: relative;
+      display: block;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      background:
+        radial-gradient(
+          circle at 50% 30%,
+          rgba(212, 175, 55, 0.14),
+          transparent 45%
+        ),
+        #020617;
+    }
+    .channel-preview img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.88;
+      transition: transform 220ms ease;
+    }
+    .channel-card:hover .channel-preview img {
+      transform: scale(1.035);
+    }
+    .channel-preview-label {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      border: 1px solid rgba(250, 204, 21, 0.38);
+      border-radius: 999px;
+      padding: 5px 8px;
+      color: var(--gold-light);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background: rgba(2, 6, 23, 0.82);
+    }
+    .channel-card-body {
+      display: block;
+      padding: 12px;
+    }
+    .channel-card-title {
+      display: block;
+      color: var(--white);
+      font-size: 15px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+    .channel-card-source {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+    .channel-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .channel-card-schedule {
+      color: #94a3b8;
+      font-size: 10px;
+    }
+    .channel-card-action {
+      color: var(--gold-light);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .stage-player-mount {
+      position: absolute;
+      inset: 0;
+    }
+    .stage-player-mount iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .stage-idle {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      text-align: center;
+      background:
+        radial-gradient(
+          circle at 50% 36%,
+          rgba(212, 175, 55, 0.17),
+          transparent 36%
+        ),
+        linear-gradient(
+          145deg,
+          rgba(15, 23, 42, 0.98),
+          rgba(2, 6, 23, 0.98)
+        );
+    }
+    .stage-idle[hidden],
+    .live-badge[hidden] {
+      display: none;
+    }
+    .stage-idle-mark {
+      display: grid;
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 18px;
+      place-items: center;
+      border: 1px solid rgba(250, 204, 21, 0.46);
+      border-radius: 50%;
+      color: var(--gold-light);
+      font-size: 24px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      background: rgba(212, 175, 55, 0.08);
+      box-shadow: 0 0 40px rgba(212, 175, 55, 0.12);
+    }
+    .stage-idle-title {
+      color: var(--white);
+      font-size: clamp(22px, 3vw, 34px);
+      font-weight: 900;
+    }
+    .stage-idle-copy {
+      max-width: 420px;
+      margin: 10px auto 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .stage-now {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 15px;
+      align-items: center;
+      padding: 14px 7px 0;
+    }
+    .stage-now-label {
+      color: #8996aa;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .stage-now-title {
+      margin-top: 4px;
+      color: var(--white);
+      font-size: 17px;
+      font-weight: 850;
+    }
+    .stage-now-meta {
+      max-width: 250px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+      text-align: right;
+    }
+    .stage-actions button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .eject-button {
+      border-color: rgba(248, 113, 113, 0.42) !important;
+      color: #fecaca !important;
+      background: rgba(127, 29, 29, 0.16) !important;
+    }
+    .eject-button:not(:disabled):hover {
+      border-color: rgba(248, 113, 113, 0.75) !important;
+      background: rgba(127, 29, 29, 0.28) !important;
+    }
+    @media (max-width: 1180px) {
+      .channel-panel {
+        min-height: 590px;
+      }
+    }
+    @media (max-width: 840px) {
+      .channel-panel {
+        min-height: auto;
+      }
+      .category-strip {
+        flex-wrap: nowrap;
+        max-height: none;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 10px;
+      }
+      .category-button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      .channel-list {
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(230px, 76vw);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding: 0 0 8px;
+      }
+      .stage-now {
+        grid-template-columns: 1fr;
+      }
+      .stage-now-meta {
+        max-width: none;
+        text-align: left;
+      }
+    }
+    .stage-panel {
+      display: flex;
+      min-width: 0;
+      min-height: 640px;
+      flex-direction: column;
+      padding: 14px;
+      border-color: rgba(212, 175, 55, 0.34);
+      background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(212, 175, 55, 0.1),
+          transparent 32%
+        ),
+        linear-gradient(
+          155deg,
+          rgba(20, 15, 12, 0.93),
+          rgba(3, 8, 19, 0.95)
+        );
+    }
+    .stage-heading {
+      padding: 6px 6px 14px;
+      text-align: center;
+    }
+    .video-frame {
+      position: relative;
+      min-height: 0;
+      flex: 1;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 19px;
+      background: #000;
+    }
+    .video-frame iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      background: #000;
+    }
+    .live-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: 1px solid rgba(250, 204, 21, 0.42);
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: var(--gold-light);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      background: rgba(2, 6, 23, 0.8);
+      pointer-events: none;
+    }
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold-light);
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.9);
+    }
+    .stage-actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 0 0;
+    }
+    .chat-panel {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--line);
+    }
+    .tab {
+      min-height: 62px;
+      border: 0;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
+      background: transparent;
+    }
+    .tab.active {
+      border-bottom-color: var(--gold-light);
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.05);
+    }
+    .tab-content {
+      display: none;
+      min-height: 0;
+      flex: 1;
+      flex-direction: column;
+    }
+    .tab-content.active {
+      display: flex;
+    }
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px 20px 14px;
+    }
+    .chat-title {
+      font-size: 19px;
+      font-weight: 800;
+    }
+    .connection {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .connection.online {
+      color: var(--green);
+    }
+    .connection.offline {
+      color: var(--danger);
+    }
+    .connection-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .chat-list {
+      min-height: 250px;
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 20px 18px;
+      scrollbar-color: rgba(212, 175, 55, 0.46) transparent;
+    }
+    .chat-empty {
+      margin-top: 14px;
+      border: 1px dashed rgba(148, 163, 184, 0.22);
+      border-radius: 15px;
+      padding: 20px;
+      color: var(--muted);
+      line-height: 1.5;
+      text-align: center;
+    }
+    .message {
+      margin-top: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      border-radius: 15px;
+      padding: 12px;
+      background: rgba(15, 23, 42, 0.54);
+    }
+    .message-meta {
+      margin-bottom: 5px;
+      color: #98a5b9;
+      font-size: 12px;
+      font-weight: 750;
+    }
+    .message-text {
+      color: var(--white);
+      font-size: 14px;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+    .composer {
+      border-top: 1px solid var(--line);
+      padding: 16px;
+      background: rgba(2, 6, 23, 0.42);
+    }
+    .name-input,
+    .message-input {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 13px;
+      outline: 0;
+      color: var(--white);
+      background: rgba(15, 23, 42, 0.82);
+    }
+    .name-input {
+      margin-bottom: 9px;
+      padding: 11px 12px;
+    }
+    .composer-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+    .message-input {
+      min-width: 0;
+      padding: 12px;
+    }
+    .name-input:focus,
+    .message-input:focus {
+      border-color: rgba(250, 204, 21, 0.65);
+      box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.08);
+    }
+    .send-button {
+      min-width: 54px;
+      border: 1px solid rgba(250, 204, 21, 0.65);
+      border-radius: 13px;
+      color: #111827;
+      font-size: 20px;
+      font-weight: 900;
+      cursor: pointer;
+      background: linear-gradient(135deg, #facc15, #d4af37);
+    }
+    .send-button:disabled,
+    .message-input:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    .community-note {
+      margin-top: 10px;
+      color: #8e9bad;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .info-body {
+      padding: 24px;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .info-body strong {
+      color: var(--white);
+    }
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      margin-top: 22px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: var(--line);
+      box-shadow: var(--shadow);
+    }
+    .status-item {
+      display: flex;
+      min-height: 88px;
+      align-items: center;
+      gap: 13px;
+      padding: 16px 20px;
+      background: rgba(10, 20, 36, 0.94);
+    }
+    .status-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      flex: 0 0 42px;
+      place-items: center;
+      border: 1px solid rgba(212, 175, 55, 0.28);
+      border-radius: 50%;
+      color: var(--gold-light);
+      background: rgba(212, 175, 55, 0.07);
+    }
+    .status-label {
+      color: #8694a9;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .status-value {
+      margin-top: 3px;
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .status-value.connected {
+      color: var(--green);
+    }
+    .footer {
+      padding: 26px 4px 4px;
+      color: #8390a3;
+      font-size: 12px;
+      line-height: 1.6;
+      text-align: center;
+    }
+    @media (max-width: 1280px) {
+      .station-grid {
+        grid-template-columns: 260px minmax(480px, 1fr);
+      }
+      .chat-panel {
+        grid-column: 1 / -1;
+        min-height: 500px;
+      }
+      .details-panel,
+      .stage-panel {
+        min-height: 590px;
+      }
+    }
+    @media (max-width: 840px) {
+      .page-shell {
+        padding: 0 14px 18px;
+      }
+      .topbar {
+        position: relative;
+        align-items: flex-start;
+        margin: 0 -14px;
+        padding: 16px;
+      }
+      .brand-mark {
+        width: 54px;
+        height: 54px;
+        flex-basis: 54px;
+        border-radius: 16px;
+        font-size: 19px;
+      }
+      .brand-tagline {
+        display: none;
+      }
+      .lobby-button {
+        min-height: 43px;
+        padding: 10px 13px;
+        font-size: 13px;
+      }
+      .hero {
+        display: block;
+        padding-top: 26px;
+      }
+      .hero-copy {
+        margin-top: 17px;
+        text-align: left;
+      }
+      .station-grid {
+        display: flex;
+        flex-direction: column;
+      }
+      .details-panel,
+      .stage-panel,
+      .chat-panel {
+        min-height: auto;
+      }
+      .video-frame {
+        min-height: 52vw;
+      }
+      .status-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+      .status-item:last-child {
+        grid-column: 1 / -1;
+      }
+    }
+    @media (max-width: 520px) {
+      .topbar {
+        gap: 10px;
+      }
+      .brand-name {
+        font-size: 17px;
+      }
+      .lobby-button span:last-child {
+        display: none;
+      }
+      h1 {
+        font-size: 38px;
+      }
+      .details-panel {
+        padding: 18px;
+      }
+      .video-frame {
+        min-height: 58vw;
+      }
+      .stage-actions {
+        display: grid;
+      }
+      .outline-button {
+        width: 100%;
+      }
+      .status-strip {
+        display: block;
+      }
+      .status-item {
+        border-bottom: 1px solid var(--line);
+      }
+      .status-item:last-child {
+        border-bottom: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="/agv-splash.html" aria-label="Avant Global Vision home">
+        <span class="brand-mark" aria-hidden="true">AGV</span>
+        <span>
+          <span class="brand-name">Avant Global Vision</span>
+          <span class="brand-tagline">
+            Digital Convention + Broadcast Platform
+          </span>
+        </span>
+      </a>
+      <a
+        class="lobby-button"
+        href="/agv-splash.html"
+        rel="noreferrer"
+      >
+        <span aria-hidden="true">←</span>
+        <span>Back to AGV Lobby</span>
+      </a>
+    </header>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">AGV Network</div>
+        <h1>AGV Network Live Stage</h1>
+        <div class="public-pill">
+          <span aria-hidden="true">LIVE</span>
+          Public Channel Lineup
+        </div>
+      </div>
+      <p class="hero-copy">
+        Explore live public channels, preview the lineup, and bring any
+        available feed to the AGV Stage with one click.
+      </p>
+    </section>
+    <section class="station-grid">
+      <aside
+        class="panel channel-panel"
+        aria-label="AGV Network channel lineup"
+      >
+        <div class="channel-panel-header">
+          <div>
+            <div class="panel-heading">AGV Network Station</div>
+            <p class="channel-panel-copy">
+              Select a category, preview its available channels, and
+              bring a feed directly to the AGV Stage.
+            </p>
+          </div>
+          <div class="channel-count" id="channelCount">3 channels</div>
+        </div>
+        <div
+          class="category-strip"
+          id="categoryStrip"
+          aria-label="AGV Network categories"
+        ></div>
+        <div
+          class="category-summary"
+          id="categorySummary"
+          aria-live="polite"
+        >
+          Showing all available channels.
+        </div>
+        <div
+          class="channel-list"
+          id="channelList"
+          aria-label="Available public channels"
+        ></div>
+        <div class="source-note">
+          Each stream remains controlled by its external content
+          provider. Availability and schedules may change.
+        </div>
+      </aside>
+      <section class="panel stage-panel">
+        <div class="stage-heading" id="stageHeading">
+          AGV Network Stage
+        </div>
+        <div class="video-frame" id="videoFrame">
+          <div class="live-badge" id="stageBadge" hidden>
+            <span class="live-dot"></span>
+            <span id="stageBadgeText">LIVE</span>
+          </div>
+          <div class="stage-player-mount" id="playerMount"></div>
+          <div class="stage-idle" id="stageIdle">
+            <div>
+              <div class="stage-idle-mark" aria-hidden="true">AGV</div>
+              <div class="stage-idle-title">The stage is ready</div>
+              <p class="stage-idle-copy">
+                Choose a channel from the lineup to bring it to the
+                AGV Network Stage.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="stage-now" aria-live="polite">
+          <div>
+            <div class="stage-now-label">Now on stage</div>
+            <div class="stage-now-title" id="stageNowTitle">
+              Stage is clear
+            </div>
+          </div>
+          <div class="stage-now-meta" id="stageNowMeta">
+            Select a channel from the lineup.
+          </div>
+        </div>
+        <div class="stage-actions">
+          <button
+            class="outline-button"
+            id="fullscreenButton"
+            type="button"
+            disabled
+          >
+            Open Full Screen
+          </button>
+          <button
+            class="outline-button eject-button"
+            id="ejectButton"
+            type="button"
+            disabled
+          >
+            Eject from Stage
+          </button>
+        </div>
+      </section>
+      <aside class="panel chat-panel">
+        <div class="tabs" role="tablist" aria-label="Station information">
+          <button
+            class="tab active"
+            id="chatTab"
+            type="button"
+            role="tab"
+            aria-selected="true"
+            aria-controls="chatContent"
+          >
+            Chat
+          </button>
+          <button
+            class="tab"
+            id="infoTab"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            aria-controls="infoContent"
+          >
+            Info
+          </button>
+        </div>
+        <section
+          class="tab-content active"
+          id="chatContent"
+          role="tabpanel"
+          aria-labelledby="chatTab"
+        >
+          <div class="chat-header">
+            <div class="chat-title">Live Chat</div>
+            <div class="connection" id="chatConnection">
+              <span class="connection-dot"></span>
+              <span id="chatConnectionText">Connecting</span>
+            </div>
+          </div>
+          <div
+            class="chat-list"
+            id="chatList"
+            aria-live="polite"
+            aria-label="AGV Network Live Stage chat messages"
+          >
+            <div class="chat-empty">
+              Connecting to the AGV Network chat room…
+            </div>
+          </div>
+          <form class="composer" id="chatForm">
+            <input
+              class="name-input"
+              id="displayName"
+              type="text"
+              maxlength="32"
+              autocomplete="nickname"
+              placeholder="Display name"
+              aria-label="Display name"
+            />
+            <div class="composer-row">
+              <input
+                class="message-input"
+                id="messageInput"
+                type="text"
+                maxlength="500"
+                autocomplete="off"
+                placeholder="Say something…"
+                aria-label="Chat message"
+              />
+              <button
+                class="send-button"
+                id="sendButton"
+                type="submit"
+                aria-label="Send message"
+              >
+                ➤
+              </button>
+            </div>
+            <div class="community-note">
+              Please be respectful. Public chat is subject to AGV
+              community and moderation rules.
+            </div>
+          </form>
+        </section>
+        <section
+          class="tab-content"
+          id="infoContent"
+          role="tabpanel"
+          aria-labelledby="infoTab"
+        >
+          <div class="info-body">
+            <p>
+              <strong id="infoChannelName">AGV Network Live Stage</strong>
+              presents public channels inside a standalone AGV viewing
+              environment.
+            </p>
+            <p id="infoChannelDescription">
+              Choose a channel from the lineup to begin playback.
+            </p>
+            <p>
+              Current source:
+              <strong id="infoChannelSource">No channel selected</strong>
+            </p>
+            <p>
+              This page remains separate from AGV host, ticketing,
+              wallet, room-management, and Super Admin controls.
+            </p>
+          </div>
+        </section>
+      </aside>
+    </section>
+    <section class="status-strip" aria-label="AGV Network status">
+      <div class="status-item">
+        <div class="status-icon" aria-hidden="true">SRC</div>
+        <div>
+          <div class="status-label">Source</div>
+          <div class="status-value" id="sourceStatusValue">
+            No channel
+          </div>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon" aria-hidden="true">PUB</div>
+        <div>
+          <div class="status-label">Access</div>
+          <div class="status-value">Public</div>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon" aria-hidden="true">NOW</div>
+        <div>
+          <div class="status-label">Schedule</div>
+          <div class="status-value" id="modeStatusValue">
+            Stage clear
+          </div>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon" aria-hidden="true">MSG</div>
+        <div>
+          <div class="status-label">Chat</div>
+          <div class="status-value" id="chatStatusValue">
+            Connecting
+          </div>
+        </div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon" aria-hidden="true">AGV</div>
+        <div>
+          <div class="status-label">Safety</div>
+          <div class="status-value">Public Viewer Page</div>
+        </div>
+      </div>
+    </section>
+    <footer class="footer">
+      &copy; 2026 Avant Global Vision. AGV Network provides the public
+      viewing stage. External content providers retain control of their
+      respective streams, schedules, content, and services.
+    </footer>
+  </main>
+  <!-- PASS_AGV_NETWORK_PUBLIC_EARTH_CAM_STORAGE_ISOLATION -->
+  <!--
+    This standalone public station does not import AGV account,
+    owner, host, ticket, wallet, or Super Admin session logic.
+    It intentionally leaves existing AGV browser storage untouched.
+  -->
+  <script>
+    (() => {
+      "use strict";
+      // PASS_AGV_NETWORK_PUBLIC_EARTH_CAM_1
+      const ROOM_ID = "agv-network-earth-view";
+      // PASS_AGV_NETWORK_MULTI_STAGE_1
+      // PASS_AGV_NETWORK_STATION_CATEGORIES_1
+      const CATEGORIES = Object.freeze([
+        {
+          id: "space-observatories",
+          label: "Space Agencies & Observatories"
+        },
+        {
+          id: "zoos-aquariums",
+          label: "Zoos & Aquariums"
+        },
+        {
+          id: "wildlife-sanctuaries",
+          label: "Wildlife Sanctuaries"
+        },
+        {
+          id: "cities-landmarks",
+          label: "Cities & Landmarks"
+        },
+        {
+          id: "weather-ocean",
+          label: "Weather & Ocean"
+        },
+        {
+          id: "educational-institutions",
+          label: "Educational Institutions"
+        },
+        {
+          id: "worship-ministry",
+          label: "Worship & Ministry"
+        },
+        {
+          id: "agv-original-programming",
+          label: "AGV Original Programming"
+        },
+        {
+          id: "authorized-documentaries",
+          label: "Authorized Documentaries"
+        },
+        {
+          id: "public-radio-audio",
+          label: "Public Radio & Audio"
+        }
+      ]);
+      const CHANNELS = Object.freeze([
+        {
+          id: "earth-from-space",
+          title: "Earth From Space",
+          source: "NASA",
+          categoryId: "space-observatories",
+          category: "Space & Observatories",
+          badge: "LIVE",
+          schedule: "24/7 when the source is available",
+          videoId: "awQzjn72bI0",
+          thumbnail:
+            "https://i.ytimg.com/vi/awQzjn72bI0/hqdefault.jpg",
+          description:
+            "Live high-definition views of Earth from an external camera on the International Space Station."
+        },
+        {
+          id: "monterey-bay-live",
+          title: "Monterey Bay Live",
+          source: "Monterey Bay Aquarium",
+          categoryId: "zoos-aquariums",
+          category: "Zoos & Aquariums",
+          badge: "LIVE CAM",
+          schedule: "Daily, 7 a.m. to 7 p.m. Pacific",
+          videoId: "fVa6-zCBR7A",
+          thumbnail:
+            "https://i.ytimg.com/vi/fVa6-zCBR7A/hqdefault.jpg",
+          description:
+            "A live view across Monterey Bay from the Aquarium's ocean-view decks."
+        },
+        {
+          id: "moon-jelly-cam",
+          title: "Moon Jelly Cam",
+          source: "Monterey Bay Aquarium",
+          categoryId: "zoos-aquariums",
+          category: "Zoos & Aquariums",
+          badge: "LIVE CAM",
+          schedule: "Daily, 7 a.m. to 7 p.m. Pacific",
+          videoId: "IEGYa3FlY1s",
+          thumbnail:
+            "https://i.ytimg.com/vi/IEGYa3FlY1s/hqdefault.jpg",
+          description:
+            "A live view of Pacific moon jellies moving with the current inside the Aquarium's gallery."
+        }
+      ]);
+      // This page does not read AGV account, owner, plan, ticket,
+      // wallet, host, moderator, or Super Admin browser storage.
+      try {
+        window.opener = null;
+        if (
+          window.location.search ||
+          window.location.hash
+        ) {
+          window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+          );
+        }
+      } catch {}
+      const configuredChatApi =
+        document
+          .querySelector('meta[name="agv-chat-api-base"]')
+          ?.getAttribute("content")
+          ?.trim() || "";
+      const isLocal =
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname === "localhost";
+      const CHAT_API_BASE =
+        configuredChatApi ||
+        (
+          isLocal
+            ? `${window.location.protocol}//${window.location.hostname}:8788`
+            : window.location.origin
+        );
+      const chatList = document.getElementById("chatList");
+      const chatForm = document.getElementById("chatForm");
+      const displayName = document.getElementById("displayName");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const chatConnection = document.getElementById("chatConnection");
+      const chatConnectionText =
+        document.getElementById("chatConnectionText");
+      const chatStatusValue =
+        document.getElementById("chatStatusValue");
+      const fullscreenButton =
+        document.getElementById("fullscreenButton");
+      const ejectButton =
+        document.getElementById("ejectButton");
+      const videoFrame =
+        document.getElementById("videoFrame");
+      const channelList =
+        document.getElementById("channelList");
+      const channelCount =
+        document.getElementById("channelCount");
+      const categoryStrip =
+        document.getElementById("categoryStrip");
+      const categorySummary =
+        document.getElementById("categorySummary");
+      const playerMount =
+        document.getElementById("playerMount");
+      const stageIdle =
+        document.getElementById("stageIdle");
+      const stageBadge =
+        document.getElementById("stageBadge");
+      const stageBadgeText =
+        document.getElementById("stageBadgeText");
+      const stageHeading =
+        document.getElementById("stageHeading");
+      const stageNowTitle =
+        document.getElementById("stageNowTitle");
+      const stageNowMeta =
+        document.getElementById("stageNowMeta");
+      const sourceStatusValue =
+        document.getElementById("sourceStatusValue");
+      const modeStatusValue =
+        document.getElementById("modeStatusValue");
+      const infoChannelName =
+        document.getElementById("infoChannelName");
+      const infoChannelSource =
+        document.getElementById("infoChannelSource");
+      const infoChannelDescription =
+        document.getElementById("infoChannelDescription");
+      const chatTab = document.getElementById("chatTab");
+      const infoTab = document.getElementById("infoTab");
+      const chatContent = document.getElementById("chatContent");
+      const infoContent = document.getElementById("infoContent");
+      let chatOnline = false;
+      let chatRequestActive = false;
+      let activeChannelId = null;
+      let activeCategoryId = "all";
+      function getChannel(channelId) {
+        return (
+          CHANNELS.find(
+            (channel) => channel.id === channelId
+          ) || null
+        );
+      }
+      function buildEmbedUrl(videoId) {
+        return (
+          "https://www.youtube-nocookie.com/embed/" +
+          encodeURIComponent(videoId) +
+          "?autoplay=1&mute=1&playsinline=1&controls=1" +
+          "&fs=1&rel=0&origin=" +
+          encodeURIComponent(window.location.origin)
+        );
+      }
+      function getCategory(categoryId) {
+        return (
+          CATEGORIES.find(
+            (category) => category.id === categoryId
+          ) || null
+        );
+      }
+      function getCategoryLabel(categoryId) {
+        return (
+          getCategory(categoryId)?.label ||
+          "Uncategorized"
+        );
+      }
+      function getCategoryChannelCount(categoryId) {
+        return CHANNELS.filter(
+          (channel) =>
+            channel.categoryId === categoryId
+        ).length;
+      }
+      function getVisibleChannels() {
+        if (activeCategoryId === "all") {
+          return [...CHANNELS];
+        }
+        return CHANNELS.filter(
+          (channel) =>
+            channel.categoryId === activeCategoryId
+        );
+      }
+      function renderCategorySelector() {
+        categoryStrip.replaceChildren();
+        const options = [
+          {
+            id: "all",
+            label: "All Channels",
+            count: CHANNELS.length
+          },
+          ...CATEGORIES.map((category) => ({
+            id: category.id,
+            label: category.label,
+            count: getCategoryChannelCount(category.id)
+          }))
+        ];
+        options.forEach((category) => {
+          const button =
+            document.createElement("button");
+          const isActive =
+            category.id === activeCategoryId;
+          button.type = "button";
+          button.className =
+            `category-button${isActive ? " active" : ""}`;
+          button.setAttribute(
+            "aria-pressed",
+            String(isActive)
+          );
+          const label =
+            document.createElement("span");
+          label.textContent =
+            category.label;
+          const count =
+            document.createElement("span");
+          count.className =
+            "category-button-count";
+          count.textContent =
+            `(${category.count})`;
+          button.append(
+            label,
+            count
+          );
+          button.addEventListener(
+            "click",
+            () => {
+              activeCategoryId = category.id;
+              renderChannelLineup();
+            }
+          );
+          categoryStrip.appendChild(button);
+        });
+      }
+      function renderChannelLineup() {
+        const visibleChannels =
+          getVisibleChannels();
+        renderCategorySelector();
+        channelList.replaceChildren();
+        const activeCategory =
+          activeCategoryId === "all"
+            ? null
+            : getCategory(activeCategoryId);
+        channelCount.textContent =
+          `${visibleChannels.length} ${
+            visibleChannels.length === 1
+              ? "channel"
+              : "channels"
+          }`;
+        categorySummary.textContent =
+          activeCategory
+            ? `Showing ${activeCategory.label}.`
+            : "Showing all available channels.";
+        if (visibleChannels.length === 0) {
+          const empty =
+            document.createElement("div");
+          empty.className =
+            "channel-empty";
+          const emptyContent =
+            document.createElement("div");
+          const title =
+            document.createElement("strong");
+          title.textContent =
+            activeCategory?.label ||
+            "Category";
+          const message =
+            document.createElement("span");
+          message.textContent =
+            "This station category is ready for an approved feed.";
+          emptyContent.append(
+            title,
+            message
+          );
+          empty.appendChild(emptyContent);
+          channelList.appendChild(empty);
+          return;
+        }
+        visibleChannels.forEach((channel) => {
+          const card = document.createElement("button");
+          const isActive =
+            channel.id === activeChannelId;
+          card.type = "button";
+          card.className =
+            `channel-card${isActive ? " active" : ""}`;
+          card.setAttribute(
+            "aria-pressed",
+            String(isActive)
+          );
+          card.setAttribute(
+            "aria-label",
+            `${
+              isActive
+                ? "Currently on stage"
+                : "Bring to stage"
+            }: ${channel.title}`
+          );
+          const preview =
+            document.createElement("span");
+          preview.className =
+            "channel-preview";
+          const image =
+            document.createElement("img");
+          image.src = channel.thumbnail;
+          image.alt = `${channel.title} preview`;
+          image.loading = "lazy";
+          image.referrerPolicy = "no-referrer";
+          const previewLabel =
+            document.createElement("span");
+          previewLabel.className =
+            "channel-preview-label";
+          previewLabel.textContent =
+            getCategoryLabel(channel.categoryId);
+          preview.append(
+            image,
+            previewLabel
+          );
+          const body =
+            document.createElement("span");
+          body.className =
+            "channel-card-body";
+          const title =
+            document.createElement("span");
+          title.className =
+            "channel-card-title";
+          title.textContent =
+            channel.title;
+          const source =
+            document.createElement("span");
+          source.className =
+            "channel-card-source";
+          source.textContent =
+            channel.source;
+          const footer =
+            document.createElement("span");
+          footer.className =
+            "channel-card-footer";
+          const schedule =
+            document.createElement("span");
+          schedule.className =
+            "channel-card-schedule";
+          schedule.textContent =
+            channel.schedule;
+          const action =
+            document.createElement("span");
+          action.className =
+            "channel-card-action";
+          action.textContent =
+            isActive
+              ? "On Stage"
+              : "Bring to Stage";
+          footer.append(
+            schedule,
+            action
+          );
+          body.append(
+            title,
+            source,
+            footer
+          );
+          card.append(
+            preview,
+            body
+          );
+          card.addEventListener(
+            "click",
+            () => {
+              bringChannelToStage(channel.id);
+            }
+          );
+          channelList.appendChild(card);
+        });
+      }
+      function bringChannelToStage(channelId) {
+        const channel =
+          getChannel(channelId);
+        if (!channel) return;
+        const iframe =
+          document.createElement("iframe");
+        iframe.title =
+          `${channel.title} presented by AGV Network`;
+        iframe.src =
+          buildEmbedUrl(channel.videoId);
+        iframe.allow =
+          "autoplay; encrypted-media; picture-in-picture; fullscreen";
+        iframe.referrerPolicy =
+          "strict-origin-when-cross-origin";
+        iframe.allowFullscreen = true;
+        playerMount.replaceChildren(iframe);
+        activeChannelId = channel.id;
+        stageIdle.hidden = true;
+        stageBadge.hidden = false;
+        stageBadgeText.textContent = channel.badge;
+        stageHeading.textContent = channel.title;
+        stageNowTitle.textContent = channel.title;
+        stageNowMeta.textContent =
+          `${channel.source} | ${channel.category} | ${channel.schedule}`;
+        sourceStatusValue.textContent =
+          channel.source;
+        modeStatusValue.textContent =
+          channel.schedule;
+        infoChannelName.textContent =
+          channel.title;
+        infoChannelSource.textContent =
+          channel.source;
+        infoChannelDescription.textContent =
+          channel.description;
+        chatList.setAttribute(
+          "aria-label",
+          `${channel.title} AGV Network chat messages`
+        );
+        fullscreenButton.disabled = false;
+        ejectButton.disabled = false;
+        document.title =
+          `${channel.title} | AGV Network`;
+        renderChannelLineup();
+      }
+      async function ejectStage() {
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen();
+          }
+        } catch {}
+        playerMount.replaceChildren();
+        activeChannelId = null;
+        stageIdle.hidden = false;
+        stageBadge.hidden = true;
+        stageBadgeText.textContent = "LIVE";
+        stageHeading.textContent =
+          "AGV Network Stage";
+        stageNowTitle.textContent =
+          "Stage is clear";
+        stageNowMeta.textContent =
+          "Select a channel from the lineup.";
+        sourceStatusValue.textContent =
+          "No channel";
+        modeStatusValue.textContent =
+          "Stage clear";
+        infoChannelName.textContent =
+          "AGV Network Live Stage";
+        infoChannelSource.textContent =
+          "No channel selected";
+        infoChannelDescription.textContent =
+          "Choose a channel from the lineup to begin playback.";
+        chatList.setAttribute(
+          "aria-label",
+          "AGV Network Live Stage chat messages"
+        );
+        fullscreenButton.disabled = true;
+        ejectButton.disabled = true;
+        document.title =
+          "AGV Network Live Stage | Avant Global Vision";
+        renderChannelLineup();
+      }
+      function setChatConnection(state, message) {
+        chatOnline = state === "online";
+        chatConnection.classList.remove("online", "offline");
+        if (state === "online") {
+          chatConnection.classList.add("online");
+          chatStatusValue.classList.add("connected");
+        } else if (state === "offline") {
+          chatConnection.classList.add("offline");
+          chatStatusValue.classList.remove("connected");
+        }
+        chatConnectionText.textContent = message;
+        chatStatusValue.textContent = message;
+        messageInput.disabled = !chatOnline;
+        sendButton.disabled = !chatOnline;
+      }
+      function renderMessages(messages) {
+        chatList.replaceChildren();
+        if (!Array.isArray(messages) || messages.length === 0) {
+          const empty = document.createElement("div");
+          empty.className = "chat-empty";
+          empty.textContent =
+            "No messages yet. Welcome to the AGV Network Live Stage.";
+          chatList.appendChild(empty);
+          return;
+        }
+        messages.forEach((message, index) => {
+          const item = document.createElement("article");
+          item.className = "message";
+          const meta = document.createElement("div");
+          meta.className = "message-meta";
+          const sender =
+            String(message?.sender || "Viewer").trim().slice(0, 32);
+          const time =
+            String(message?.time || "").trim().slice(0, 40);
+          meta.textContent =
+            time ? `${sender} • ${time}` : sender;
+          const text = document.createElement("div");
+          text.className = "message-text";
+          text.textContent =
+            String(message?.text || "").slice(0, 1000);
+          item.dataset.messageId =
+            String(message?.id || index);
+          item.append(meta, text);
+          chatList.appendChild(item);
+        });
+        chatList.scrollTop = chatList.scrollHeight;
+      }
+      async function loadChat({ quiet = false } = {}) {
+        if (chatRequestActive) return;
+        chatRequestActive = true;
+        try {
+          const response = await fetch(
+            `${CHAT_API_BASE}/api/chat/${encodeURIComponent(ROOM_ID)}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json"
+              },
+              cache: "no-store"
+            }
+          );
+          const data = await response.json().catch(() => ({}));
+          if (
+            !response.ok ||
+            !data?.ok ||
+            !Array.isArray(data.messages)
+          ) {
+            throw new Error(
+              data?.error || "Chat response was not valid."
+            );
+          }
+          renderMessages(data.messages);
+          setChatConnection("online", "Connected");
+        } catch {
+          setChatConnection("offline", "Unavailable");
+          if (!quiet) {
+            chatList.replaceChildren();
+            const offline = document.createElement("div");
+            offline.className = "chat-empty";
+            offline.textContent =
+              isLocal
+                ? "AGV Chat is offline. Start SERVER chat on port 8788."
+                : "AGV public chat is temporarily unavailable.";
+            chatList.appendChild(offline);
+          }
+        } finally {
+          chatRequestActive = false;
+        }
+      }
+      async function sendMessage(event) {
+        event.preventDefault();
+        if (!chatOnline) return;
+        const text = messageInput.value.trim();
+        const sender =
+          displayName.value.trim().slice(0, 32) || "Viewer";
+        if (!text) return;
+        sendButton.disabled = true;
+        try {
+          const response = await fetch(
+            `${CHAT_API_BASE}/api/chat/${encodeURIComponent(ROOM_ID)}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json"
+              },
+              body: JSON.stringify({
+                text: text.slice(0, 500),
+                sender,
+                role: "viewer"
+              })
+            }
+          );
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data?.ok) {
+            throw new Error(
+              data?.error || "Message could not be sent."
+            );
+          }
+          messageInput.value = "";
+          if (Array.isArray(data.messages)) {
+            renderMessages(data.messages);
+          } else {
+            await loadChat({ quiet: true });
+          }
+          setChatConnection("online", "Connected");
+        } catch {
+          setChatConnection("offline", "Unavailable");
+        } finally {
+          sendButton.disabled = !chatOnline;
+        }
+      }
+      function activateTab(tabName) {
+        const chatActive = tabName === "chat";
+        chatTab.classList.toggle("active", chatActive);
+        infoTab.classList.toggle("active", !chatActive);
+        chatContent.classList.toggle("active", chatActive);
+        infoContent.classList.toggle("active", !chatActive);
+        chatTab.setAttribute(
+          "aria-selected",
+          String(chatActive)
+        );
+        infoTab.setAttribute(
+          "aria-selected",
+          String(!chatActive)
+        );
+      }
+      chatTab.addEventListener("click", () => {
+        activateTab("chat");
+      });
+      infoTab.addEventListener("click", () => {
+        activateTab("info");
+      });
+      chatForm.addEventListener("submit", sendMessage);
+      fullscreenButton.addEventListener("click", async () => {
+        if (!activeChannelId) return;
+        try {
+          if (document.fullscreenElement) {
+            await document.exitFullscreen();
+          } else {
+            await videoFrame.requestFullscreen();
+          }
+        } catch {}
+      });
+      ejectButton.addEventListener(
+        "click",
+        ejectStage
+      );
+      window.addEventListener("online", () => {
+        loadChat();
+      });
+      window.addEventListener("offline", () => {
+        setChatConnection("offline", "Offline");
+      });
+      bringChannelToStage("earth-from-space");
+      setChatConnection("connecting", "Connecting");
+      loadChat();
+      window.setInterval(() => {
+        loadChat({ quiet: true });
+      }, 2500);
+    })();
+  </script>
+</body>
+</html>

@@ -53,6 +53,7 @@ const DEFAULT_ROOMS = [
   { id: "main-hall", name: "Main Hall", category: "AGV Stage", isPrivate: false, isLocked: false },
 ];
 const LEGACY_DEFAULT_ROOM_IDS = new Set([
+  "agv-network-earth-view",
   "studio-a",
   "radio-room",
   "classroom-1",
@@ -271,17 +272,18 @@ function syncRoomsForCurrentPlan(existingRooms, currentPlan, ownerId, freeAccoun
   const normalizedPlan = normalizePlan(currentPlan);
   const limits = PLAN_LIMITS[normalizedPlan] || PLAN_LIMITS.FREE;
 
-  if (!Array.isArray(existingRooms) || existingRooms.length === 0) {
-    return DEFAULT_ROOMS;
-  }
+  const originalRooms =
+    Array.isArray(existingRooms) && existingRooms.length
+      ? cleanAgvLegacyRooms(existingRooms)
+      : DEFAULT_ROOMS;
 
   if (!freeAccount?.email) {
-    return existingRooms;
+    return originalRooms;
   }
 
   let changed = false;
 
-  const syncedRooms = existingRooms.map((room) => {
+  const syncedRooms = originalRooms.map((room) => {
     const roomOwnerId = String(room.ownerId || room.ownerEmail || "").trim().toLowerCase();
 
     const isOwnedByCurrentAccount =
@@ -490,6 +492,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     return rooms.find((room) => room.id === selectedRoomId) || rooms[0];
   }, [rooms, selectedRoomId]);
 
+  // PASS_AGV_NETWORK_INTERNAL_ROOM_REMOVAL_1
+  const isAgvNetworkStation = false;
+
   const currentPlanLimits = PLAN_LIMITS[currentPlan] || PLAN_LIMITS.FREE;
 
   const isViewerOnly = roleMode === "viewer";
@@ -514,14 +519,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     : "VIEWER";
 
   const isModerator = moderators.length > 0;
-  const canModerate = isHost || isModerator;
-  const canControlStage = isHost;
+  const canModerate = isAgvNetworkStation ? isSuperAdmin : isHost || isModerator;
+  const canControlStage = isHost && !isAgvNetworkStation;
   const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
   const cloudflareBroadcastAllowed = isSuperAdmin || currentPlan !== "FREE";
   const universityPalAllowed = isSuperAdmin || currentPlan !== "FREE";
   const hostVendorAgreementRequired =
     isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
-  const viewerNeedsTicket = isViewerOnly && currentPlan !== "FREE" && !ticketApproved;
+  const viewerNeedsTicket = isViewerOnly && !isAgvNetworkStation && currentPlan !== "FREE" && !ticketApproved;
   // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
   const eventIdFromUrl = getEventFromUrl();
 
@@ -559,8 +564,15 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     const currentEmail = String(storedAccount?.email || freeAccount?.email || "").trim().toLowerCase();
     const currentName = String(storedAccount?.name || freeAccount?.name || "").trim().toLowerCase();
 
+    // PASS_AGV_NETWORK_BROADCAST_1_ALL_TIER_VISIBILITY
+    const networkRooms = roomList.filter(
+      (room) => room?.roomClass === "AGV_NETWORK_STATION"
+    );
+
     // PASS32D_D_FREE_ROOM_VISIBILITY_GUARD
     const ownedRooms = roomList.filter((room) => {
+      if (room?.roomClass === "AGV_NETWORK_STATION") return false;
+
       const roomOwnerId = String(room.ownerId || room.ownerEmail || room.createdBy || "").trim().toLowerCase();
       const roomOwnerEmail = String(room.ownerEmail || room.createdBy || "").trim().toLowerCase();
       const roomHostName = String(room.host || room.ownerName || "").trim().toLowerCase();
@@ -573,7 +585,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     });
 
     if (currentPlan === "FREE") {
-      return ownedRooms.slice(0, 1);
+      return [...networkRooms, ...ownedRooms.slice(0, 1)];
     }
 
     return roomList.filter((room) => {
@@ -588,7 +600,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         Boolean(currentEmail && roomOwnerEmail && roomOwnerEmail === currentEmail) ||
         Boolean(currentName && roomHostName && roomHostName === currentName);
 
-      return isDefaultStarterRoom || ownedByCurrentAccount;
+      return (
+        room?.roomClass === "AGV_NETWORK_STATION" ||
+        isDefaultStarterRoom ||
+        ownedByCurrentAccount
+      );
     });
   }, [
     rooms,
@@ -654,6 +670,35 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       setVendorFinanceDockOpen(false);
     }
   }, [paidBusinessToolsLocked, selectedPanel]);
+
+  // PASS_AGV_NETWORK_RETIRED_ROOM_STORAGE_CLEANUP_1
+  useEffect(() => {
+    try {
+      const storageKey = "agv_super_admin_rooms";
+      const savedRooms = localStorage.getItem(storageKey);
+
+      if (!savedRooms) return;
+
+      const parsedRooms = JSON.parse(savedRooms);
+
+      if (!Array.isArray(parsedRooms)) return;
+
+      const containsRetiredRoom = parsedRooms.some(
+        (room) =>
+          String(room?.id || "").trim().toLowerCase() ===
+          "agv-network-earth-view"
+      );
+
+      if (!containsRetiredRoom) return;
+
+      const cleanedRooms = cleanAgvLegacyRooms(parsedRooms);
+
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify(cleanedRooms)
+      );
+    } catch {}
+  }, []);
 
   useEffect(() => {
     syncPlanFromSubscriptionServer();
@@ -1520,7 +1565,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   }
 
   function clearStage() {
-    if (stageRef.current) stageRef.current.innerHTML = "";
+    if (stageRef.current) {
+      stageRef.current.replaceChildren();
+      stageRef.current.style.background = "transparent";
+    }
 
     audioElementsRef.current.forEach((el) => {
       try {
@@ -1546,7 +1594,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     if (!stageRef.current || !element) return;
 
     try {
-      stageRef.current.style.position = "relative";
+      stageRef.current.style.position = "absolute";
+      stageRef.current.style.inset = "0";
       stageRef.current.style.overflow = "hidden";
       stageRef.current.style.display = "flex";
       stageRef.current.style.alignItems = "center";
@@ -1568,8 +1617,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       element.muted = true;
     }
 
-    stageRef.current.innerHTML = "";
-    stageRef.current.appendChild(element);
+    stageRef.current.replaceChildren(element);
   }
 
   function showStageTrack(track, label = "Live stage") {
@@ -1889,13 +1937,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       return false;
     }
 
-    clearStage();
-    cleanupLocalTracks();
-
-    if (livekitRoom) {
-      disconnectAgvLiveKitRoom(livekitRoom);
-      setLivekitRoom(null);
-    }
+    await disconnectFromLiveKit({ updateStatus: false });
 
     const displayed = showAgvBroadcastPlayer(state);
 
@@ -1920,13 +1962,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     try {
-      if (livekitRoom) {
-        disconnectAgvLiveKitRoom(livekitRoom);
-        setLivekitRoom(null);
-      }
-
-      clearStage();
-      cleanupLocalTracks();
+      await disconnectFromLiveKit({ updateStatus: false });
 
       setStatus(`Connecting to ${roomId} as ${nextRole.toUpperCase()}...`);
 
@@ -2863,6 +2899,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
 
   async function joinAsViewer() {
+    // PASS_AGV_NETWORK_BROADCAST_1_NO_LIVEKIT_VIEWER_JOIN
+    if (isAgvNetworkStation) {
+      setStatus("AGV Network station playback is already active. LiveKit is not required.");
+      return;
+    }
     // PASS_AGV_REVENUE_LOCK_1D_B_TICKET_ENTRY_HARDENING
     if (currentPlan !== "FREE" && !ticketApproved) {
       setStatus("Ticket required before viewer can join the room.");
@@ -2876,16 +2917,27 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     await connectToRoom("viewer", selectedRoomId);
   }
 
-  function disconnectFromLiveKit() {
-    cleanupLocalTracks();
+  // PASS_AGV_LIVEKIT_AWAITED_ROOM_TRANSITION
+  async function disconnectFromLiveKit({ updateStatus = true } = {}) {
+    const roomToDisconnect = livekitRoom;
 
-    if (livekitRoom) disconnectAgvLiveKitRoom(livekitRoom);
-
-    clearStage();
+    // Remove the room from active React state before awaiting teardown.
     setLivekitRoom(null);
     setCameraOn(false);
     setScreenOn(false);
-    setStatus("Disconnected");
+
+    try {
+      if (roomToDisconnect) {
+        await disconnectAgvLiveKitRoom(roomToDisconnect);
+      }
+    } finally {
+      cleanupLocalTracks();
+      clearStage();
+
+      if (updateStatus) {
+        setStatus("Disconnected");
+      }
+    }
   }
 
   function getServerAuthToken() {
@@ -3040,7 +3092,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
     setRooms(nextRooms);
     localStorage.setItem("agv_super_admin_rooms", JSON.stringify(nextRooms));
-    handleJoinRoom(fallbackRoom.id);
+    await handleJoinRoom(fallbackRoom.id);
 
     setNewRoomName("");
     setNewRoomCategory("Custom");
@@ -3048,15 +3100,27 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     setNewRoomTicketOnly(false);
     setStatus(`Room created locally: ${fallbackRoom.name}. SERVER auth connection can be wired later.`);
   }
-  function handleJoinRoom(roomId) {
-    disconnectFromLiveKit();
+  async function handleJoinRoom(roomId) {
+    const targetRoomName =
+      rooms.find((room) => room.id === roomId)?.name || roomId;
+
+    if (roomId === selectedRoomId) {
+      return;
+    }
+
+    setStatus(`Switching to ${targetRoomName}...`);
+
+    await disconnectFromLiveKit({
+      updateStatus: false,
+    });
+
     setSelectedRoomId(roomId);
 
     const url = new URL(window.location.href);
     url.searchParams.set("room", roomId);
     window.history.replaceState({}, "", url.toString());
 
-    setStatus(`Entered ${rooms.find((room) => room.id === roomId)?.name || roomId}`);
+    setStatus(`Entered ${targetRoomName}`);
   }
 
   async function addBulletin() {
@@ -4361,7 +4425,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   style={room.id === selectedRoomId ? styles.roomButtonActive : styles.roomButton}
                   onClick={() => handleJoinRoom(room.id)}
                 >
-                  <div style={styles.roomName}>{room.name}</div>
+                  <div style={styles.roomName}>
+                    {room?.roomClass === "AGV_NETWORK_STATION" &&
+                    room.id === selectedRoomId
+                      ? `Return to ${getAgvNetworkReturnRoomName()}`
+                      : room.name}
+                  </div>
                   <div style={styles.roomMeta}>
                     {room.category} • {room.isPrivate ? "Private" : "Public"} •{" "}
                     {room.isLocked ? "Locked" : "Open"}
@@ -4439,21 +4508,62 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
           ) : null}
           <div style={styles.stageShell}>
-            <div style={styles.stageTop}>AGV LIVE STAGE</div>
-
-            <div ref={stageRef} style={styles.stageViewport}>
-              <div style={styles.stagePlaceholder}>
-                <div style={styles.stageBadge}>AGV</div>
-                <div style={styles.stagePlaceholderTitle}>
-                  {isViewerOnly ? "Audience Stage Ready" : "Host Stage Ready"}
-                </div>
-                <div style={styles.stagePlaceholderText}>
-                  {isViewerOnly
-                    ? "Click Join Viewer to receive the host LiveKit stream."
-                    : `Start Host Camera to broadcast through LiveKit as ${hostModeLabel}.`}
-                </div>
-              </div>
+            {/* PASS_AGV_NETWORK_BROADCAST_1_EMBEDDED_PLAYER */}
+            <div style={styles.stageTop}>
+              {isAgvNetworkStation ? "AGV NETWORK • 24/7 STATION" : "AGV LIVE STAGE"}
             </div>
+
+            {/* PASS_AGV_NETWORK_BROADCAST_1_STAGE_REF_ISOLATION */}
+            {/* PASS_AGV_NETWORK_BROADCAST_1_KEYED_STAGE_REMOUNT */}
+            {isAgvNetworkStation ? (
+              <div key={`agv-network-stage-${selectedRoomId}`} style={styles.stageViewport}>
+                <iframe
+                  title="AGV Earth View — Official NASA ISS Live Feed"
+                  src={`https://www.youtube-nocookie.com/embed/${selectedRoom?.externalVideoId || "awQzjn72bI0"}?autoplay=1&mute=1&playsinline=1&controls=1&fs=1&rel=0&origin=${encodeURIComponent(window.location.origin)}`}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    border: 0,
+                    display: "block",
+                    background: "#000",
+                  }}
+                  allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div key={`livekit-stage-${selectedRoomId}`} style={{ ...styles.stageViewport, position: "relative" }}>
+                <div style={styles.stagePlaceholder}>
+                  <div style={styles.stageBadge}>AGV</div>
+                  <div style={styles.stagePlaceholderTitle}>
+                    {isViewerOnly ? "Audience Stage Ready" : "Host Stage Ready"}
+                  </div>
+                  <div style={styles.stagePlaceholderText}>
+                    {isViewerOnly
+                      ? "Click Join Viewer to receive the host LiveKit stream."
+                      : `Start Host Camera to broadcast through LiveKit as ${hostModeLabel}.`}
+                  </div>
+                </div>
+
+                {/* PASS_AGV_LIVEKIT_STAGE_DOM_OWNERSHIP_ISOLATION */}
+                <div
+                  ref={stageRef}
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 2,
+                    width: "100%",
+                    height: "100%",
+                    overflow: "hidden",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "transparent",
+                  }}
+                />
+              </div>
+            )}
 
             {canControlStage ? (
               <div style={styles.stageControls}>
@@ -5238,11 +5348,30 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
             ) : (
               <div style={styles.stageControls}>
-                <button style={viewerNeedsTicket ? styles.lockedButton : styles.primaryButton} onClick={joinAsViewer}>
-                  {viewerNeedsTicket ? "Ticket Required" : "Join Viewer"}
-                </button>
+                {isAgvNetworkStation ? (
+                  <div
+                    style={{
+                      width: "100%",
+                      padding: "12px 14px",
+                      borderRadius: 14,
+                      border: "1px solid rgba(250, 204, 21, 0.32)",
+                      background: "rgba(15, 23, 42, 0.78)",
+                      color: "#f8fafc",
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    <strong>AGV Network station active</strong>
+                    <div style={{ marginTop: 4, color: "rgba(248,250,252,0.70)" }}>
+                      The 24/7 broadcast is playing directly on the stage. LiveKit entry is not required.
+                    </div>
+                  </div>
+                ) : (
+                  <button style={viewerNeedsTicket ? styles.lockedButton : styles.primaryButton} onClick={joinAsViewer}>
+                    {viewerNeedsTicket ? "Ticket Required" : "Join Viewer"}
+                  </button>
+                )}
 
-                {ticketApproved ? (
+                {!isAgvNetworkStation && ticketApproved ? (
                   <button style={styles.secondaryButton} onClick={clearTicket}>
                     Clear Ticket
                   </button>
