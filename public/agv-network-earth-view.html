@@ -1382,7 +1382,8 @@
           label: "Public Radio & Audio"
         }
       ]);
-      const CHANNELS = Object.freeze([
+      // PASS_AGV_NETWORK_CONTROL_2_PUBLIC_REGISTRY
+      const FALLBACK_CHANNELS = Object.freeze([
         {
           id: "earth-from-space",
           title: "Earth From Space",
@@ -1426,6 +1427,8 @@
             "A live view of Pacific moon jellies moving with the current inside the Aquarium's gallery."
         }
       ]);
+      let CHANNELS = [...FALLBACK_CHANNELS];
+
       // This page does not read AGV account, owner, plan, ticket,
       // wallet, host, moderator, or Super Admin browser storage.
       try {
@@ -1456,6 +1459,71 @@
             ? `${window.location.protocol}//${window.location.hostname}:8788`
             : window.location.origin
         );
+
+      const NETWORK_API_BASE =
+        isLocal
+          ? `${window.location.protocol}//${window.location.hostname}:8792`
+          : "https://agv-subscription-server.onrender.com";
+
+      async function loadNetworkStations() {
+        try {
+          const response = await fetch(
+            `${NETWORK_API_BASE}/api/network/stations`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json"
+              }
+            }
+          );
+
+          const data = await response.json().catch(() => ({}));
+
+          if (
+            !response.ok ||
+            !data.ok ||
+            !Array.isArray(data.stations) ||
+            !data.stations.length
+          ) {
+            throw new Error(
+              data.error || "AGV Network registry was unavailable."
+            );
+          }
+
+          CHANNELS = data.stations.map((station) => ({
+            ...station,
+            thumbnail:
+              station.thumbnail ||
+              `https://i.ytimg.com/vi/${station.videoId}/hqdefault.jpg`
+          }));
+
+          if (!CHANNELS.some((channel) => channel.id === activeChannelId)) {
+            activeChannelId = "";
+          }
+
+          renderChannelLineup();
+
+          if (!activeChannelId && CHANNELS[0]) {
+            bringChannelToStage(CHANNELS[0].id);
+          }
+
+          return true;
+        } catch (error) {
+          console.warn(
+            "AGV Network registry fallback active:",
+            error?.message || error
+          );
+
+          CHANNELS = [...FALLBACK_CHANNELS];
+          renderChannelLineup();
+
+          if (!activeChannelId && CHANNELS[0]) {
+            bringChannelToStage(CHANNELS[0].id);
+          }
+
+          return false;
+        }
+      }
       const chatList = document.getElementById("chatList");
       const chatForm = document.getElementById("chatForm");
       const displayName = document.getElementById("displayName");
@@ -1999,7 +2067,8 @@
       window.addEventListener("offline", () => {
         setChatConnection("offline", "Offline");
       });
-      bringChannelToStage("earth-from-space");
+      renderChannelLineup();
+      loadNetworkStations();
       setChatConnection("connecting", "Connecting");
       loadChat();
       window.setInterval(() => {
