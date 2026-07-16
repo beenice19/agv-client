@@ -161,6 +161,34 @@ function getStoredAccount() {
   };
 }
 
+// PASS_AGV_NETWORK_CONTROL_2_SUPER_ADMIN_SYNC
+function getAgvServerAuthToken() {
+  try {
+    return (
+      localStorage.getItem("agv_auth_token") ||
+      localStorage.getItem("agv_server_token") ||
+      localStorage.getItem("agvToken") ||
+      localStorage.getItem("token") ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+function getNetworkAdminHeaders(includeJson = false) {
+  const token = getAgvServerAuthToken();
+  const headers = includeJson
+    ? { "Content-Type": "application/json" }
+    : {};
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+}
+
 function normalizePlan(plan) {
   const value = String(plan || "FREE").trim().toUpperCase();
 
@@ -217,6 +245,7 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
   const [networkMessage, setNetworkMessage] = useState(
     "AGV Network stations are controlled separately from host rooms."
   );
+  const [networkSyncing, setNetworkSyncing] = useState(false);
   const [roomName, setRoomName] = useState("");
   const [category, setCategory] = useState("Convention");
   const [visibility, setVisibility] = useState("Public");
@@ -262,6 +291,12 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
   useEffect(() => {
     loadSubscription();
   }, []);
+
+  useEffect(() => {
+    if (unlocked) {
+      loadNetworkStationsFromServer();
+    }
+  }, [unlocked]);
 
   async function loadSubscription() {
     try {
@@ -696,6 +731,119 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
     );
   }
 
+
+  async function loadNetworkStationsFromServer() {
+    const token = getAgvServerAuthToken();
+
+    if (!token) {
+      setNetworkMessage(
+        "A verified AGV account session is required to load the server registry."
+      );
+      return false;
+    }
+
+    setNetworkSyncing(true);
+    setNetworkMessage("Loading the protected AGV Network registry...");
+
+    try {
+      const response = await fetch(
+        `${SUBSCRIPTION_API_BASE}/api/network/stations/admin`,
+        {
+          method: "GET",
+          headers: getNetworkAdminHeaders(),
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (
+        !response.ok ||
+        !data?.ok ||
+        !Array.isArray(data.stations)
+      ) {
+        throw new Error(
+          data?.error || "The protected station registry could not be loaded."
+        );
+      }
+
+      setNetworkStations(data.stations);
+      resetNetworkForm();
+      setNetworkMessage(
+        `Loaded ${data.stations.length} station${data.stations.length === 1 ? "" : "s"} from the protected server registry.`
+      );
+
+      return true;
+    } catch (error) {
+      setNetworkMessage(
+        `Server registry load failed. The browser recovery copy remains available. ${error?.message || ""}`.trim()
+      );
+
+      return false;
+    } finally {
+      setNetworkSyncing(false);
+    }
+  }
+
+  async function publishNetworkStations() {
+    const token = getAgvServerAuthToken();
+
+    if (!token) {
+      setNetworkMessage(
+        "A verified AGV account session is required to publish the registry."
+      );
+      return false;
+    }
+
+    if (!Array.isArray(networkStations) || !networkStations.length) {
+      setNetworkMessage(
+        "At least one valid AGV Network station is required before publishing."
+      );
+      return false;
+    }
+
+    setNetworkSyncing(true);
+    setNetworkMessage("Publishing the AGV Network registry...");
+
+    try {
+      const response = await fetch(
+        `${SUBSCRIPTION_API_BASE}/api/network/stations`,
+        {
+          method: "PUT",
+          headers: getNetworkAdminHeaders(true),
+          body: JSON.stringify({
+            stations: networkStations,
+          }),
+        }
+      );
+
+      const data = await response.json().catch(() => ({}));
+
+      if (
+        !response.ok ||
+        !data?.ok ||
+        !Array.isArray(data.stations)
+      ) {
+        throw new Error(
+          data?.error || "The station registry could not be published."
+        );
+      }
+
+      setNetworkStations(data.stations);
+      setNetworkMessage(
+        `Published ${data.stations.length} AGV Network station${data.stations.length === 1 ? "" : "s"} to the protected server registry.`
+      );
+
+      return true;
+    } catch (error) {
+      setNetworkMessage(
+        `Registry publish failed. No server change was confirmed. ${error?.message || ""}`.trim()
+      );
+
+      return false;
+    } finally {
+      setNetworkSyncing(false);
+    }
+  }
 
   function cleanNetworkStationId(value) {
     return String(value || "")
@@ -1143,6 +1291,31 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
         </div>
 
         <div style={styles.enforcementBox}>{networkMessage}</div>
+
+        <div
+          style={{
+            display: "flex",
+            gap: 10,
+            flexWrap: "wrap",
+            marginTop: 12,
+          }}
+        >
+          <button
+            style={styles.primaryButton}
+            disabled={networkSyncing}
+            onClick={publishNetworkStations}
+          >
+            {networkSyncing ? "Working..." : "Publish Registry"}
+          </button>
+
+          <button
+            style={styles.secondaryButton}
+            disabled={networkSyncing}
+            onClick={loadNetworkStationsFromServer}
+          >
+            Reload Server Registry
+          </button>
+        </div>
 
         <div
           style={{
