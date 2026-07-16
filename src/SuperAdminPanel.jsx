@@ -876,13 +876,25 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
   function saveNetworkStation() {
     const title = String(networkForm.title || "").trim();
     const videoId = String(networkForm.videoId || "").trim();
+    const sourceType = String(
+      networkForm.sourceType || (videoId ? "YOUTUBE" : "DIRECT_MP4")
+    ).trim().toUpperCase();
+    const sourceUrl = String(networkForm.sourceUrl || "").trim();
+    const embedUrl = String(networkForm.embedUrl || "").trim();
     const id = cleanNetworkStationId(
       networkForm.id || editingNetworkStationId || title
     );
 
-    if (!title || !id || !videoId) {
+    const hasPlayableSource =
+      (sourceType === "YOUTUBE" && Boolean(videoId)) ||
+      (sourceType === "DIRECT_MP4" && Boolean(sourceUrl)) ||
+      (sourceType === "IFRAME" && Boolean(embedUrl || sourceUrl)) ||
+      (sourceType === "HLS" && Boolean(sourceUrl)) ||
+      (sourceType === "DASH" && Boolean(sourceUrl));
+
+    if (!title || !id || !hasPlayableSource) {
       setNetworkMessage(
-        "Station title, station ID, and YouTube video ID are required."
+        "Station title, station ID, and a valid source for the selected source type are required."
       );
       return;
     }
@@ -907,6 +919,11 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
       title,
       videoId,
       source: String(networkForm.source || "").trim(),
+      provider: String(networkForm.source || "").trim(),
+      sourceType,
+      sourceUrl,
+      embedUrl,
+      fallbackUrl: String(networkForm.fallbackUrl || "").trim(),
       categoryId:
         String(networkForm.categoryId || "").trim() || "uncategorized",
       category:
@@ -944,7 +961,12 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
     setNetworkForm({
       id: station.id || "",
       title: station.title || "",
-      source: station.source || "",
+      source: station.source || station.provider || "",
+      sourceType:
+        station.sourceType || (station.videoId ? "YOUTUBE" : "DIRECT_MP4"),
+      sourceUrl: station.sourceUrl || "",
+      embedUrl: station.embedUrl || "",
+      fallbackUrl: station.fallbackUrl || "",
       categoryId: station.categoryId || "space-observatories",
       category: station.category || "Space & Observatories",
       badge: station.badge || "LIVE",
@@ -1369,10 +1391,61 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
           </label>
 
           <label>
+            <span style={styles.label}>Source Type</span>
+            <select
+              style={styles.input}
+              value={networkForm.sourceType}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  sourceType: event.target.value,
+                }))
+              }
+            >
+              <option value="DIRECT_MP4">Direct MP4</option>
+              <option value="YOUTUBE">YouTube</option>
+              <option value="IFRAME">Iframe / Embedded Player</option>
+              <option value="HLS">HLS Stream</option>
+              <option value="DASH">DASH Stream</option>
+            </select>
+          </label>
+
+          <label>
+            <span style={styles.label}>Direct Media / Stream URL</span>
+            <input
+              style={styles.input}
+              value={networkForm.sourceUrl}
+              placeholder="https://...movie.mp4"
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  sourceUrl: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Embed URL</span>
+            <input
+              style={styles.input}
+              value={networkForm.embedUrl}
+              placeholder="Used for IFRAME sources"
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  embedUrl: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
             <span style={styles.label}>YouTube Video ID</span>
             <input
               style={styles.input}
               value={networkForm.videoId}
+              placeholder="Used only for YOUTUBE sources"
               onChange={(event) =>
                 setNetworkForm((current) => ({
                   ...current,
@@ -1383,7 +1456,21 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
           </label>
 
           <label>
-            <span style={styles.label}>Fallback Video ID</span>
+            <span style={styles.label}>Fallback Source URL</span>
+            <input
+              style={styles.input}
+              value={networkForm.fallbackUrl}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  fallbackUrl: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Fallback YouTube Video ID</span>
             <input
               style={styles.input}
               value={networkForm.fallbackVideoId}

@@ -23,7 +23,8 @@
       default-src 'self';
       style-src 'self' 'unsafe-inline';
       script-src 'self' 'unsafe-inline';
-      frame-src https://www.youtube-nocookie.com;
+      frame-src https://www.youtube-nocookie.com https:;
+      media-src 'self' https: blob:;
       connect-src 'self'
         http://127.0.0.1:8788
         http://localhost:8788
@@ -527,7 +528,8 @@
       position: absolute;
       inset: 0;
     }
-    .stage-player-mount iframe {
+    .stage-player-mount iframe,
+    .stage-player-mount video {
       position: absolute;
       inset: 0;
       width: 100%;
@@ -1587,7 +1589,8 @@
           ) || null
         );
       }
-      function buildEmbedUrl(videoId) {
+      // PASS_AGV_NETWORK_MULTI_SOURCE_PLAYER_1
+      function buildYouTubeEmbedUrl(videoId) {
         return (
           "https://www.youtube-nocookie.com/embed/" +
           encodeURIComponent(videoId) +
@@ -1595,6 +1598,63 @@
           "&fs=1&rel=0&origin=" +
           encodeURIComponent(window.location.origin)
         );
+      }
+
+      function buildPlayerElement(channel) {
+        const sourceType = String(
+          channel.sourceType ||
+          (channel.videoId ? "YOUTUBE" : "")
+        ).trim().toUpperCase();
+
+        if (sourceType === "DIRECT_MP4") {
+          const sourceUrl = String(channel.sourceUrl || "").trim();
+          if (!sourceUrl) return null;
+
+          const video = document.createElement("video");
+          video.title = `${channel.title} presented by AGV Network`;
+          video.src = sourceUrl;
+          video.controls = true;
+          video.autoplay = true;
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = "metadata";
+
+          if (channel.thumbnail) {
+            video.poster = channel.thumbnail;
+          }
+
+          return video;
+        }
+
+        if (sourceType === "IFRAME") {
+          const embedUrl = String(
+            channel.embedUrl || channel.sourceUrl || ""
+          ).trim();
+
+          if (!embedUrl) return null;
+
+          const iframe = document.createElement("iframe");
+          iframe.title = `${channel.title} presented by AGV Network`;
+          iframe.src = embedUrl;
+          iframe.allow =
+            "autoplay; encrypted-media; picture-in-picture; fullscreen";
+          iframe.referrerPolicy = "strict-origin-when-cross-origin";
+          iframe.allowFullscreen = true;
+          return iframe;
+        }
+
+        if (sourceType === "YOUTUBE" && channel.videoId) {
+          const iframe = document.createElement("iframe");
+          iframe.title = `${channel.title} presented by AGV Network`;
+          iframe.src = buildYouTubeEmbedUrl(channel.videoId);
+          iframe.allow =
+            "autoplay; encrypted-media; picture-in-picture; fullscreen";
+          iframe.referrerPolicy = "strict-origin-when-cross-origin";
+          iframe.allowFullscreen = true;
+          return iframe;
+        }
+
+        return null;
       }
       function getCategory(categoryId) {
         return (
@@ -1816,18 +1876,22 @@
         const channel =
           getChannel(channelId);
         if (!channel) return;
-        const iframe =
-          document.createElement("iframe");
-        iframe.title =
-          `${channel.title} presented by AGV Network`;
-        iframe.src =
-          buildEmbedUrl(channel.videoId);
-        iframe.allow =
-          "autoplay; encrypted-media; picture-in-picture; fullscreen";
-        iframe.referrerPolicy =
-          "strict-origin-when-cross-origin";
-        iframe.allowFullscreen = true;
-        playerMount.replaceChildren(iframe);
+        const player = buildPlayerElement(channel);
+
+        if (!player) {
+          playerMount.replaceChildren();
+          stageIdle.hidden = false;
+          stageBadge.hidden = true;
+          stageHeading.textContent = channel.title;
+          stageNowTitle.textContent = channel.title;
+          stageNowMeta.textContent =
+            "This source is configured but does not yet have a playable media URL.";
+          sourceStatusValue.textContent =
+            channel.provider || channel.source || "Source unavailable";
+          return;
+        }
+
+        playerMount.replaceChildren(player);
         activeChannelId = channel.id;
         stageIdle.hidden = true;
         stageBadge.hidden = false;
