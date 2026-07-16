@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 
 const ROOM_STORAGE_KEY = "agv_super_admin_rooms";
 const NETWORK_STATION_STORAGE_KEY = "agv_network_stations";
@@ -257,7 +257,7 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
   // Session-only testing selection. This does not modify the real subscription.
   const [testPlan, setTestPlan] = useState(() => {
     const savedTestPlan = String(
-      sessionStorage.getItem("agv_owner_test_plan") || "CONVENTION"
+      sessionStorage.getItem("agv_super_admin_test_plan") || sessionStorage.getItem("agv_owner_test_plan") || "CONVENTION"
     ).trim().toUpperCase();
 
     return FALLBACK_PLAN_LIMITS[savedTestPlan] ? savedTestPlan : "CONVENTION";
@@ -1081,7 +1081,7 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
             onChange={(event) => {
               const nextTestPlan = normalizePlan(event.target.value);
               setTestPlan(nextTestPlan);
-              sessionStorage.setItem("agv_owner_test_plan", nextTestPlan);
+              sessionStorage.setItem("agv_super_admin_test_plan", nextTestPlan); sessionStorage.removeItem("agv_owner_test_plan");
             }}
             style={styles.input}
           >
@@ -1111,7 +1111,7 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
           <h2 style={styles.planTitle}>AGV SaaS Usage</h2>
           <p style={styles.planText}>{limits.note || "Subscription authority active."}</p>
           <p style={styles.planText}>
-            Account: {account.name || "Not synced"} • {account.email || "No email"} •{" "}
+            Account: {account.name || "Not synced"} â€¢ {account.email || "No email"} â€¢{" "}
             {account.organization || "No organization"}
           </p>
         </div>
@@ -1627,7 +1627,7 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
                 Privacy: {room.visibility || (room.isPrivate ? "Private" : "Public")}
               </div>
               <div style={styles.meta}>
-                AGV Flags: {room.isPrivate ? "Private" : "Public"} ·{" "}
+                AGV Flags: {room.isPrivate ? "Private" : "Public"} Â·{" "}
                 {room.isLocked ? "Locked" : "Open"}
               </div>
               <div style={styles.meta}>Host: {room.host || "Unassigned"}</div>
@@ -1944,3 +1944,4 @@ const styles = {
     cursor: "pointer",
   },
 };
+
