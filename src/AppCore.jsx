@@ -1076,7 +1076,8 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       );
       try {
         const statusResponse = await fetch(
-          `${VENDOR_API_BASE}/api/vendor/status?vendorId=${encodeURIComponent(vendorId)}`
+          `${VENDOR_API_BASE}/api/vendor/status?vendorId=${encodeURIComponent(vendorId)}`,
+          { headers: getVendorAuthHeaders() }
         );
         const statusData = await statusResponse.json().catch(() => ({}));
         if (!statusResponse.ok || !statusData.ok || !statusData.vendor) {
@@ -1105,7 +1106,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             `${VENDOR_API_BASE}/api/vendor/connect/stripe`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: getVendorAuthHeaders(true),
               body: JSON.stringify(hostProfile),
             }
           );
@@ -2954,6 +2955,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
   }
 
+  function getVendorAuthHeaders(includeJson = false) {
+    const token = getServerAuthToken();
+    const headers = includeJson ? { "Content-Type": "application/json" } : {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    return headers;
+  }
+
   async function createHostOwnedRoom() {
     if (!isHost) {
       setStatus("Host access required to create rooms.");
@@ -3252,7 +3264,9 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   async function openHostFinancialDock() {
     setVendorFinanceDockOpen(true);
     try {
-      const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`);
+      const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`, {
+        headers: getVendorAuthHeaders(),
+      });
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) {
         throw new Error(data.error || "Host financial profile list failed to load.");
@@ -6193,7 +6207,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                         const route = vendorDockRecord?.vendorId ? "update" : "register";
                         const response = await fetch(`${VENDOR_API_BASE}/api/vendor/${route}`, {
                           method: "POST",
-                          headers: { "Content-Type": "application/json" },
+                          headers: getVendorAuthHeaders(true),
                           body: JSON.stringify(payload),
                         });
 
@@ -6263,7 +6277,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
                       const response = await fetch(`${VENDOR_API_BASE}/api/vendor/connect/${gatewayChoice}`, {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
+                        headers: getVendorAuthHeaders(true),
                         body: JSON.stringify(payload),
                       });
 
@@ -6545,6 +6559,7 @@ if (typeof window !== "undefined" && !window.__AGV_CLEAN_SCALE1_HIDE_ENGINEERING
     agvStartEngineeringControlCleaner();
   }
 }
+
 
 
 
