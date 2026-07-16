@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const ROOM_STORAGE_KEY = "agv_super_admin_rooms";
+const NETWORK_STATION_STORAGE_KEY = "agv_network_stations";
 const SUPER_ADMIN_PIN = "AGV-HOST-2026";
 
 const SUBSCRIPTION_API_BASE =
@@ -22,6 +23,62 @@ const DEFAULT_ROOMS = [
   },
 ];
 
+const DEFAULT_NETWORK_STATIONS = [
+  {
+    id: "earth-from-space",
+    title: "Earth From Space",
+    source: "NASA",
+    categoryId: "space-observatories",
+    category: "Space & Observatories",
+    badge: "LIVE",
+    schedule: "24/7 when the source is available",
+    videoId: "awQzjn72bI0",
+    thumbnail: "https://i.ytimg.com/vi/awQzjn72bI0/hqdefault.jpg",
+    description:
+      "Live high-definition views of Earth from an external camera on the International Space Station.",
+    attribution: "Source: NASA",
+    fallbackVideoId: "",
+    enabled: true,
+    rightsStatus: "PENDING_REVIEW",
+    healthStatus: "UNKNOWN",
+  },
+  {
+    id: "monterey-bay-live",
+    title: "Monterey Bay Live",
+    source: "Monterey Bay Aquarium",
+    categoryId: "zoos-aquariums",
+    category: "Zoos & Aquariums",
+    badge: "LIVE CAM",
+    schedule: "Daily, 7 a.m. to 7 p.m. Pacific",
+    videoId: "fVa6-zCBR7A",
+    thumbnail: "https://i.ytimg.com/vi/fVa6-zCBR7A/hqdefault.jpg",
+    description:
+      "A live view across Monterey Bay from the Aquarium's ocean-view decks.",
+    attribution: "Source: Monterey Bay Aquarium",
+    fallbackVideoId: "",
+    enabled: true,
+    rightsStatus: "PENDING_REVIEW",
+    healthStatus: "UNKNOWN",
+  },
+  {
+    id: "moon-jelly-cam",
+    title: "Moon Jelly Cam",
+    source: "Monterey Bay Aquarium",
+    categoryId: "zoos-aquariums",
+    category: "Zoos & Aquariums",
+    badge: "LIVE CAM",
+    schedule: "Daily, 7 a.m. to 7 p.m. Pacific",
+    videoId: "IEGYa3FlY1s",
+    thumbnail: "https://i.ytimg.com/vi/IEGYa3FlY1s/hqdefault.jpg",
+    description:
+      "A live view of Pacific moon jellies moving with the current inside the Aquarium's gallery.",
+    attribution: "Source: Monterey Bay Aquarium",
+    fallbackVideoId: "",
+    enabled: true,
+    rightsStatus: "PENDING_REVIEW",
+    healthStatus: "UNKNOWN",
+  },
+];
 const FALLBACK_PLAN_LIMITS = {
   FREE: {
     label: "Free",
@@ -128,6 +185,38 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
     }
   });
 
+  const [networkStations, setNetworkStations] = useState(() => {
+    try {
+      const saved = localStorage.getItem(NETWORK_STATION_STORAGE_KEY);
+      const parsed = saved ? JSON.parse(saved) : DEFAULT_NETWORK_STATIONS;
+
+      return Array.isArray(parsed) ? parsed : DEFAULT_NETWORK_STATIONS;
+    } catch {
+      return DEFAULT_NETWORK_STATIONS;
+    }
+  });
+
+  const [networkForm, setNetworkForm] = useState({
+    id: "",
+    title: "",
+    source: "",
+    categoryId: "space-observatories",
+    category: "Space & Observatories",
+    badge: "LIVE",
+    schedule: "24/7",
+    videoId: "",
+    thumbnail: "",
+    description: "",
+    attribution: "",
+    fallbackVideoId: "",
+    rightsStatus: "PENDING_REVIEW",
+    healthStatus: "UNKNOWN",
+  });
+
+  const [editingNetworkStationId, setEditingNetworkStationId] = useState("");
+  const [networkMessage, setNetworkMessage] = useState(
+    "AGV Network stations are controlled separately from host rooms."
+  );
   const [roomName, setRoomName] = useState("");
   const [category, setCategory] = useState("Convention");
   const [visibility, setVisibility] = useState("Public");
@@ -163,6 +252,12 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
   useEffect(() => {
     localStorage.setItem(ROOM_STORAGE_KEY, JSON.stringify(rooms));
   }, [rooms]);
+  useEffect(() => {
+    localStorage.setItem(
+      NETWORK_STATION_STORAGE_KEY,
+      JSON.stringify(networkStations)
+    );
+  }, [networkStations]);
 
   useEffect(() => {
     loadSubscription();
@@ -601,6 +696,170 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
     );
   }
 
+
+  function cleanNetworkStationId(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  function resetNetworkForm() {
+    setEditingNetworkStationId("");
+    setNetworkForm({
+      id: "",
+      title: "",
+      source: "",
+      categoryId: "space-observatories",
+      category: "Space & Observatories",
+      badge: "LIVE",
+      schedule: "24/7",
+      videoId: "",
+      thumbnail: "",
+      description: "",
+      attribution: "",
+      fallbackVideoId: "",
+      rightsStatus: "PENDING_REVIEW",
+      healthStatus: "UNKNOWN",
+    });
+  }
+
+  function saveNetworkStation() {
+    const title = String(networkForm.title || "").trim();
+    const videoId = String(networkForm.videoId || "").trim();
+    const id = cleanNetworkStationId(
+      networkForm.id || editingNetworkStationId || title
+    );
+
+    if (!title || !id || !videoId) {
+      setNetworkMessage(
+        "Station title, station ID, and YouTube video ID are required."
+      );
+      return;
+    }
+
+    const duplicate = networkStations.some(
+      (station) =>
+        station.id === id && station.id !== editingNetworkStationId
+    );
+
+    if (duplicate) {
+      setNetworkMessage("A station with that ID already exists.");
+      return;
+    }
+
+    const existing = networkStations.find(
+      (station) => station.id === editingNetworkStationId
+    );
+
+    const stationRecord = {
+      ...networkForm,
+      id,
+      title,
+      videoId,
+      source: String(networkForm.source || "").trim(),
+      categoryId:
+        String(networkForm.categoryId || "").trim() || "uncategorized",
+      category:
+        String(networkForm.category || "").trim() || "Uncategorized",
+      badge: String(networkForm.badge || "").trim() || "LIVE",
+      schedule: String(networkForm.schedule || "").trim() || "24/7",
+      thumbnail: String(networkForm.thumbnail || "").trim(),
+      description: String(networkForm.description || "").trim(),
+      attribution: String(networkForm.attribution || "").trim(),
+      fallbackVideoId: String(networkForm.fallbackVideoId || "").trim(),
+      enabled: existing ? existing.enabled !== false : true,
+      rightsStatus:
+        String(networkForm.rightsStatus || "").trim() || "PENDING_REVIEW",
+      healthStatus:
+        String(networkForm.healthStatus || "").trim() || "UNKNOWN",
+    };
+
+    if (editingNetworkStationId) {
+      setNetworkStations((current) =>
+        current.map((station) =>
+          station.id === editingNetworkStationId ? stationRecord : station
+        )
+      );
+      setNetworkMessage("Updated AGV Network station: " + title);
+    } else {
+      setNetworkStations((current) => [...current, stationRecord]);
+      setNetworkMessage("Added AGV Network station: " + title);
+    }
+
+    resetNetworkForm();
+  }
+
+  function editNetworkStation(station) {
+    setEditingNetworkStationId(station.id);
+    setNetworkForm({
+      id: station.id || "",
+      title: station.title || "",
+      source: station.source || "",
+      categoryId: station.categoryId || "space-observatories",
+      category: station.category || "Space & Observatories",
+      badge: station.badge || "LIVE",
+      schedule: station.schedule || "24/7",
+      videoId: station.videoId || "",
+      thumbnail: station.thumbnail || "",
+      description: station.description || "",
+      attribution: station.attribution || "",
+      fallbackVideoId: station.fallbackVideoId || "",
+      rightsStatus: station.rightsStatus || "PENDING_REVIEW",
+      healthStatus: station.healthStatus || "UNKNOWN",
+    });
+
+    setNetworkMessage("Editing station: " + station.title);
+  }
+
+  function toggleNetworkStation(id) {
+    setNetworkStations((current) =>
+      current.map((station) =>
+        station.id === id
+          ? { ...station, enabled: station.enabled === false }
+          : station
+      )
+    );
+  }
+
+  function moveNetworkStation(id, direction) {
+    setNetworkStations((current) => {
+      const index = current.findIndex((station) => station.id === id);
+      const nextIndex = index + direction;
+
+      if (index < 0 || nextIndex < 0 || nextIndex >= current.length) {
+        return current;
+      }
+
+      const next = [...current];
+      [next[index], next[nextIndex]] = [next[nextIndex], next[index]];
+      return next;
+    });
+  }
+
+  function deleteNetworkStation(id) {
+    const station = networkStations.find((item) => item.id === id);
+
+    if (!station) return;
+
+    const approved = window.confirm(
+      'Remove "' + station.title + '" from AGV Network control?'
+    );
+
+    if (!approved) return;
+
+    setNetworkStations((current) =>
+      current.filter((item) => item.id !== id)
+    );
+
+    if (editingNetworkStationId === id) {
+      resetNetworkForm();
+    }
+
+    setNetworkMessage("Removed AGV Network station: " + station.title);
+  }
+
   if (!unlocked) {
     return (
       <div style={styles.page}>
@@ -855,6 +1114,332 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
           </div>
         </div>
       </section>
+      <section style={{ ...styles.cardWide, marginBottom: 18 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            gap: 16,
+            alignItems: "start",
+            flexWrap: "wrap",
+          }}
+        >
+          <div>
+            <h2 style={{ marginTop: 0 }}>AGV Network Station Control</h2>
+            <p style={styles.meta}>
+              Platform-owned 24/7 stations. These remain separate from host
+              rooms and do not count against subscription room limits.
+            </p>
+          </div>
+
+          <button
+            style={styles.secondaryButton}
+            onClick={() =>
+              window.open("/agv-network-earth-view.html", "_blank", "noopener")
+            }
+          >
+            Open AGV Network
+          </button>
+        </div>
+
+        <div style={styles.enforcementBox}>{networkMessage}</div>
+
+        <div
+          style={{
+            marginTop: 18,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 12,
+          }}
+        >
+          <label>
+            <span style={styles.label}>Station Title</span>
+            <input
+              style={styles.input}
+              value={networkForm.title}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  title: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Station ID</span>
+            <input
+              style={styles.input}
+              value={networkForm.id}
+              placeholder="generated-from-title"
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  id: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Provider / Source</span>
+            <input
+              style={styles.input}
+              value={networkForm.source}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  source: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>YouTube Video ID</span>
+            <input
+              style={styles.input}
+              value={networkForm.videoId}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  videoId: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Fallback Video ID</span>
+            <input
+              style={styles.input}
+              value={networkForm.fallbackVideoId}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  fallbackVideoId: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Category ID</span>
+            <input
+              style={styles.input}
+              value={networkForm.categoryId}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  categoryId: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Category Label</span>
+            <input
+              style={styles.input}
+              value={networkForm.category}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  category: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Badge</span>
+            <input
+              style={styles.input}
+              value={networkForm.badge}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  badge: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Schedule</span>
+            <input
+              style={styles.input}
+              value={networkForm.schedule}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  schedule: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Thumbnail URL</span>
+            <input
+              style={styles.input}
+              value={networkForm.thumbnail}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  thumbnail: event.target.value,
+                }))
+              }
+            />
+          </label>
+
+          <label>
+            <span style={styles.label}>Rights Status</span>
+            <select
+              style={styles.input}
+              value={networkForm.rightsStatus}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  rightsStatus: event.target.value,
+                }))
+              }
+            >
+              <option value="PENDING_REVIEW">Pending Review</option>
+              <option value="APPROVED_EMBED">Approved Embed</option>
+              <option value="WRITTEN_LICENSE">Written License</option>
+              <option value="AGV_OWNED">AGV Owned</option>
+              <option value="BLOCKED">Blocked</option>
+            </select>
+          </label>
+
+          <label>
+            <span style={styles.label}>Health Status</span>
+            <select
+              style={styles.input}
+              value={networkForm.healthStatus}
+              onChange={(event) =>
+                setNetworkForm((current) => ({
+                  ...current,
+                  healthStatus: event.target.value,
+                }))
+              }
+            >
+              <option value="UNKNOWN">Unknown</option>
+              <option value="ONLINE">Online</option>
+              <option value="DEGRADED">Degraded</option>
+              <option value="OFFLINE">Offline</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          <span style={styles.label}>Attribution</span>
+          <input
+            style={styles.input}
+            value={networkForm.attribution}
+            onChange={(event) =>
+              setNetworkForm((current) => ({
+                ...current,
+                attribution: event.target.value,
+              }))
+            }
+          />
+        </label>
+
+        <label>
+          <span style={styles.label}>Description</span>
+          <textarea
+            style={{ ...styles.input, minHeight: 100, resize: "vertical" }}
+            value={networkForm.description}
+            onChange={(event) =>
+              setNetworkForm((current) => ({
+                ...current,
+                description: event.target.value,
+              }))
+            }
+          />
+        </label>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button style={styles.primaryButton} onClick={saveNetworkStation}>
+            {editingNetworkStationId ? "Update Station" : "Add Station"}
+          </button>
+
+          {editingNetworkStationId ? (
+            <button style={styles.secondaryButton} onClick={resetNetworkForm}>
+              Cancel Edit
+            </button>
+          ) : null}
+        </div>
+
+        <div style={{ marginTop: 22 }}>
+          {networkStations.map((station, index) => (
+            <div key={station.id} style={styles.roomCard}>
+              <div style={styles.roomInfo}>
+                <strong>{station.title}</strong>
+                <div style={styles.meta}>ID: {station.id}</div>
+                <div style={styles.meta}>
+                  Source: {station.source || "Not entered"}
+                </div>
+                <div style={styles.meta}>
+                  Category: {station.category || station.categoryId}
+                </div>
+                <div style={styles.meta}>
+                  Rights: {station.rightsStatus || "PENDING_REVIEW"}
+                </div>
+                <div style={styles.meta}>
+                  Health: {station.healthStatus || "UNKNOWN"}
+                </div>
+                <div style={styles.meta}>
+                  Status: {station.enabled === false ? "Disabled" : "Enabled"}
+                </div>
+              </div>
+
+              <div style={styles.roomActions}>
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => editNetworkStation(station)}
+                >
+                  Edit
+                </button>
+
+                <button
+                  style={styles.secondaryButton}
+                  onClick={() => toggleNetworkStation(station.id)}
+                >
+                  {station.enabled === false ? "Enable" : "Disable"}
+                </button>
+
+                <button
+                  style={styles.secondaryButton}
+                  disabled={index === 0}
+                  onClick={() => moveNetworkStation(station.id, -1)}
+                >
+                  Move Up
+                </button>
+
+                <button
+                  style={styles.secondaryButton}
+                  disabled={index === networkStations.length - 1}
+                  onClick={() => moveNetworkStation(station.id, 1)}
+                >
+                  Move Down
+                </button>
+
+                <button
+                  style={styles.deleteButton}
+                  onClick={() => deleteNetworkStation(station.id)}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+
 
       <section style={styles.cardWide}>
         <h2>Current Rooms</h2>
