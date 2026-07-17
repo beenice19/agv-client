@@ -1809,8 +1809,8 @@
             document.createElement("img");
           image.src = channel.thumbnail;
           image.alt = `${channel.title} preview`;
-          image.loading = "lazy";
-          image.referrerPolicy = "no-referrer";
+          image.loading = "eager";
+          image.decoding = "async";
           const previewLabel =
             document.createElement("span");
           previewLabel.className =
