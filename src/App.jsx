@@ -233,6 +233,7 @@ export default function App() {
   const [ticketApproved, setTicketApproved] = useState(false);
   const [showTicketAdmin, setShowTicketAdmin] = useState(false);
   const [showSuperAdmin, setShowSuperAdmin] = useState(false);
+  const [showOwnerLogin, setShowOwnerLogin] = useState(false);
 
   const [billingReturn, setBillingReturn] = useState(() => readBillingFromUrl());
   const [account, setAccount] = useState(() => getStoredAccount());
@@ -452,6 +453,30 @@ export default function App() {
     setEntryMode("viewer");
   }, []);
 
+  if (showOwnerLogin) {
+    return (
+      <OwnerAccountLoginGate
+        account={account}
+        onApproved={(verifiedAccount) => {
+          const cleanAccount = {
+            name: verifiedAccount?.name || "",
+            email: verifiedAccount?.email || "",
+            organization: verifiedAccount?.organization || "",
+            plan: cleanPublicPlan(verifiedAccount?.plan || currentPlan || "FREE"),
+            updatedAt: verifiedAccount?.updatedAt || new Date().toISOString(),
+          };
+
+          setAccount(cleanAccount);
+          saveStoredAccount(cleanAccount);
+          setCurrentPlan(cleanAccount.plan);
+          localStorage.setItem("agv_current_plan", cleanAccount.plan);
+          setShowOwnerLogin(false);
+          setShowSuperAdmin(true);
+        }}
+        onBack={() => setShowOwnerLogin(false)}
+      />
+    );
+  }
   if (showSuperAdmin) {
     return (
       <SuperAdminPanel
@@ -555,7 +580,8 @@ export default function App() {
         }}
         onSuperAdmin={() => {
           setShowTicketAdmin(false);
-          setShowSuperAdmin(true);
+          setShowSuperAdmin(false);
+          setShowOwnerLogin(true);
         }}
         onTicketAdmin={() => {
           setShowSuperAdmin(false);
@@ -1297,6 +1323,113 @@ function HostPinGate({ onApproved, onBack }) {
   );
 }
 
+function OwnerAccountLoginGate({ account, onApproved, onBack }) {
+  const [email, setEmail] = useState(() =>
+    String(account?.email || getStoredAccount()?.email || "").trim().toLowerCase()
+  );
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [working, setWorking] = useState(false);
+
+  async function verifyOwnerAccount() {
+    const cleanEmail = String(email || "").trim().toLowerCase();
+
+    if (!cleanEmail || !password) {
+      setMessage("Enter the verified owner email and password.");
+      return;
+    }
+
+    setWorking(true);
+    setMessage("Verifying AGV owner identity...");
+
+    try {
+      const response = await fetch(`${SUBSCRIPTION_API_BASE}/api/account/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: cleanEmail,
+          password,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok || !data?.ok || !data?.token || !data?.account) {
+        throw new Error(data?.error || data?.message || "Owner login failed.");
+      }
+
+      const role = String(data.account?.role || "").trim().toLowerCase();
+
+      if (!["owner", "admin", "super_admin", "superadmin"].includes(role)) {
+        throw new Error("This verified account does not have Super Admin authority.");
+      }
+
+      localStorage.setItem("agv_auth_token", data.token);
+      localStorage.setItem("agv_server_token", data.token);
+      setPassword("");
+      setMessage("Owner identity verified.");
+      onApproved(data.account);
+    } catch (error) {
+      localStorage.removeItem("agv_auth_token");
+      localStorage.removeItem("agv_server_token");
+      setMessage(error?.message || "Unable to verify AGV owner identity.");
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  return (
+    <div style={styles.page}>
+      <main style={styles.finalCta}>
+        <div style={styles.badge}>VERIFIED AGV OWNER</div>
+        <h1 style={styles.ctaTitle}>Owner Account Login</h1>
+        <p style={styles.ctaText}>
+          Sign in with the verified AGV owner account before opening protected Super Admin controls.
+        </p>
+
+        <input
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Owner account email"
+          autoComplete="username"
+          style={styles.ticketInput}
+        />
+
+        <input
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          placeholder="Owner account password"
+          type="password"
+          autoComplete="current-password"
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !working) verifyOwnerAccount();
+          }}
+          style={styles.ticketInput}
+        />
+
+        {message ? <p style={message === "Owner identity verified." ? styles.adminMessage : styles.errorText}>{message}</p> : null}
+
+        <div style={styles.buttonRow}>
+          <button
+            style={styles.primaryButton}
+            onClick={verifyOwnerAccount}
+            disabled={working}
+          >
+            {working ? "Verifying..." : "Verify and Open Super Admin"}
+          </button>
+
+          <button
+            style={styles.secondaryButton}
+            onClick={onBack}
+            disabled={working}
+          >
+            Back to Owner Access
+          </button>
+        </div>
+      </main>
+    </div>
+  );
+}
 function TicketGate({ onApproved, onBack }) {
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
