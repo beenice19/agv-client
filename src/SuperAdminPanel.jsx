@@ -1566,6 +1566,9 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
               }
             >
               <option value="PENDING_REVIEW">Pending Review</option>
+              <option value="PUBLIC_DOMAIN_REVIEW_REQUIRED">
+                Public Domain — Review Required
+              </option>
               <option value="APPROVED_EMBED">Approved Embed</option>
               <option value="WRITTEN_LICENSE">Written License</option>
               <option value="AGV_OWNED">AGV Owned</option>
