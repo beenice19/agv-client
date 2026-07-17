@@ -413,11 +413,14 @@
     .channel-list {
       display: grid;
       min-height: 0;
+      max-height: min(68vh, 640px);
+      align-content: start;
       gap: 12px;
       margin-top: 15px;
       padding-right: 5px;
       overflow-x: hidden;
       overflow-y: auto;
+      overscroll-behavior: contain;
       scrollbar-width: thin;
       scrollbar-color: rgba(250, 204, 21, 0.46) transparent;
     }
@@ -1596,7 +1599,7 @@
         return (
           "https://www.youtube-nocookie.com/embed/" +
           encodeURIComponent(videoId) +
-          "?autoplay=1&mute=1&playsinline=1&controls=1" +
+          "?autoplay=0&mute=0&playsinline=1&controls=1" +
           "&fs=1&rel=0&origin=" +
           encodeURIComponent(window.location.origin)
         );
@@ -1616,8 +1619,8 @@
           video.title = `${channel.title} presented by AGV Network`;
           video.src = sourceUrl;
           video.controls = true;
-          video.autoplay = true;
-          video.muted = true;
+          video.autoplay = false;
+          video.muted = false;
           video.playsInline = true;
           video.preload = "metadata";
 
