@@ -29,7 +29,7 @@
         http://127.0.0.1:8788
         http://localhost:8788
         https:;
-      img-src 'self' data: https://i.ytimg.com;
+      img-src 'self' data: https:;
       font-src 'self' data:;
       object-src 'none';
       base-uri 'self';
@@ -1496,7 +1496,9 @@
             ...station,
             thumbnail:
               station.thumbnail ||
-              `https://i.ytimg.com/vi/${station.videoId}/hqdefault.jpg`
+              (station.videoId
+                ? `https://i.ytimg.com/vi/${station.videoId}/hqdefault.jpg`
+                : "")
           }));
 
           if (!CHANNELS.some((channel) => channel.id === activeChannelId)) {
