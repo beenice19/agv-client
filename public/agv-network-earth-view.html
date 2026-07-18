@@ -1614,7 +1614,11 @@
           (channel.videoId ? "YOUTUBE" : "")
         ).trim().toUpperCase();
 
-        if (sourceType === "DIRECT_MP4") {
+        // PASS_AGV_NETWORK_DIRECT_WEBM_1
+        if (
+          sourceType === "DIRECT_MP4" ||
+          sourceType === "DIRECT_WEBM"
+        ) {
           const sourceUrl = String(channel.sourceUrl || "").trim();
           if (!sourceUrl) return null;
 
