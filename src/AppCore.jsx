@@ -359,6 +359,7 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [roleMode] = useState(entryRole === "host" ? "host" : "viewer");
   const [selectedPanel, setSelectedPanel] = useState("chat");
   const [vendorFinanceDockOpen, setVendorFinanceDockOpen] = useState(false); // PASS_VENDOR_FINANCE_DOCK_3A
+  const [hostFinancialOnboardingStep, setHostFinancialOnboardingStep] = useState(1); // PASS_HOST_FINANCIAL_DOCK_VISUAL_ONBOARDING_1
   const [vendorDockList, setVendorDockList] = useState([]); // PASS_REAL_VENDOR_DATABASE_DOCK
   const [vendorDockRecord, setVendorDockRecord] = useState(null); // PASS_REAL_VENDOR_DATABASE_DOCK
   const [vendorTicketSalesSummary, setVendorTicketSalesSummary] = useState(null); // PASS_VENDOR_TICKET_SALES_LEDGER_1_V3
@@ -3262,6 +3263,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     return fallback;
   }
   async function openHostFinancialDock() {
+    setHostFinancialOnboardingStep(1);
     setVendorFinanceDockOpen(true);
     try {
       const response = await fetch(`${VENDOR_API_BASE}/api/vendor/list`, {
@@ -3286,6 +3288,17 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
         null;
       if (openVendor) {
         setVendorDockRecord(openVendor);
+        {
+          const openingGatewayStatus = String(openVendor.gatewayStatus || "").toUpperCase();
+          setHostFinancialOnboardingStep(
+            openingGatewayStatus === "VERIFIED" ||
+              openingGatewayStatus === "AGV_GATEWAY_ACTIVE"
+              ? 5
+              : openingGatewayStatus === "PENDING_VERIFICATION"
+                ? 4
+                : 3
+          );
+        }
         setVendorDockForm((prev) => ({
           ...prev,
           businessName: openVendor.businessName || "",
@@ -6123,21 +6136,608 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
           <div style={{ width: "min(1080px, 96vw)", maxHeight: "88vh", overflowY: "auto", borderRadius: 26, border: "1px solid rgba(212,175,55,0.50)", background: "linear-gradient(135deg, rgba(15,23,42,0.99), rgba(2,6,23,0.99))", boxShadow: "0 30px 90px rgba(0,0,0,0.60)", padding: 22, color: "#f8fafc" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 16, alignItems: "start", flexWrap: "wrap" }}>
               <div>
-                <div style={{ fontSize: 24, fontWeight: 950, color: "#fde68a" }}>AGV Host Financial Docking Station</div>
+                <div style={{ fontSize: 28, fontWeight: 950, color: "#fde68a" }}>Host Financial Dock</div>
                 <div style={{ marginTop: 6, color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, maxWidth: 720 }}>
-                  Vendor setup, payment gateway readiness, booth-ticket revenue, and AGV's fixed 7% ticket platform fee.
+                  Set up how you receive your earnings, review payout readiness, and manage host financial details.
                 </div>
               </div>
               <button onClick={() => setVendorFinanceDockOpen(false)} style={{ border: "1px solid rgba(148,163,184,0.35)", borderRadius: 14, padding: "10px 14px", background: "rgba(15,23,42,0.85)", color: "#e5e7eb", fontWeight: 900, cursor: "pointer" }}>Close</button>
             </div>
 
-            <div style={{ marginTop: 18, border: "1px solid rgba(34,197,94,0.24)", background: "rgba(22,101,52,0.12)", color: "#bbf7d0", borderRadius: 18, padding: 14, fontSize: 13, lineHeight: 1.5, fontWeight: 800 }}>
-              MVP Scope: Host financial profile, payment gateway setup, event-ticket financial summary, payment readiness, and AGV's 7% ticket platform fee.
-            </div>
+            {/* PASS_HOST_FINANCIAL_DOCK_VISUAL_ONBOARDING_1 */}
+            {(() => {
+              const gatewayStatus = String(
+                vendorDockRecord?.gatewayStatus || "NOT_CONNECTED"
+              ).toUpperCase();
+
+              const payoutReady =
+                gatewayStatus === "VERIFIED" ||
+                gatewayStatus === "AGV_GATEWAY_ACTIVE";
+
+              const verificationPending =
+                gatewayStatus === "PENDING_VERIFICATION";
+
+              const actionRequired = [
+                "ACTION_REQUIRED",
+                "RESTRICTED",
+                "INCOMPLETE",
+                "REJECTED",
+              ].includes(gatewayStatus);
+
+              const profileSaved = Boolean(vendorDockRecord?.vendorId);
+
+              const payoutStatusLabel = payoutReady
+                ? "Payouts Ready"
+                : verificationPending
+                  ? "Verification Pending"
+                  : actionRequired
+                    ? "Action Required"
+                    : profileSaved
+                      ? "Setup Incomplete"
+                      : "Not Connected";
+
+              const payoutStatusColor = payoutReady
+                ? "#86efac"
+                : verificationPending
+                  ? "#93c5fd"
+                  : actionRequired
+                    ? "#fca5a5"
+                    : "#fde68a";
+
+              const onboardingSteps = [
+                { id: 1, label: "Welcome" },
+                { id: 2, label: "Verify Profile" },
+                { id: 3, label: "Add Payout Account" },
+                { id: 4, label: "Review Status" },
+                { id: 5, label: "Ready for Earnings" },
+              ];
+
+              const profileChecklist = [
+                ["Legal or contact name", Boolean(vendorDockForm.contactName)],
+                ["Business or organization name", Boolean(vendorDockForm.businessName)],
+                ["Host email", Boolean(vendorDockForm.email)],
+                ["Phone number", Boolean(vendorDockForm.phone)],
+                ["Organization type", Boolean(vendorDockForm.businessCategory)],
+              ];
+
+              const jumpToProfileForm = () => {
+                setHostFinancialOnboardingStep(2);
+                setStatus(
+                  "Complete and save your Host Financial Profile before connecting payouts."
+                );
+                setTimeout(() => {
+                  document
+                    .getElementById("agvHostFinancialProfileSection")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }, 0);
+              };
+
+              const startStripePayoutOnboarding = () => {
+                if (!vendorDockRecord?.vendorId) {
+                  jumpToProfileForm();
+                  return;
+                }
+
+                const gatewaySelect = document.getElementById(
+                  "agvVendorGatewayChoice"
+                );
+
+                if (gatewaySelect) {
+                  gatewaySelect.value = "stripe";
+                }
+
+                const connectButton = document.getElementById(
+                  "agvApplyPaymentModeButton"
+                );
+
+                if (!connectButton) {
+                  setStatus(
+                    "Payout setup control was not found. Use the Payout Account Setup section below."
+                  );
+                  return;
+                }
+
+                setStatus(
+                  "Creating a secure Stripe payout onboarding link..."
+                );
+                connectButton.click();
+              };
+
+              const renderStepContent = () => {
+                if (hostFinancialOnboardingStep === 1) {
+                  return (
+                    <div style={{ display: "grid", gap: 16 }}>
+                      <div style={{ color: "#facc15", fontSize: 11, fontWeight: 950, letterSpacing: 1.4 }}>
+                        STEP 1 OF 5
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 26, fontWeight: 950, lineHeight: 1.12 }}>
+                          Welcome to your Host Financial Dock
+                        </div>
+                        <div style={{ marginTop: 8, color: "#cbd5e1", lineHeight: 1.65 }}>
+                          Before you receive ticket earnings, AGV will guide you through
+                          creating a host profile and securely connecting a payout account.
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gap: 9 }}>
+                        {[
+                          "Receive eligible event earnings",
+                          "Use secure Stripe-hosted identity and banking onboarding",
+                          "Track setup, verification, and payout readiness",
+                        ].map((item) => (
+                          <div key={item} style={{ display: "flex", gap: 9, alignItems: "center", color: "#e2e8f0" }}>
+                            <span style={{ width: 22, height: 22, borderRadius: 8, display: "inline-flex", alignItems: "center", justifyContent: "center", background: "rgba(250,204,21,0.16)", color: "#fde68a", fontWeight: 950 }}>
+                              ✓
+                            </span>
+                            <span>{item}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setHostFinancialOnboardingStep(2)}
+                        style={{ ...styles.primaryButton, width: "fit-content", minWidth: 230 }}
+                      >
+                        Begin Payout Setup
+                      </button>
+                    </div>
+                  );
+                }
+
+                if (hostFinancialOnboardingStep === 2) {
+                  return (
+                    <div style={{ display: "grid", gap: 16 }}>
+                      <div style={{ color: "#facc15", fontSize: 11, fontWeight: 950, letterSpacing: 1.4 }}>
+                        STEP 2 OF 5
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 24, fontWeight: 950 }}>
+                          Verify your host profile
+                        </div>
+                        <div style={{ marginTop: 7, color: "#cbd5e1", lineHeight: 1.6 }}>
+                          AGV uses this profile to identify the host account that will
+                          receive earnings. Stripe may request additional identity, tax,
+                          and business information on its secure onboarding page.
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {profileChecklist.map(([label, complete]) => (
+                          <div
+                            key={label}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              gap: 12,
+                              padding: "10px 12px",
+                              borderRadius: 13,
+                              background: "rgba(255,255,255,0.045)",
+                              border: "1px solid rgba(255,255,255,0.07)",
+                            }}
+                          >
+                            <span style={{ color: "#e2e8f0" }}>{label}</span>
+                            <strong style={{ color: complete ? "#86efac" : "#fde68a" }}>
+                              {complete ? "Complete" : "Needed"}
+                            </strong>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={jumpToProfileForm}
+                          style={{ ...styles.primaryButton, minWidth: 210 }}
+                        >
+                          Open Host Profile Form
+                        </button>
+                        {profileSaved ? (
+                          <button
+                            type="button"
+                            onClick={() => setHostFinancialOnboardingStep(3)}
+                            style={styles.secondaryButton}
+                          >
+                            Continue to Payout Account
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (hostFinancialOnboardingStep === 3) {
+                  return (
+                    <div style={{ display: "grid", gap: 16 }}>
+                      <div style={{ color: "#facc15", fontSize: 11, fontWeight: 950, letterSpacing: 1.4 }}>
+                        STEP 3 OF 5
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 24, fontWeight: 950 }}>
+                          Add your payout account
+                        </div>
+                        <div style={{ marginTop: 7, color: "#cbd5e1", lineHeight: 1.6 }}>
+                          Your payout account is where eligible host earnings are sent.
+                          This is separate from the card used to pay AGV subscriptions or
+                          purchase broadcast credits.
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+                        <div style={{ padding: 14, borderRadius: 16, border: "1px solid rgba(250,204,21,0.32)", background: "rgba(250,204,21,0.08)" }}>
+                          <div style={{ fontSize: 22 }}>🏦</div>
+                          <div style={{ marginTop: 7, fontWeight: 950, color: "#fde68a" }}>Bank account</div>
+                          <div style={{ marginTop: 4, color: "#cbd5e1", fontSize: 12, lineHeight: 1.5 }}>
+                            Receive eligible payouts by bank deposit.
+                          </div>
+                        </div>
+                        <div style={{ padding: 14, borderRadius: 16, border: "1px solid rgba(96,165,250,0.25)", background: "rgba(59,130,246,0.08)" }}>
+                          <div style={{ fontSize: 22 }}>💳</div>
+                          <div style={{ marginTop: 7, fontWeight: 950, color: "#bfdbfe" }}>Eligible debit card</div>
+                          <div style={{ marginTop: 4, color: "#cbd5e1", fontSize: 12, lineHeight: 1.5 }}>
+                            Availability depends on Stripe eligibility and location.
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={startStripePayoutOnboarding}
+                        style={{ ...styles.primaryButton, width: "fit-content", minWidth: 250 }}
+                      >
+                        Connect My Payout Account
+                      </button>
+                      <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.55 }}>
+                        🔒 Complete sensitive identity and banking steps only through
+                        the secure Stripe page opened by AGV.
+                      </div>
+                    </div>
+                  );
+                }
+
+                if (hostFinancialOnboardingStep === 4) {
+                  const statuses = [
+                    {
+                      label: "Not Connected",
+                      active: !profileSaved,
+                      detail: "No saved host financial profile.",
+                      color: "#cbd5e1",
+                    },
+                    {
+                      label: "Setup Incomplete",
+                      active:
+                        profileSaved &&
+                        !payoutReady &&
+                        !verificationPending &&
+                        !actionRequired,
+                      detail: "Profile saved; payout setup still needs completion.",
+                      color: "#fde68a",
+                    },
+                    {
+                      label: "Verification Pending",
+                      active: verificationPending,
+                      detail: "Stripe is reviewing submitted information.",
+                      color: "#93c5fd",
+                    },
+                    {
+                      label: "Action Required",
+                      active: actionRequired,
+                      detail: "Additional information or correction is needed.",
+                      color: "#fca5a5",
+                    },
+                    {
+                      label: "Payouts Ready",
+                      active: payoutReady,
+                      detail: "The payout connection is ready for eligible earnings.",
+                      color: "#86efac",
+                    },
+                  ];
+
+                  return (
+                    <div style={{ display: "grid", gap: 15 }}>
+                      <div style={{ color: "#facc15", fontSize: 11, fontWeight: 950, letterSpacing: 1.4 }}>
+                        STEP 4 OF 5
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 24, fontWeight: 950 }}>
+                          Review your setup status
+                        </div>
+                        <div style={{ marginTop: 7, color: "#cbd5e1" }}>
+                          Current AGV status:{" "}
+                          <strong style={{ color: payoutStatusColor }}>
+                            {payoutStatusLabel}
+                          </strong>
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gap: 8 }}>
+                        {statuses.map((item) => (
+                          <div
+                            key={item.label}
+                            style={{
+                              display: "grid",
+                              gap: 3,
+                              padding: "11px 12px",
+                              borderRadius: 14,
+                              border: item.active
+                                ? `1px solid ${item.color}`
+                                : "1px solid rgba(255,255,255,0.07)",
+                              background: item.active
+                                ? "rgba(255,255,255,0.075)"
+                                : "rgba(255,255,255,0.035)",
+                              opacity: item.active ? 1 : 0.62,
+                            }}
+                          >
+                            <strong style={{ color: item.color }}>
+                              {item.active ? "● " : ""}
+                              {item.label}
+                            </strong>
+                            <span style={{ color: "#cbd5e1", fontSize: 12 }}>
+                              {item.detail}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                        {!payoutReady ? (
+                          <button
+                            type="button"
+                            onClick={() => setHostFinancialOnboardingStep(3)}
+                            style={styles.primaryButton}
+                          >
+                            Continue Payout Setup
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setHostFinancialOnboardingStep(5)}
+                            style={styles.primaryButton}
+                          >
+                            View Ready Status
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div style={{ display: "grid", gap: 16, textAlign: "center", justifyItems: "center", padding: "8px 0" }}>
+                    <div style={{ width: 78, height: 78, borderRadius: 26, display: "flex", alignItems: "center", justifyContent: "center", background: payoutReady ? "rgba(34,197,94,0.18)" : "rgba(250,204,21,0.14)", border: payoutReady ? "1px solid rgba(34,197,94,0.40)" : "1px solid rgba(250,204,21,0.34)", color: payoutReady ? "#86efac" : "#fde68a", fontSize: 36, fontWeight: 950 }}>
+                      {payoutReady ? "✓" : "!"}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 28, fontWeight: 950, color: payoutReady ? "#86efac" : "#fde68a" }}>
+                        {payoutReady ? "Payouts Ready" : "Setup Not Complete Yet"}
+                      </div>
+                      <div style={{ marginTop: 8, color: "#cbd5e1", maxWidth: 620, lineHeight: 1.65 }}>
+                        {payoutReady
+                          ? "Your payout connection is ready. Eligible host earnings can be assigned according to AGV settlement rules."
+                          : "Your host profile is saved, but payout onboarding or verification still needs attention."}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={payoutReady ? startStripePayoutOnboarding : () => setHostFinancialOnboardingStep(3)}
+                      style={styles.primaryButton}
+                    >
+                      {payoutReady ? "Manage Payout Account" : "Continue Payout Setup"}
+                    </button>
+                  </div>
+                );
+              };
+
+              return (
+                <div style={{ marginTop: 18, display: "grid", gap: 16 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                      gap: 12,
+                      padding: 14,
+                      borderRadius: 18,
+                      background: "rgba(255,255,255,0.045)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(34,197,94,0.15)", color: "#86efac", fontSize: 20 }}>
+                        🏦
+                      </div>
+                      <div>
+                        <div style={{ color: "#86efac", fontWeight: 950 }}>
+                          Payout Account
+                        </div>
+                        <div style={{ color: "#e2e8f0", fontSize: 12, marginTop: 2 }}>
+                          Where you receive eligible ticket earnings
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
+                      <div style={{ width: 42, height: 42, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(59,130,246,0.15)", color: "#93c5fd", fontSize: 20 }}>
+                        💳
+                      </div>
+                      <div>
+                        <div style={{ color: "#93c5fd", fontWeight: 950 }}>
+                          AGV Payment Method
+                        </div>
+                        <div style={{ color: "#e2e8f0", fontSize: 12, marginTop: 2 }}>
+                          How you pay AGV for plans, credits, or add-ons
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(135px, 1fr))",
+                      gap: 8,
+                    }}
+                  >
+                    {onboardingSteps.map((step) => {
+                      const active = hostFinancialOnboardingStep === step.id;
+                      const complete =
+                        payoutReady || step.id < hostFinancialOnboardingStep;
+
+                      return (
+                        <button
+                          key={step.id}
+                          type="button"
+                          onClick={() => setHostFinancialOnboardingStep(step.id)}
+                          style={{
+                            minHeight: 72,
+                            padding: "10px 9px",
+                            borderRadius: 15,
+                            border: active
+                              ? "1px solid rgba(250,204,21,0.65)"
+                              : "1px solid rgba(255,255,255,0.08)",
+                            background: active
+                              ? "rgba(250,204,21,0.12)"
+                              : "rgba(255,255,255,0.035)",
+                            color: "#f8fafc",
+                            cursor: "pointer",
+                            textAlign: "left",
+                          }}
+                        >
+                          <span
+                            style={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: 10,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              background: active
+                                ? "linear-gradient(135deg, #facc15, #a16207)"
+                                : complete
+                                  ? "linear-gradient(135deg, #22c55e, #15803d)"
+                                  : "rgba(148,163,184,0.18)",
+                              color: active ? "#111827" : "#ffffff",
+                              fontWeight: 950,
+                            }}
+                          >
+                            {complete && !active ? "✓" : step.id}
+                          </span>
+                          <div style={{ marginTop: 8, fontSize: 11, fontWeight: 900, lineHeight: 1.25 }}>
+                            {step.label}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+                      gap: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        minHeight: 410,
+                        padding: 20,
+                        borderRadius: 22,
+                        border: "1px solid rgba(212,175,55,0.30)",
+                        background:
+                          "linear-gradient(145deg, rgba(30,41,59,0.92), rgba(2,6,23,0.92))",
+                        boxShadow: "0 18px 44px rgba(0,0,0,0.28)",
+                      }}
+                    >
+                      {renderStepContent()}
+                    </div>
+
+                    <div style={{ display: "grid", gap: 12, alignContent: "start" }}>
+                      <div style={{ padding: 16, borderRadius: 20, border: "1px solid rgba(212,175,55,0.25)", background: "rgba(15,23,42,0.76)" }}>
+                        <div style={{ color: "#fde68a", fontWeight: 950, fontSize: 16 }}>
+                          How Revenue Flows
+                        </div>
+                        <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+                          {[
+                            "Guest pays",
+                            "Payment processing",
+                            "AGV 7% platform fee",
+                            "Broadcast delivery fee, when applicable",
+                            "Host net earnings",
+                            "Payout account",
+                          ].map((item, index, items) => (
+                            <div key={item}>
+                              <div style={{ display: "flex", gap: 9, alignItems: "center", color: index === items.length - 1 ? "#86efac" : "#e2e8f0", fontWeight: index === items.length - 1 ? 950 : 750 }}>
+                                <span style={{ width: 24, height: 24, borderRadius: 9, display: "inline-flex", alignItems: "center", justifyContent: "center", background: index === items.length - 1 ? "rgba(34,197,94,0.15)" : "rgba(250,204,21,0.10)", color: index === items.length - 1 ? "#86efac" : "#fde68a", fontSize: 11, fontWeight: 950 }}>
+                                  {index + 1}
+                                </span>
+                                <span>{item}</span>
+                              </div>
+                              {index < items.length - 1 ? (
+                                <div style={{ marginLeft: 11, height: 10, borderLeft: "1px dashed rgba(250,204,21,0.35)" }} />
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div style={{ padding: 16, borderRadius: 20, border: "1px solid rgba(96,165,250,0.22)", background: "rgba(15,23,42,0.76)" }}>
+                        <div style={{ color: "#bfdbfe", fontWeight: 950, fontSize: 15 }}>
+                          Frequently Asked Questions
+                        </div>
+                        <div style={{ display: "grid", gap: 8, marginTop: 10, color: "#e2e8f0", fontSize: 12 }}>
+                          <details>
+                            <summary style={{ cursor: "pointer", fontWeight: 850 }}>
+                              Do I need an existing Stripe account?
+                            </summary>
+                            <div style={{ marginTop: 6, color: "#94a3b8", lineHeight: 1.5 }}>
+                              No. AGV can begin the appropriate Stripe Connect onboarding flow for you.
+                            </div>
+                          </details>
+                          <details>
+                            <summary style={{ cursor: "pointer", fontWeight: 850 }}>
+                              Can I change my payout account later?
+                            </summary>
+                            <div style={{ marginTop: 6, color: "#94a3b8", lineHeight: 1.5 }}>
+                              Yes. Stripe may require verification before the new destination becomes active.
+                            </div>
+                          </details>
+                          <details>
+                            <summary style={{ cursor: "pointer", fontWeight: 850 }}>
+                              Can I sell tickets before setup is complete?
+                            </summary>
+                            <div style={{ marginTop: 6, color: "#94a3b8", lineHeight: 1.5 }}>
+                              AGV should show Payouts Ready before enabling eligible host-revenue activity.
+                            </div>
+                          </details>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setStatus(
+                              "Financial Dock help: review the current status and complete the highlighted onboarding step."
+                            )
+                          }
+                          style={{ ...styles.secondaryButton, marginTop: 12, width: "100%" }}
+                        >
+                          Get Financial Dock Help
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      padding: "12px 14px",
+                      borderRadius: 16,
+                      border: "1px solid rgba(212,175,55,0.22)",
+                      background: "rgba(212,175,55,0.07)",
+                    }}
+                  >
+                    <div style={{ color: "#fde68a", fontWeight: 950 }}>
+                      Financial Details & Advanced Controls
+                    </div>
+                    <div style={{ marginTop: 4, color: "#cbd5e1", fontSize: 12, lineHeight: 1.5 }}>
+                      The existing AGV profile, payout connection, ticket revenue, and status controls remain available below for testing and administration.
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 14, marginTop: 18 }}>
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Host Financial Profile</div>
+                <div id="agvHostFinancialProfileSection" style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>1. Host Financial Profile</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <select
                     style={styles.input}
@@ -6240,10 +6840,10 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>2. Payment Gateway Setup</div>
-                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>Host payment connection is required before event-ticket sales are activated.</div>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>2. Payout Account Setup</div>
+                <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.5, marginBottom: 12 }}>A payout account is required before eligible ticket earnings can be sent to the host.</div>
                 <div style={{ border: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "1px solid rgba(34,197,94,0.35)" : "1px solid rgba(239,68,68,0.32)", background: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "rgba(22,101,52,0.18)" : "rgba(127,29,29,0.18)", borderRadius: 16, padding: 12, marginBottom: 10 }}>
-                  <div style={{ fontWeight: 950, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>Payment Status</div>
+                  <div style={{ fontWeight: 950, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>Payout Status</div>
                   <div style={{ marginTop: 4, color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#dcfce7" : "#fee2e2", fontSize: 13 }}>
                     {vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " - " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No host profile selected"}
                   </div>
@@ -6256,6 +6856,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <option value="square">Square manual review</option>
                 </select>
                 <button
+                  id="agvApplyPaymentModeButton"
                   onClick={async () => {
                     try {
                       if (!vendorDockRecord?.vendorId) {
@@ -6301,7 +6902,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   }}
                   style={styles.primaryButton}
                 >
-                  Apply Payment Mode
+                  Connect / Update Payout Account
                 </button>
               </div>
 
@@ -6334,13 +6935,13 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>AGV 7% Fee</span><strong style={{ color: "#fde68a" }}>{formatAgvCents(vendorTicketSalesSummary?.agvPlatformFeeCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Processing</span><strong style={{ color: "#bfdbfe" }}>{formatAgvCents(vendorTicketSalesSummary?.paymentProcessingFeeCents)}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Net Revenue</span><strong style={{ color: "#bbf7d0" }}>{formatAgvCents(vendorTicketSalesSummary?.hostVendorNetRevenueCents)}</strong></div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payment Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No host profile selected"}</strong></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span>Payout Account</span><strong style={{ color: vendorDockRecord?.gatewayStatus === "AGV_GATEWAY_ACTIVE" || vendorDockRecord?.gatewayStatus === "VERIFIED" ? "#bbf7d0" : "#fecaca" }}>{vendorDockRecord ? ((vendorDockRecord.gateway || "NONE") + " / " + (vendorDockRecord.gatewayStatus || "NOT_CONNECTED")) : "No host profile selected"}</strong></div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}><span>Approval Status</span><strong style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7" }}>{vendorDockRecord?.approvalStatus || "Pending"}</strong></div>
                 </div>
               </div>
 
               <div style={{ border: "1px solid rgba(212,175,55,0.24)", borderRadius: 20, background: "rgba(15,23,42,0.72)", padding: 16 }}>
-                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Host Payment Status</div>
+                <div style={{ color: "#fde68a", fontWeight: 950, marginBottom: 10 }}>5. Host Payout Status</div>
                 <div style={{ display: "grid", gap: 10 }}>
                   <div style={{ border: "1px solid rgba(250,204,21,0.30)", background: "rgba(113,63,18,0.18)", borderRadius: 16, padding: 12 }}>
                     <div style={{ color: vendorDockRecord?.approvalStatus === "APPROVED" ? "#bbf7d0" : "#fef3c7", fontWeight: 950 }}>{vendorDockRecord?.approvalStatus === "APPROVED" ? "Approved" : "Pending"}</div>

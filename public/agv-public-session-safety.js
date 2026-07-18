@@ -6,7 +6,7 @@
   if (window.__AGV_PUBLIC_SESSION_SAFETY__) return;
   window.__AGV_PUBLIC_SESSION_SAFETY__ = true;
 
-  const BLOCKED_EMAILS = ["byron217@yahoo.com"];
+  const BLOCKED_EMAILS = []; // Founder/Owner email must never be blocked
 
   function hasBlockedEmail(value) {
     const text = String(value || "").toLowerCase();
