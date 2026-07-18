@@ -619,67 +619,17 @@
   function activeClass(){ return data.classes.find(c => c.id === data.activeClassId) || data.classes[0] || null; }
   function activeRegistration(){ return data.registrations.find(r => r.id === data.activeRegistrationId) || data.registrations[0] || null; }
 
+  /* PASS_AGV_UP_DUPLICATE_FUNCTION_CLEANUP_2A */
   function activateTab(id){
-      function exportRecords(){
-    try {
-      const payload = {
-        app:"AGV University Pal",
-        version:"PASS 3",
-        exportedAt:new Date().toISOString(),
-        storageKey:STORAGE,
-        data:data
-      };
+    document.querySelectorAll(".tab").forEach(function(button){
+      button.classList.toggle("active", button.dataset.tab === id);
+    });
 
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type:"application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-
-      const stamp = new Date().toISOString().replace(/[:.]/g,"-");
-      a.href = url;
-      a.download = "agv-university-pal-records-" + stamp + ".json";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      URL.revokeObjectURL(url);
-      alert("AGV University Pal records backup exported.");
-    } catch(e) {
-      alert("Could not export records: " + e.message);
-    }
+    document.querySelectorAll(".view").forEach(function(view){
+      view.classList.toggle("active", view.id === id);
+    });
   }
 
-  function importRecordsFromFile(file){
-    if (!file) return;
-
-    const reader = new FileReader();
-
-    reader.onload = function(){
-      try {
-        const parsed = JSON.parse(String(reader.result || "{}"));
-        const incoming = parsed.data || parsed;
-
-        if (!incoming || !Array.isArray(incoming.students) || !Array.isArray(incoming.classes) || !Array.isArray(incoming.registrations)) {
-          throw new Error("This does not look like an AGV University Pal records backup.");
-        }
-
-        const ok = confirm("Import this AGV University Pal backup? This will replace the records saved in this browser.");
-        if (!ok) return;
-
-        data = incoming;
-        localStorage.setItem(STORAGE, JSON.stringify(data));
-        renderAll();
-
-        alert("AGV University Pal records imported successfully.");
-      } catch(e) {
-        alert("Import failed: " + e.message);
-      }
-    };
-
-    reader.readAsText(file);
-  }
-  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === id));
-    document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === id));
-  }
   function simulateProvider(provider){
     /*
       AGV UNIVERSITY PAL CLIENT:
