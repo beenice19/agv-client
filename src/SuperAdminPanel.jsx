@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ROOM_STORAGE_KEY = "agv_super_admin_rooms";
 const NETWORK_STATION_STORAGE_KEY = "agv_network_stations";
@@ -1103,7 +1103,13 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
             onChange={(event) => {
               const nextTestPlan = normalizePlan(event.target.value);
               setTestPlan(nextTestPlan);
-              sessionStorage.setItem("agv_super_admin_test_plan", nextTestPlan); sessionStorage.removeItem("agv_owner_test_plan");
+              sessionStorage.setItem("agv_super_admin_test_plan", nextTestPlan);
+              sessionStorage.removeItem("agv_owner_test_plan");
+              window.dispatchEvent(
+                new CustomEvent("agv-super-admin-test-plan-changed", {
+                  detail: { plan: nextTestPlan },
+                })
+              );
             }}
             style={styles.input}
           >

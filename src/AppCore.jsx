@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   createAgvLiveKitRoom,
   publishAgvHostCamera,
@@ -507,7 +507,14 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const isSuperAdmin =
     isHost &&
-    getAgvSuperAdminVerified();  const hostModeLabel = isViewerOnly
+    getAgvSuperAdminVerified();
+  // PASS_SUBSCRIPTION_TIER_SIMULATION_ENFORCEMENT_1
+  // Founder authority remains active, while customer-facing features obey the selected test tier.
+  const isTierSimulationActive =
+    isSuperAdmin && Boolean(sessionStorage.getItem("agv_super_admin_test_plan"));
+  const customerFeatureAdminBypass = isSuperAdmin && !isTierSimulationActive;
+
+  const hostModeLabel = isViewerOnly
     ? "USER / VIEWER"
     : isSuperAdmin
     ? "ADMIN / HOST"
@@ -522,11 +529,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const isModerator = moderators.length > 0;
   const canModerate = isAgvNetworkStation ? isSuperAdmin : isHost || isModerator;
   const canControlStage = isHost && !isAgvNetworkStation;
-  const paidBusinessToolsLocked = currentPlan === "FREE" && !isSuperAdmin;
-  const cloudflareBroadcastAllowed = isSuperAdmin || currentPlan !== "FREE";
-  const universityPalAllowed = isSuperAdmin || currentPlan !== "FREE";
+  const paidBusinessToolsLocked = currentPlan === "FREE" && !customerFeatureAdminBypass;
+  const cloudflareBroadcastAllowed = customerFeatureAdminBypass || currentPlan !== "FREE";
+  const universityPalAllowed = customerFeatureAdminBypass || currentPlan !== "FREE";
   const hostVendorAgreementRequired =
-    isHost && currentPlan !== "FREE" && !isSuperAdmin && !hostVendorAgreementAccepted;
+    isHost && currentPlan !== "FREE" && !customerFeatureAdminBypass && !hostVendorAgreementAccepted;
   const viewerNeedsTicket = isViewerOnly && !isAgvNetworkStation && currentPlan !== "FREE" && !ticketApproved;
   // PASS32E_B_EVENT_LANDING_ROUTE_SHELL
   const eventIdFromUrl = getEventFromUrl();
@@ -554,7 +561,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   const visibleRooms = useMemo(() => {
     const roomList = cleanAgvLegacyRooms(Array.isArray(rooms) ? rooms : []);
 
-    if (isSuperAdmin) {
+    if (customerFeatureAdminBypass) {
       return roomList;
     }
 
@@ -609,7 +616,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     });
   }, [
     rooms,
-    isSuperAdmin,
+    customerFeatureAdminBypass,
     isViewerOnly,
     selectedRoomId,
     currentOwnerId,
@@ -635,7 +642,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }).length;
   }, [rooms, currentOwnerId, storedAccount?.email, freeAccount?.email]);
 
-  const roomLimitReached = !isSuperAdmin && ownedRoomCount >= currentPlanLimits.maxRooms;
+  const roomLimitReached = !customerFeatureAdminBypass && ownedRoomCount >= currentPlanLimits.maxRooms;
   const [viewerAudioEnabled, setViewerAudioEnabled] = useState(false);
   const [viewerMuted, setViewerMuted] = useState(false);
   const [viewerVolume, setViewerVolume] = useState(1);
@@ -664,6 +671,43 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
       }
     } catch {}
   }, []);
+  // PASS_SUBSCRIPTION_TIER_SIMULATION_ENFORCEMENT_2
+  // Apply Super Admin customer-tier simulations immediately without removing administrative authority.
+  useEffect(() => {
+    function handleSuperAdminTestPlanChanged(event) {
+      const nextPlan = normalizePlan(
+        event?.detail?.plan ||
+          sessionStorage.getItem("agv_super_admin_test_plan") ||
+          "CONVENTION"
+      );
+
+      localStorage.setItem("agv_current_plan", nextPlan);
+      localStorage.setItem("agv_viewer_plan", nextPlan);
+      setCurrentPlan(nextPlan);
+      setRooms((currentRooms) =>
+        syncRoomsForCurrentPlan(
+          currentRooms,
+          nextPlan,
+          getCurrentOwnerId(),
+          getFreeAccount()
+        )
+      );
+      setStatus(`Super Admin test plan active: ${PLAN_LIMITS[nextPlan]?.label || nextPlan}`);
+    }
+
+    window.addEventListener(
+      "agv-super-admin-test-plan-changed",
+      handleSuperAdminTestPlanChanged
+    );
+
+    return () => {
+      window.removeEventListener(
+        "agv-super-admin-test-plan-changed",
+        handleSuperAdminTestPlanChanged
+      );
+    };
+  }, []);
+
   // Free Plan control redirect
   useEffect(() => {
     if (paidBusinessToolsLocked && selectedPanel === "controls") {
@@ -2479,7 +2523,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   function freeLiveTokensExhausted() {
     const plan = String(currentPlan || "FREE").toUpperCase();
-    if (plan !== "FREE" || isSuperAdmin) return false;
+    if (plan !== "FREE" || customerFeatureAdminBypass) return false;
     return Number(freeTokenWallet?.liveTokensBalance ?? freeTokenWallet?.balance ?? 0) <= 0;
   }
 
@@ -2554,7 +2598,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
   async function ensureFreeTokensBeforeBroadcast() {
     const plan = String(currentPlan || "FREE").toUpperCase();
 
-    if (plan !== "FREE" || isSuperAdmin) {
+    if (plan !== "FREE" || customerFeatureAdminBypass) {
       return true;
     }
 
@@ -2986,12 +3030,12 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
     }
 
     // PASS32D_E_FREE_ROOM_CREATION_BLOCK
-    if (!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1) {
+    if (!customerFeatureAdminBypass && currentPlan === "FREE" && ownedRoomCount >= 1) {
       setStatus("Free plan limit reached. Free hosts can create only 1 owned room. Upgrade to Creator to add more rooms.");
       return;
     }
 
-    if (!isSuperAdmin && ownedRoomCount >= currentPlanLimits.maxRooms) {
+    if (!customerFeatureAdminBypass && ownedRoomCount >= currentPlanLimits.maxRooms) {
       setStatus(`Room limit reached for ${currentPlanLimits.label}. Limit: ${currentPlanLimits.maxRooms} room(s).`);
       return;
     }
@@ -4390,7 +4434,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                 Room usage: {ownedRoomCount} of {currentPlanLimits.maxRooms} owned room(s) used • Plan: {currentPlanLimits.label}
               </div>
 
-              {!isSuperAdmin && currentPlan === "FREE" && ownedRoomCount >= 1 ? (
+              {!customerFeatureAdminBypass && currentPlan === "FREE" && ownedRoomCount >= 1 ? (
                 <div style={styles.viewerLockBox}>
                   Free plan limit reached. Free hosts can create only 1 owned room. Upgrade to Creator to add more rooms.
                 </div>
@@ -4418,20 +4462,20 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                     <input
                       type="checkbox"
                       checked={newRoomPrivate}
-                      disabled={!currentPlanLimits.allowPrivate && !isSuperAdmin}
+                      disabled={!currentPlanLimits.allowPrivate && !customerFeatureAdminBypass}
                       onChange={(event) => setNewRoomPrivate(event.target.checked)}
                     />{" "}
-                    Private room {currentPlanLimits.allowPrivate || isSuperAdmin ? "" : "(upgrade required)"}
+                    Private room {currentPlanLimits.allowPrivate || customerFeatureAdminBypass ? "" : "(upgrade required)"}
                   </label>
 
                   <label style={styles.helperText}>
                     <input
                       type="checkbox"
                       checked={newRoomTicketOnly}
-                      disabled={!currentPlanLimits.allowTicketOnly && !isSuperAdmin}
+                      disabled={!currentPlanLimits.allowTicketOnly && !customerFeatureAdminBypass}
                       onChange={(event) => setNewRoomTicketOnly(event.target.checked)}
                     />{" "}
-                    Ticket-only room {currentPlanLimits.allowTicketOnly || isSuperAdmin ? "" : "(upgrade required)"}
+                    Ticket-only room {currentPlanLimits.allowTicketOnly || customerFeatureAdminBypass ? "" : "(upgrade required)"}
                   </label>
 
                   <button
