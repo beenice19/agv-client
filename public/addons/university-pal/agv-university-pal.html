@@ -204,8 +204,991 @@
     section,.card{border:0;box-shadow:none;background:white}
     .certificate{display:block;margin:0;border-radius:0;min-height:96vh}
   }
-</style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  /* PASS_AGV_UP_COURSE_WORKSPACE_2B */
+  .workspaceHero{
+    padding:24px;
+    border:1px solid rgba(59,130,246,.25);
+    border-radius:24px;
+    background:
+      radial-gradient(circle at top right,rgba(59,130,246,.17),transparent 34%),
+      linear-gradient(145deg,rgba(15,23,42,.98),rgba(2,6,23,.98));
+    color:#fff;
+    margin-bottom:18px;
+  }
+  .workspaceHero h2{margin:0 0 8px;font-size:clamp(26px,4vw,38px)}
+  .workspaceHero p{margin:0;color:#cbd5e1;line-height:1.65}
+  .workspaceToolbar{
+    display:grid;
+    grid-template-columns:minmax(220px,1fr) minmax(220px,2fr);
+    gap:14px;
+    align-items:end;
+    margin-top:20px;
+  }
+  .workspaceToolbar label{color:#dbeafe}
+  .workspaceToolbar select{
+    width:100%;
+    min-height:46px;
+    border-radius:12px;
+  }
+  .workspaceRoleNotice{
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    padding:10px 14px;
+    border:1px solid rgba(148,163,184,.25);
+    border-radius:12px;
+    background:rgba(15,23,42,.48);
+    color:#cbd5e1;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .workspaceMetrics{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+    gap:12px;
+    margin:18px 0;
+  }
+  .workspaceMetric{
+    padding:16px;
+    border:1px solid rgba(148,163,184,.22);
+    border-radius:18px;
+    background:rgba(255,255,255,.04);
+  }
+  .workspaceMetric strong{
+    display:block;
+    color:#fff;
+    font-size:28px;
+    line-height:1;
+  }
+  .workspaceMetric span{
+    display:block;
+    margin-top:7px;
+    color:#94a3b8;
+    font-size:12px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+  .workspaceGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+    gap:16px;
+  }
+  .workspacePanel{
+    padding:18px;
+    border:1px solid rgba(148,163,184,.22);
+    border-radius:20px;
+    background:rgba(255,255,255,.035);
+  }
+  .workspacePanel h3{margin:0 0 5px}
+  .workspacePanelNote{
+    margin:0 0 14px;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.5;
+  }
+  .workspaceItem{
+    padding:12px;
+    margin-top:9px;
+    border:1px solid rgba(148,163,184,.18);
+    border-radius:14px;
+    background:rgba(15,23,42,.05);
+  }
+  .workspaceItem b{display:block}
+  .workspaceItem small{
+    display:block;
+    margin-top:5px;
+    color:#64748b;
+    line-height:1.45;
+  }
+  .workspaceEmpty{
+    padding:16px;
+    border:1px dashed rgba(148,163,184,.38);
+    border-radius:14px;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.55;
+  }
+  .workspaceCourseSummary{
+    margin-top:16px;
+    padding:14px;
+    border-left:4px solid #2563eb;
+    border-radius:12px;
+    background:rgba(37,99,235,.08);
+    line-height:1.55;
+  }
+  .workspaceTableWrap{overflow:auto}
+  .workspaceTable{
+    width:100%;
+    border-collapse:collapse;
+    min-width:520px;
+  }
+  .workspaceTable th,
+  .workspaceTable td{
+    padding:10px;
+    border-bottom:1px solid rgba(148,163,184,.2);
+    text-align:left;
+    vertical-align:top;
+  }
+  .workspaceTable th{
+    color:#64748b;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  @media(max-width:720px){
+    .workspaceToolbar{grid-template-columns:1fr}
+    .workspaceHero{padding:18px}
+  }
+  /* PASS_AGV_UP_WORKSPACE_WIRING_2C */
+  .workspaceEditor{
+    margin:0 0 14px;
+    padding:14px;
+    border:1px solid rgba(37,99,235,.25);
+    border-radius:16px;
+    background:rgba(37,99,235,.055);
+  }
+
+  .workspaceEditorGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .workspaceEditorGrid .workspaceFull{
+    grid-column:1 / -1;
+  }
+
+  .workspaceEditor label{
+    display:block;
+    margin-bottom:5px;
+    color:#475569;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .workspaceEditor input,
+  .workspaceEditor select,
+  .workspaceEditor textarea{
+    width:100%;
+    min-height:42px;
+    border:1px solid rgba(148,163,184,.45);
+    border-radius:10px;
+    padding:9px 11px;
+    background:#fff;
+    color:#0f172a;
+  }
+
+  .workspaceEditor textarea{
+    min-height:76px;
+    resize:vertical;
+  }
+
+  .workspaceEditorActions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
+  .workspaceSaveButton{
+    border:0;
+    border-radius:10px;
+    padding:10px 14px;
+    background:#2563eb;
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .workspaceDeleteButton{
+    margin-top:9px;
+    border:1px solid rgba(220,38,38,.28);
+    border-radius:9px;
+    padding:7px 10px;
+    background:rgba(220,38,38,.07);
+    color:#b91c1c;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .workspaceEditorStatus{
+    margin:0 0 14px;
+    padding:10px 12px;
+    border:1px solid rgba(148,163,184,.3);
+    border-radius:12px;
+    background:rgba(148,163,184,.08);
+    color:#475569;
+    font-size:13px;
+    line-height:1.45;
+  }
+
+  .workspaceItemMeta{
+    display:flex;
+    gap:7px;
+    flex-wrap:wrap;
+    margin-top:7px;
+  }
+
+  .workspaceItemMeta span{
+    display:inline-flex;
+    padding:4px 7px;
+    border-radius:999px;
+    background:rgba(37,99,235,.08);
+    color:#1d4ed8;
+    font-size:11px;
+    font-weight:800;
+  }
+
+  @media(max-width:720px){
+    .workspaceEditorGrid{
+      grid-template-columns:1fr;
+    }
+
+    .workspaceEditorGrid .workspaceFull{
+      grid-column:auto;
+    }
+  }
+  /* PASS_AGV_UP_TEACHER_MODULE_BUILDER_3D */
+  .agvUpModuleBuilderToolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    margin:0 0 14px;
+    padding:14px;
+    border:1px solid rgba(37,99,235,.22);
+    border-radius:15px;
+    background:linear-gradient(
+      135deg,
+      rgba(239,246,255,.96),
+      rgba(248,250,252,.96)
+    );
+  }
+
+  .agvUpModuleBuilderHint{
+    color:#475569;
+    font-size:13px;
+    line-height:1.45;
+  }
+
+  .agvUpModulePrimaryButton{
+    min-height:44px;
+    padding:10px 18px;
+    border:0;
+    border-radius:11px;
+    background:#1d4ed8;
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .agvUpModulePrimaryButton:disabled{
+    cursor:not-allowed;
+    opacity:.5;
+  }
+
+  .agvUpModuleEditor[hidden]{
+    display:none !important;
+  }
+
+  .agvUpModuleEditorHeading{
+    margin:0 0 12px;
+    color:#1e3a8a;
+    font-size:17px;
+  }
+
+  .agvUpModuleSecondaryButton,
+  .agvUpModuleCancelButton{
+    min-height:42px;
+    padding:9px 14px;
+    border-radius:10px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .agvUpModuleSecondaryButton{
+    border:1px solid rgba(37,99,235,.3);
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .agvUpModuleCancelButton{
+    border:1px solid rgba(100,116,139,.3);
+    background:#f8fafc;
+    color:#475569;
+  }
+
+  .agvUpModuleCard{
+    margin-top:12px;
+    padding:16px;
+    border:1px solid rgba(148,163,184,.3);
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 7px 18px rgba(15,23,42,.055);
+  }
+
+  .agvUpModuleCard:first-child{
+    margin-top:0;
+  }
+
+  .agvUpModuleCardHeader{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+
+  .agvUpModuleCardTitle{
+    margin:0;
+    color:#0f172a;
+    font-size:16px;
+  }
+
+  .agvUpModuleCardDescription{
+    margin:8px 0 0;
+    color:#475569;
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  .agvUpModuleStatusBadge{
+    display:inline-flex;
+    flex:0 0 auto;
+    padding:5px 9px;
+    border-radius:999px;
+    background:#f1f5f9;
+    color:#475569;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .agvUpModuleStatusBadge.isPublished{
+    background:#dcfce7;
+    color:#166534;
+  }
+
+  .agvUpModuleActions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-top:13px;
+    padding-top:12px;
+    border-top:1px solid #e2e8f0;
+  }
+
+  .agvUpModuleActionButton{
+    min-height:36px;
+    padding:7px 10px;
+    border:1px solid rgba(100,116,139,.26);
+    border-radius:9px;
+    background:#f8fafc;
+    color:#334155;
+    font-size:12px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .agvUpModuleActionButton:hover{
+    background:#eff6ff;
+    color:#1d4ed8;
+  }
+
+  .agvUpModuleActionButton:disabled{
+    cursor:not-allowed;
+    opacity:.38;
+  }
+
+  .agvUpModuleDeleteButton{
+    border-color:rgba(220,38,38,.25);
+    background:#fef2f2;
+    color:#b91c1c;
+  }
+
+  @media(max-width:720px){
+    .agvUpModuleBuilderToolbar,
+    .agvUpModuleCardHeader{
+      align-items:stretch;
+      flex-direction:column;
+    }
+
+    .agvUpModulePrimaryButton{
+      width:100%;
+    }
+
+    .agvUpModuleActionButton{
+      flex:1 1 calc(50% - 7px);
+    }
+  }
+  /* AGV_UP_STUDENT_HANDOUTS_3A_STYLES */
+  .agvUpHandoutPanel{
+    margin:18px 0;
+    padding:18px;
+    border:1px solid rgba(16,185,129,.32);
+    border-radius:20px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(236,253,245,.96),
+        rgba(239,246,255,.96)
+      );
+  }
+
+  .agvUpHandoutPanel h3{
+    margin:0 0 6px;
+    color:#064e3b;
+  }
+
+  .agvUpHandoutPanelIntro{
+    margin:0 0 14px;
+    color:#475569;
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  .agvUpHandoutEditorGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .agvUpHandoutFull{
+    grid-column:1 / -1;
+  }
+
+  .agvUpHandoutPanel label{
+    display:block;
+    margin-bottom:5px;
+    color:#334155;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .agvUpHandoutPanel input,
+  .agvUpHandoutPanel textarea{
+    width:100%;
+    min-height:42px;
+    padding:9px 11px;
+    border:1px solid rgba(100,116,139,.35);
+    border-radius:10px;
+    background:#fff;
+    color:#0f172a;
+  }
+
+  .agvUpHandoutPanel textarea{
+    min-height:76px;
+    resize:vertical;
+  }
+
+  .agvUpHandoutActions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+  }
+
+  .agvUpHandoutActions button{
+    min-height:42px;
+    padding:9px 14px;
+    border:0;
+    border-radius:10px;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .agvUpHandoutPublishButton{
+    background:#047857;
+    color:#fff;
+  }
+
+  .agvUpHandoutCopyButton{
+    background:#1d4ed8;
+    color:#fff;
+  }
+
+  .agvUpHandoutOpenButton{
+    background:#0f172a;
+    color:#fff;
+  }
+
+  .agvUpHandoutUnpublishButton{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+
+  .agvUpHandoutActions button:disabled{
+    cursor:not-allowed;
+    opacity:.48;
+  }
+
+  .agvUpHandoutStatus{
+    margin-top:12px;
+    padding:10px 12px;
+    border-radius:10px;
+    background:rgba(255,255,255,.75);
+    color:#475569;
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .agvUpHandoutPublicOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:100000;
+    overflow:auto;
+    padding:24px;
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(37,99,235,.2),
+        transparent 32%
+      ),
+      linear-gradient(145deg,#020617,#0f172a);
+  }
+
+  .agvUpHandoutPublicShell{
+    width:min(100%,980px);
+    margin:0 auto;
+  }
+
+  .agvUpHandoutPublicBrand{
+    margin-bottom:14px;
+    color:#bfdbfe;
+    font-size:12px;
+    font-weight:900;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+
+  .agvUpHandoutPublicHero{
+    padding:28px;
+    border:1px solid rgba(148,163,184,.24);
+    border-radius:26px;
+    background:
+      radial-gradient(
+        circle at top right,
+        rgba(59,130,246,.2),
+        transparent 36%
+      ),
+      rgba(15,23,42,.94);
+    color:#fff;
+  }
+
+  .agvUpHandoutPublicHero h1{
+    margin:0 0 9px;
+    font-size:clamp(28px,5vw,44px);
+  }
+
+  .agvUpHandoutCourseName{
+    margin:0;
+    color:#93c5fd;
+    font-size:18px;
+    font-weight:900;
+  }
+
+  .agvUpHandoutCourseMeta{
+    margin-top:12px;
+    color:#cbd5e1;
+    line-height:1.6;
+  }
+
+  .agvUpHandoutIntroduction{
+    margin-top:18px;
+    padding:14px;
+    border-left:4px solid #60a5fa;
+    border-radius:12px;
+    background:rgba(37,99,235,.12);
+    color:#e2e8f0;
+    line-height:1.7;
+  }
+
+  .agvUpHandoutPublicGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;
+    margin-top:18px;
+  }
+
+  .agvUpHandoutPublicSection{
+    padding:20px;
+    border:1px solid rgba(148,163,184,.2);
+    border-radius:20px;
+    background:#fff;
+    color:#0f172a;
+  }
+
+  .agvUpHandoutPublicSection h2{
+    margin:0 0 13px;
+    color:#0f172a;
+    font-size:21px;
+  }
+
+  .agvUpHandoutPublicItem{
+    margin-top:10px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    background:#f8fafc;
+  }
+
+  .agvUpHandoutPublicItem:first-of-type{
+    margin-top:0;
+  }
+
+  .agvUpHandoutPublicItem h3{
+    margin:0 0 6px;
+    color:#0f172a;
+    font-size:16px;
+  }
+
+  .agvUpHandoutPublicItemMeta{
+    margin-bottom:7px;
+    color:#475569;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .agvUpHandoutPublicItemText{
+    color:#334155;
+    font-size:14px;
+    line-height:1.65;
+    overflow-wrap:anywhere;
+  }
+
+  .agvUpHandoutPublicItemText a{
+    color:#1d4ed8;
+    font-weight:800;
+  }
+
+  .agvUpHandoutPublicEmpty{
+    padding:15px;
+    border:1px dashed #cbd5e1;
+    border-radius:13px;
+    color:#64748b;
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  .agvUpHandoutPublicFooter{
+    padding:20px 4px;
+    color:#94a3b8;
+    text-align:center;
+    font-size:12px;
+    line-height:1.6;
+  }
+
+  @media(max-width:760px){
+    .agvUpHandoutEditorGrid,
+    .agvUpHandoutPublicGrid{
+      grid-template-columns:1fr;
+    }
+
+    .agvUpHandoutPublicOverlay{
+      padding:12px;
+    }
+
+    .agvUpHandoutPublicHero{
+      padding:20px;
+    }
+  }
+
+  /* AGV_UP_STUDENT_RESOURCES_3B_STYLES */
+  .agvUpResourcePanel{
+    display:none;
+    margin:18px 0;
+    padding:18px;
+    border:1px solid rgba(37,99,235,.3);
+    border-radius:20px;
+    background:
+      linear-gradient(
+        145deg,
+        rgba(239,246,255,.98),
+        rgba(248,250,252,.98)
+      );
+    color:#0f172a;
+  }
+
+  .agvUpResourcePanel h3{
+    margin:0 0 6px;
+    color:#1e3a8a;
+  }
+
+  .agvUpResourcePanelIntro{
+    margin:0 0 14px;
+    color:#475569;
+    font-size:13px;
+    line-height:1.6;
+  }
+
+  .agvUpResourceApiGrid,
+  .agvUpResourceEditorGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+
+  .agvUpResourceFull{
+    grid-column:1 / -1;
+  }
+
+  .agvUpResourcePanel label{
+    display:block;
+    margin-bottom:5px;
+    color:#334155;
+    font-size:12px;
+    font-weight:900;
+  }
+
+  .agvUpResourcePanel input,
+  .agvUpResourcePanel select,
+  .agvUpResourcePanel textarea{
+    width:100%;
+    min-height:42px;
+    padding:9px 11px;
+    border:1px solid rgba(100,116,139,.38);
+    border-radius:10px;
+    background:#fff;
+    color:#0f172a;
+  }
+
+  .agvUpResourcePanel textarea{
+    min-height:74px;
+    resize:vertical;
+  }
+
+  .agvUpResourceToolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:11px;
+  }
+
+  .agvUpResourceButton{
+    min-height:40px;
+    padding:9px 13px;
+    border:0;
+    border-radius:10px;
+    background:#1d4ed8;
+    color:#fff;
+    font-weight:900;
+    cursor:pointer;
+  }
+
+  .agvUpResourceButtonSecondary{
+    background:#0f172a;
+  }
+
+  .agvUpResourceButtonDanger{
+    background:#fee2e2;
+    color:#991b1b;
+  }
+
+  .agvUpResourceButtonVisibility{
+    background:#e0f2fe;
+    color:#075985;
+  }
+
+  .agvUpResourceButton:disabled{
+    cursor:not-allowed;
+    opacity:.5;
+  }
+
+  .agvUpResourceStatus{
+    margin:12px 0;
+    padding:10px 12px;
+    border-radius:11px;
+    background:#eff6ff;
+    color:#334155;
+    font-size:13px;
+    line-height:1.5;
+  }
+
+  .agvUpResourceEditors{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:14px;
+  }
+
+  .agvUpResourceEditorCard{
+    padding:14px;
+    border:1px solid #dbeafe;
+    border-radius:16px;
+    background:#fff;
+  }
+
+  .agvUpResourceEditorCard h4{
+    margin:0 0 5px;
+    color:#1e3a8a;
+  }
+
+  .agvUpResourceEditorNote{
+    margin:0 0 10px;
+    color:#64748b;
+    font-size:12px;
+    line-height:1.5;
+  }
+
+  .agvUpResourceList{
+    margin-top:16px;
+  }
+
+  .agvUpResourceItem{
+    margin-top:10px;
+    padding:14px;
+    border:1px solid #dbeafe;
+    border-radius:15px;
+    background:#fff;
+  }
+
+  .agvUpResourceItem:first-child{
+    margin-top:0;
+  }
+
+  .agvUpResourceItemHeader{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:flex-start;
+  }
+
+  .agvUpResourceItem h4{
+    margin:0;
+    color:#0f172a;
+  }
+
+  .agvUpResourceItemMeta{
+    margin-top:5px;
+    color:#64748b;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.5;
+  }
+
+  .agvUpResourceItemDescription{
+    margin-top:8px;
+    color:#334155;
+    font-size:13px;
+    line-height:1.55;
+  }
+
+  .agvUpResourceBadge{
+    display:inline-flex;
+    padding:4px 8px;
+    border-radius:999px;
+    background:#dbeafe;
+    color:#1e40af;
+    font-size:11px;
+    font-weight:900;
+  }
+
+  .agvUpPublicResourceSection{
+    grid-column:1 / -1;
+  }
+
+  .agvUpPublicResourceVideo{
+    display:block;
+    width:100%;
+    max-height:520px;
+    margin-top:11px;
+    border-radius:13px;
+    background:#020617;
+  }
+
+  .agvUpPublicResourceFrame{
+    width:100%;
+    min-height:520px;
+    margin-top:11px;
+    border:1px solid #cbd5e1;
+    border-radius:13px;
+    background:#fff;
+  }
+
+  .agvUpPublicResourceText{
+    max-height:420px;
+    overflow:auto;
+    margin-top:11px;
+    padding:13px;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    background:#f8fafc;
+    color:#0f172a;
+    white-space:pre-wrap;
+    overflow-wrap:anywhere;
+    font-family:Consolas,monospace;
+    font-size:13px;
+    line-height:1.6;
+  }
+
+  .agvUpPublicResourceLink{
+    display:inline-flex;
+    margin-top:10px;
+    padding:9px 12px;
+    border-radius:10px;
+    background:#1d4ed8;
+    color:#fff!important;
+    text-decoration:none;
+    font-weight:900;
+  }
+
+  .agvUpResourceCheckbox{
+    display:flex;
+    gap:8px;
+    align-items:center;
+    margin-top:10px;
+    color:#334155;
+    font-size:13px;
+    font-weight:800;
+  }
+
+  .agvUpResourceCheckbox input{
+    width:auto;
+    min-height:0;
+  }
+
+  @media(max-width:780px){
+    .agvUpResourceEditors,
+    .agvUpResourceApiGrid,
+    .agvUpResourceEditorGrid{
+      grid-template-columns:1fr;
+    }
+
+    .agvUpResourceFull{
+      grid-column:auto;
+    }
+
+    .agvUpPublicResourceFrame{
+      min-height:360px;
+    }
+  }</style>
+  <div
+  id="agvUpStudentHandoutPublicView"
+  class="agvUpHandoutPublicOverlay"
+  aria-live="polite"
+>
+  <div class="agvUpHandoutPublicShell">
+    <div class="agvUpHandoutPublicBrand">
+      AGV University Pal · Student Handout
+    </div>
+
+    <div id="agvUpStudentHandoutPublicContent">
+      <div class="agvUpHandoutPublicHero">
+        <h1>Loading Student Handout</h1>
+        <p class="agvUpHandoutCourseMeta">
+          Please wait while the latest course information is retrieved.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style id="PASS_HIDE_BROKEN_STUDENT_HANDOUT_PANEL_1">
+    #agvUpHandoutTeacherPanel {
+      display: none !important;
+    }
+  </style>
 </head>
 
 <body>
@@ -290,7 +1273,7 @@
 
 <div id="supabaseStatus" class="status">Supabase is not connected yet.</div>
 
-  
+
 <div class="notice" id="supabaseWriteNotice">
   <b>Supabase Save Mode:</b> These buttons save the active student, active registration,
   and active certificate record to Supabase.
@@ -305,6 +1288,7 @@
 
   <section>
     <div class="tabs noPrint">
+      <button class="tab" data-tab="workspaceView">Course Workspace</button>
       <button class="tab active" data-tab="studentView">Students</button>
       <button class="tab" data-tab="catalogView">Class Catalog</button>
       <button class="tab" data-tab="registerView">Register</button>
@@ -314,6 +1298,353 @@
       <button class="tab" data-tab="verifyView">Verify</button>
     </div>
 
+    <div id="workspaceView" class="view">
+      <div class="workspaceHero">
+        <div class="pill">University Pal 2.0</div>
+        <h2>Course Workspace</h2>
+        <p>
+          One organized learning space for course content, assignments,
+          announcements, scheduling, enrollment progress, and grades.
+        </p>
+
+        <div class="workspaceToolbar">
+          <div>
+            <label for="workspaceClassSelect">Active Course</label>
+            <select id="workspaceClassSelect">
+              <option value="">Select a course</option>
+            </select>
+          </div>
+
+          <div id="workspaceRoleNotice" class="workspaceRoleNotice">
+            Select a course to open its learning workspace.
+          </div>
+        </div>
+
+        <div id="workspaceCourseSummary" class="workspaceCourseSummary">
+          No active course selected.
+        </div>
+      </div>
+
+      <div id="agvUpHandoutTeacherPanel" class="agvUpHandoutPanel">
+        <h3>Student Handout Link</h3>
+
+        <p class="agvUpHandoutPanelIntro">
+          Publish one read-only course link for assignments, study helps,
+          announcements, and calendar information. The same link can be
+          updated whenever the teacher republishes the course handout.
+        </p>
+
+        <div class="agvUpHandoutEditorGrid">
+          <div class="agvUpHandoutFull">
+            <label for="agvUpHandoutTitle">Handout Title</label>
+            <input
+              id="agvUpHandoutTitle"
+              placeholder="Example: Weekly Student Handout"
+            >
+          </div>
+
+          <div class="agvUpHandoutFull">
+            <label for="agvUpHandoutIntroduction">
+              Teacher Introduction
+            </label>
+
+            <textarea
+              id="agvUpHandoutIntroduction"
+              placeholder="Welcome message, study guidance, or special instructions"
+            ></textarea>
+          </div>
+
+          <!-- AGV_UP_HIDE_VISIBLE_HANDOUT_KEYS_3C -->
+          <input
+            type="hidden"
+            id="agvUpHandoutLink"
+            aria-hidden="true"
+            tabindex="-1"
+          >
+
+          <div class="agvUpHandoutFull">
+            <p class="agvUpHandoutPanelIntro" style="margin:0;">
+              Private edit access is kept out of sight. Use Copy Student Link
+              or Open Student Handout to share and review the published handout.
+            </p>
+          </div>
+        </div>
+
+        <div class="agvUpHandoutActions">
+          <button
+            type="button"
+            id="agvUpPublishHandoutBtn"
+            class="agvUpHandoutPublishButton"
+          >
+            Publish / Update Handout
+          </button>
+
+          <button
+            type="button"
+            id="agvUpCopyHandoutBtn"
+            class="agvUpHandoutCopyButton"
+          >
+            Copy Student Link
+          </button>
+
+          <button
+            type="button"
+            id="agvUpOpenHandoutBtn"
+            class="agvUpHandoutOpenButton"
+          >
+            Open Student Handout
+          </button>
+
+          <button
+            type="button"
+            id="agvUpUnpublishHandoutBtn"
+            class="agvUpHandoutUnpublishButton"
+          >
+            Unpublish
+          </button>
+          <!-- PASS_AGV_UP_TEACHER_COMPUTER_UPLOAD_SHORTCUT_3E -->
+          <button
+            type="button"
+            id="agvUpUploadFromComputerBtn"
+            class="agvUpHandoutCopyButton"
+          >
+            Upload From Teacher's Computer
+          </button>
+        </div>
+
+        <div id="agvUpHandoutStatus" class="agvUpHandoutStatus">
+          Select a course before publishing its student handout.
+        </div>
+      </div>
+      <div class="workspaceMetrics">
+        <div class="workspaceMetric">
+          <strong id="workspaceEnrollmentMetric">0</strong>
+          <span>Enrolled</span>
+        </div>
+        <div class="workspaceMetric">
+          <strong id="workspaceModuleMetric">0</strong>
+          <span>Modules</span>
+        </div>
+        <div class="workspaceMetric">
+          <strong id="workspaceAssignmentMetric">0</strong>
+          <span>Assignments</span>
+        </div>
+        <div class="workspaceMetric">
+          <strong id="workspaceAnnouncementMetric">0</strong>
+          <span>Announcements</span>
+        </div>
+      </div>
+
+      <div class="workspaceGrid">
+        <div class="workspacePanel">          <h3>Modules</h3>
+
+          <p class="workspacePanelNote">
+            Build the course one lesson at a time. Only the module title is required.
+          </p>
+
+          <div class="agvUpModuleBuilderToolbar">
+            <button
+              type="button"
+              id="workspaceOpenModuleEditorBtn"
+              class="agvUpModulePrimaryButton"
+            >
+              + Add Module
+            </button>
+
+            <span
+              id="workspaceModuleBuilderHint"
+              class="agvUpModuleBuilderHint"
+            >
+              Select a course, then press Add Module.
+            </span>
+          </div>
+
+          <div
+            id="workspaceModuleEditor"
+            class="workspaceEditor agvUpModuleEditor"
+            hidden
+          >
+            <h4
+              id="workspaceModuleEditorHeading"
+              class="agvUpModuleEditorHeading"
+            >
+              Add a New Module
+            </h4>
+
+            <div class="workspaceEditorGrid">
+              <div class="workspaceFull">
+                <label for="workspaceModuleTitle">
+                  Module Title
+                </label>
+
+                <input
+                  id="workspaceModuleTitle"
+                  placeholder="Example: Module 1 — Introduction"
+                >
+              </div>
+
+              <div class="workspaceFull">
+                <label for="workspaceModuleDescription">
+                  Description or Teacher Notes
+                  <span style="font-weight:500;">(optional)</span>
+                </label>
+
+                <textarea
+                  id="workspaceModuleDescription"
+                  placeholder="What students will learn, read, watch, or complete"
+                ></textarea>
+              </div>
+            </div>
+
+            <div class="workspaceEditorActions">
+              <button
+                type="button"
+                id="workspaceSaveModuleBtn"
+                class="agvUpModuleSecondaryButton"
+              >
+                Save Draft
+              </button>
+
+              <button
+                type="button"
+                id="workspacePublishModuleBtn"
+                class="workspaceSaveButton"
+              >
+                Publish Module
+              </button>
+
+              <button
+                type="button"
+                id="workspaceCancelModuleBtn"
+                class="agvUpModuleCancelButton"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <div id="workspaceModules"></div>
+        </div>
+
+        <div class="workspacePanel">
+          <h3>Assignments</h3>
+          <p class="workspacePanelNote">
+            Track coursework, due dates, points, and completion.
+          </p>
+          <div id="workspaceAssignmentEditor" class="workspaceEditor">
+  <div class="workspaceEditorGrid">
+    <div class="workspaceFull">
+      <label for="workspaceAssignmentTitle">Assignment Title</label>
+      <input id="workspaceAssignmentTitle" placeholder="Example: Reflection Paper">
+    </div>
+
+    <div>
+      <label for="workspaceAssignmentDueDate">Due Date</label>
+      <input id="workspaceAssignmentDueDate" type="date">
+    </div>
+
+    <div>
+      <label for="workspaceAssignmentPoints">Points Possible</label>
+      <input id="workspaceAssignmentPoints" type="number" min="0" step="1" value="100">
+    </div>
+
+    <div class="workspaceFull">
+      <label for="workspaceAssignmentDescription">Instructions</label>
+      <textarea id="workspaceAssignmentDescription" placeholder="Assignment instructions and submission expectations"></textarea>
+    </div>
+  </div>
+
+  <div class="workspaceEditorActions">
+    <button type="button" id="workspaceSaveAssignmentBtn" class="workspaceSaveButton">
+      Add Assignment
+    </button>
+  </div>
+</div>
+
+<div id="workspaceAssignments"></div>
+        </div>
+
+        <div class="workspacePanel">
+          <h3>Announcements</h3>
+          <p class="workspacePanelNote">
+            Keep students informed about course activity and important updates.
+          </p>
+          <div id="workspaceAnnouncementEditor" class="workspaceEditor">
+  <div class="workspaceEditorGrid">
+    <div class="workspaceFull">
+      <label for="workspaceAnnouncementTitle">Announcement Title</label>
+      <input id="workspaceAnnouncementTitle" placeholder="Example: Welcome to the course">
+    </div>
+
+    <div class="workspaceFull">
+      <label for="workspaceAnnouncementMessage">Message</label>
+      <textarea id="workspaceAnnouncementMessage" placeholder="Write the announcement for enrolled students"></textarea>
+    </div>
+  </div>
+
+  <div class="workspaceEditorActions">
+    <button type="button" id="workspaceSaveAnnouncementBtn" class="workspaceSaveButton">
+      Post Announcement
+    </button>
+  </div>
+</div>
+
+<div id="workspaceAnnouncements"></div>
+        </div>
+
+        <div class="workspacePanel">
+          <h3>Course Calendar</h3>
+          <p class="workspacePanelNote">
+            View classes, due dates, meetings, and scheduled learning events.
+          </p>
+          <div id="workspaceCalendarEditor" class="workspaceEditor">
+  <div class="workspaceEditorGrid">
+    <div class="workspaceFull">
+      <label for="workspaceCalendarTitle">Event Title</label>
+      <input id="workspaceCalendarTitle" placeholder="Example: Live class meeting">
+    </div>
+
+    <div>
+      <label for="workspaceCalendarDate">Date</label>
+      <input id="workspaceCalendarDate" type="date">
+    </div>
+
+    <div>
+      <label for="workspaceCalendarTime">Time</label>
+      <input id="workspaceCalendarTime" type="time">
+    </div>
+
+    <div class="workspaceFull">
+      <label for="workspaceCalendarLocation">Location or Link</label>
+      <input id="workspaceCalendarLocation" placeholder="AGV room, classroom, or meeting link">
+    </div>
+
+    <div class="workspaceFull">
+      <label for="workspaceCalendarDetails">Event Details</label>
+      <textarea id="workspaceCalendarDetails" placeholder="Instructions or event details"></textarea>
+    </div>
+  </div>
+
+  <div class="workspaceEditorActions">
+    <button type="button" id="workspaceSaveCalendarBtn" class="workspaceSaveButton">
+      Add Calendar Event
+    </button>
+  </div>
+</div>
+
+<div id="workspaceCalendar"></div>
+        </div>
+      </div>
+
+      <div class="workspacePanel" style="margin-top:16px;">
+        <h3>Gradebook Foundation</h3>
+        <p class="workspacePanelNote">
+          The enrolled roster and current registration status appear here.
+          Score-entry controls will be added in the next protected pass.
+        </p>
+        <div id="workspaceGradebook"></div>
+      </div>
+    </div>
     <div id="studentView" class="view active">
       <h2>Student Profile</h2>
 
@@ -586,16 +1917,58 @@
     students:[],
     classes:[],
     registrations:[],
+    modules:[],
+    assignments:[],
+    announcements:[],
+    calendarEvents:[],
+    gradebook:[],
     activeStudentId:"",
     activeClassId:"",
-    activeRegistrationId:""
+    activeRegistrationId:"",
+    activeWorkspaceClassId:""
   };
 
   let data = loadData();
 
+  function normalizeUniversityPalData(input){
+    const next =
+      input && typeof input === "object"
+        ? input
+        : structuredClone(defaultData);
+
+    [
+      "students",
+      "classes",
+      "registrations",
+      "modules",
+      "assignments",
+      "announcements",
+      "calendarEvents",
+      "gradebook"
+    ].forEach(function(key){
+      if (!Array.isArray(next[key])) next[key] = [];
+    });
+
+    [
+      "activeStudentId",
+      "activeClassId",
+      "activeRegistrationId",
+      "activeWorkspaceClassId"
+    ].forEach(function(key){
+      if (typeof next[key] !== "string") next[key] = "";
+    });
+
+    return next;
+  }
+
   function loadData(){
-    try { return JSON.parse(localStorage.getItem(STORAGE)) || structuredClone(defaultData); }
-    catch(e){ return structuredClone(defaultData); }
+    try {
+      return normalizeUniversityPalData(
+        JSON.parse(localStorage.getItem(STORAGE))
+      );
+    } catch(e) {
+      return structuredClone(defaultData);
+    }
   }
 
   function saveData(){
@@ -1591,22 +2964,22 @@
 
   function allowedTabsForRole(role){
     if (role === "registrar") {
-      return ["studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
+      return ["workspaceView","studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
     }
 
     if (role === "instructor") {
-      return ["catalogView","portalView","registrarView","certView","verifyView"];
+      return ["workspaceView","catalogView","portalView","registrarView","certView","verifyView"];
     }
 
     if (role === "student") {
-      return ["studentView","registerView","portalView","certView","verifyView"];
+      return ["workspaceView","studentView","registerView","portalView","certView","verifyView"];
     }
 
     if (role === "verifier") {
       return ["verifyView"];
     }
 
-    return ["studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
+    return ["workspaceView","studentView","catalogView","registerView","portalView","registrarView","certView","verifyView"];
   }
 
   function setElementVisible(id, visible){
@@ -1666,10 +3039,359 @@
     }
   }
 
+  function workspaceEscape(value){
+    return String(value == null ? "" : value)
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
+  }
+
+  function workspaceCourseTitle(course){
+    if (!course) return "Untitled Course";
+
+    return (
+      course.className ||
+      course.courseName ||
+      course.title ||
+      course.name ||
+      "Untitled Course"
+    );
+  }
+
+  function workspaceEmpty(message){
+    return '<div class="workspaceEmpty">' +
+      workspaceEscape(message) +
+      '</div>';
+  }
+
+  function renderCourseWorkspace(){
+    const select = $("workspaceClassSelect");
+    if (!select) return;
+
+    if (
+      data.activeWorkspaceClassId &&
+      !data.classes.some(function(course){
+        return course.id === data.activeWorkspaceClassId;
+      })
+    ) {
+      data.activeWorkspaceClassId = "";
+    }
+
+    if (!data.activeWorkspaceClassId && data.classes.length) {
+      const preferred = data.classes.find(function(course){
+        return course.id === data.activeClassId;
+      });
+
+      data.activeWorkspaceClassId =
+        preferred?.id ||
+        data.classes[0].id;
+    }
+
+    select.innerHTML =
+      '<option value="">Select a course</option>' +
+      data.classes.map(function(course){
+        const selected =
+          course.id === data.activeWorkspaceClassId
+            ? " selected"
+            : "";
+
+        return '<option value="' +
+          workspaceEscape(course.id) +
+          '"' +
+          selected +
+          '>' +
+          workspaceEscape(workspaceCourseTitle(course)) +
+          '</option>';
+      }).join("");
+
+    select.onchange = function(){
+      data.activeWorkspaceClassId = this.value;
+      saveData();
+    };
+
+    const course = data.classes.find(function(item){
+      return item.id === data.activeWorkspaceClassId;
+    }) || null;
+
+    const role = getRoleMode();
+    const roleNotice = $("workspaceRoleNotice");
+
+    if (roleNotice) {
+      if (role === "registrar") {
+        roleNotice.textContent =
+          "Registrar view: school-wide course oversight is active.";
+      } else if (role === "instructor") {
+        roleNotice.textContent =
+          "Instructor view: course content and learner progress are available.";
+      } else if (role === "student") {
+        roleNotice.textContent =
+          "Student view: enrolled course information is available.";
+      } else {
+        roleNotice.textContent =
+          "Select a course to open its learning workspace.";
+      }
+    }
+
+    const modules = course
+      ? data.modules.filter(function(item){
+          return item.classId === course.id;
+        })
+      : [];
+
+    const assignments = course
+      ? data.assignments.filter(function(item){
+          return item.classId === course.id;
+        })
+      : [];
+
+    const announcements = course
+      ? data.announcements.filter(function(item){
+          return item.classId === course.id;
+        })
+      : [];
+
+    const calendarEvents = course
+      ? data.calendarEvents.filter(function(item){
+          return item.classId === course.id;
+        })
+      : [];
+
+    const registrations = course
+      ? data.registrations.filter(function(item){
+          return item.classId === course.id;
+        })
+      : [];
+
+    if ($("workspaceEnrollmentMetric")) {
+      $("workspaceEnrollmentMetric").textContent =
+        String(registrations.length);
+    }
+
+    if ($("workspaceModuleMetric")) {
+      $("workspaceModuleMetric").textContent =
+        String(modules.length);
+    }
+
+    if ($("workspaceAssignmentMetric")) {
+      $("workspaceAssignmentMetric").textContent =
+        String(assignments.length);
+    }
+
+    if ($("workspaceAnnouncementMetric")) {
+      $("workspaceAnnouncementMetric").textContent =
+        String(announcements.length);
+    }
+
+    const summary = $("workspaceCourseSummary");
+
+    if (summary) {
+      if (!course) {
+        summary.innerHTML =
+          "<b>No active course selected.</b><br>" +
+          "Create or select a class to begin using the Course Workspace.";
+      } else {
+        const instructor =
+          course.instructor ||
+          course.instructorName ||
+          course.teacher ||
+          "Not assigned";
+
+        const startDate =
+          course.startDate ||
+          course.classStartDate ||
+          "To be scheduled";
+
+        const delivery =
+          course.deliveryMethod ||
+          course.format ||
+          course.location ||
+          "AGV learning environment";
+
+        summary.innerHTML =
+          "<b>" +
+          workspaceEscape(workspaceCourseTitle(course)) +
+          "</b><br>" +
+          "Instructor: " +
+          workspaceEscape(instructor) +
+          " &nbsp;|&nbsp; Starts: " +
+          workspaceEscape(startDate) +
+          " &nbsp;|&nbsp; Format: " +
+          workspaceEscape(delivery);
+      }
+    }
+
+    const moduleTarget = $("workspaceModules");
+
+    if (moduleTarget) {
+      moduleTarget.innerHTML = modules.length
+        ? modules.map(function(item,index){
+            return '<div class="workspaceItem"><b>' +
+              workspaceEscape(
+                item.title ||
+                item.moduleName ||
+                "Module " + (index + 1)
+              ) +
+              '</b><small>' +
+              workspaceEscape(
+                item.description ||
+                item.status ||
+                "Course learning module"
+              ) +
+              '</small></div>';
+          }).join("")
+        : workspaceEmpty(
+            course
+              ? "No modules have been added to this course yet."
+              : "Select a course to view its modules."
+          );
+    }
+
+    const assignmentTarget = $("workspaceAssignments");
+
+    if (assignmentTarget) {
+      assignmentTarget.innerHTML = assignments.length
+        ? assignments.map(function(item){
+            return '<div class="workspaceItem"><b>' +
+              workspaceEscape(
+                item.title ||
+                item.assignmentName ||
+                "Assignment"
+              ) +
+              '</b><small>Due: ' +
+              workspaceEscape(
+                item.dueDate ||
+                "No due date"
+              ) +
+              " | Points: " +
+              workspaceEscape(
+                item.pointsPossible == null
+                  ? "Not set"
+                  : item.pointsPossible
+              ) +
+              '</small></div>';
+          }).join("")
+        : workspaceEmpty(
+            course
+              ? "No assignments have been added to this course yet."
+              : "Select a course to view its assignments."
+          );
+    }
+
+    const announcementTarget = $("workspaceAnnouncements");
+
+    if (announcementTarget) {
+      announcementTarget.innerHTML = announcements.length
+        ? announcements.map(function(item){
+            return '<div class="workspaceItem"><b>' +
+              workspaceEscape(
+                item.title ||
+                "Course Announcement"
+              ) +
+              '</b><small>' +
+              workspaceEscape(
+                item.message ||
+                item.body ||
+                "Announcement posted"
+              ) +
+              '</small></div>';
+          }).join("")
+        : workspaceEmpty(
+            course
+              ? "No announcements have been posted for this course."
+              : "Select a course to view announcements."
+          );
+    }
+
+    const calendarTarget = $("workspaceCalendar");
+
+    if (calendarTarget) {
+      calendarTarget.innerHTML = calendarEvents.length
+        ? calendarEvents.map(function(item){
+            return '<div class="workspaceItem"><b>' +
+              workspaceEscape(
+                item.title ||
+                item.eventName ||
+                "Course Event"
+              ) +
+              '</b><small>' +
+              workspaceEscape(
+                item.date ||
+                item.startDate ||
+                "Date not scheduled"
+              ) +
+              '</small></div>';
+          }).join("")
+        : workspaceEmpty(
+            course
+              ? "No course calendar items have been scheduled."
+              : "Select a course to view its calendar."
+          );
+    }
+
+    const gradebookTarget = $("workspaceGradebook");
+
+    if (gradebookTarget) {
+      if (!course) {
+        gradebookTarget.innerHTML =
+          workspaceEmpty("Select a course to view its gradebook roster.");
+      } else if (!registrations.length) {
+        gradebookTarget.innerHTML =
+          workspaceEmpty("No students are registered for this course.");
+      } else {
+        const rows = registrations.map(function(registration){
+          const student = data.students.find(function(item){
+            return item.id === registration.studentId;
+          });
+
+          const grade = data.gradebook.find(function(item){
+            return (
+              item.classId === course.id &&
+              item.studentId === registration.studentId
+            );
+          });
+
+          return "<tr><td><b>" +
+            workspaceEscape(
+              student
+                ? fullName(student)
+                : "Student record unavailable"
+            ) +
+            "</b></td><td>" +
+            workspaceEscape(
+              registration.status ||
+              "Registered"
+            ) +
+            "</td><td>" +
+            workspaceEscape(
+              grade && grade.score != null
+                ? grade.score
+                : "Not graded"
+            ) +
+            "</td></tr>";
+        }).join("");
+
+        gradebookTarget.innerHTML =
+          '<div class="workspaceTableWrap">' +
+          '<table class="workspaceTable">' +
+          "<thead><tr>" +
+          "<th>Student</th>" +
+          "<th>Registration Status</th>" +
+          "<th>Current Score</th>" +
+          "</tr></thead>" +
+          "<tbody>" +
+          rows +
+          "</tbody></table></div>";
+      }
+    }
+  }
+
   function renderAll(){
     if (!$("classStartDate").value) $("classStartDate").value = today();
     if (!$("issueDate").value) $("issueDate").value = today();
 
+    renderCourseWorkspace();
     renderProfileBox();
     renderStudents();
     renderClasses();
@@ -1805,7 +3527,7 @@
   window.agvUPUpdateReg = updateReg;
   window.agvUPOpenCertificate = openCertificate;
 
-  
+
   function agvUpAttachSupabaseSaveButtons(){
     if ($("saveActiveStudentSupabaseBtn")) $("saveActiveStudentSupabaseBtn").onclick = saveActiveStudentToSupabase;
     if ($("saveActiveRegistrationSupabaseBtn")) $("saveActiveRegistrationSupabaseBtn").onclick = saveActiveRegistrationToSupabase;
@@ -1814,15 +3536,4367 @@
 
   agvUpAttachSupabaseSaveButtons();
 
-  
+
   if ($("roleModeSelect")) $("roleModeSelect").onchange = function(){
     setRoleMode(this.value);
   };
 
+  /* PASS_AGV_UP_WORKSPACE_SCOPE_REPAIR_2C1 */
+  function agvUpWorkspaceById(id){
+    return document.getElementById(id);
+  }
+
+  function agvUpWorkspaceCanEdit(){
+    const role = getRoleMode();
+    return role === "registrar" || role === "instructor";
+  }
+
+  function agvUpWorkspaceCourse(){
+    return data.classes.find(function(course){
+      return course.id === data.activeWorkspaceClassId;
+    }) || null;
+  }
+
+  function agvUpWorkspaceSetStatus(message,type){
+    let status = agvUpWorkspaceById("workspaceEditorStatus");
+
+    if (!status) {
+      status = document.createElement("div");
+      status.id = "workspaceEditorStatus";
+      status.className = "workspaceEditorStatus";
+
+      const hero = document.querySelector(
+        "#workspaceView .workspaceHero"
+      );
+
+      if (hero && hero.parentNode) {
+        hero.parentNode.insertBefore(
+          status,
+          hero.nextSibling
+        );
+      }
+    }
+
+    status.textContent = message;
+
+    if (type === "ok") {
+      status.style.borderColor = "rgba(22,163,74,.32)";
+      status.style.background = "rgba(22,163,74,.08)";
+      status.style.color = "#166534";
+    } else if (type === "bad") {
+      status.style.borderColor = "rgba(220,38,38,.32)";
+      status.style.background = "rgba(220,38,38,.08)";
+      status.style.color = "#991b1b";
+    } else {
+      status.style.borderColor = "rgba(148,163,184,.3)";
+      status.style.background = "rgba(148,163,184,.08)";
+      status.style.color = "#475569";
+    }
+  }
+
+  function agvUpWorkspaceRequireCourse(){
+    const course = agvUpWorkspaceCourse();
+
+    if (!course) {
+      agvUpWorkspaceSetStatus(
+        "Select an active course before adding course content.",
+        "bad"
+      );
+
+      return null;
+    }
+
+    return course;
+  }
+
+  function agvUpWorkspaceRequireEditor(){
+    if (!agvUpWorkspaceCanEdit()) {
+      agvUpWorkspaceSetStatus(
+        "Student access is read-only. Registrar or Instructor access is required to edit course content.",
+        "bad"
+      );
+
+      return false;
+    }
+
+    return true;
+  }
+
+  function agvUpWorkspaceClear(ids){
+    ids.forEach(function(id){
+      const element = agvUpWorkspaceById(id);
+
+      if (!element) return;
+
+      if (
+        element.tagName === "SELECT" ||
+        element.type === "number"
+      ) {
+        return;
+      }
+
+      element.value = "";
+    });
+  }
+
+  let agvUpWorkspaceEditingModuleId = "";
+  let agvUpWorkspaceEditingModuleCourseId = "";
+
+  function agvUpWorkspaceNormalizeModulePositions(courseId){
+    data.modules
+      .filter(function(item){
+        return item.classId === courseId;
+      })
+      .sort(function(a,b){
+        return Number(a.position || 0) -
+          Number(b.position || 0);
+      })
+      .forEach(function(item,index){
+        item.position = index + 1;
+      });
+  }
+
+  function agvUpWorkspaceCloseModuleEditor(){
+    agvUpWorkspaceEditingModuleId = "";
+    agvUpWorkspaceEditingModuleCourseId = "";
+
+    const editor =
+      agvUpWorkspaceById("workspaceModuleEditor");
+
+    const heading =
+      agvUpWorkspaceById("workspaceModuleEditorHeading");
+
+    const title =
+      agvUpWorkspaceById("workspaceModuleTitle");
+
+    const description =
+      agvUpWorkspaceById("workspaceModuleDescription");
+
+    const draftButton =
+      agvUpWorkspaceById("workspaceSaveModuleBtn");
+
+    const publishButton =
+      agvUpWorkspaceById("workspacePublishModuleBtn");
+
+    if (title) title.value = "";
+    if (description) description.value = "";
+
+    if (heading) {
+      heading.textContent = "Add a New Module";
+    }
+
+    if (draftButton) {
+      draftButton.textContent = "Save Draft";
+    }
+
+    if (publishButton) {
+      publishButton.textContent = "Publish Module";
+    }
+
+    if (editor) {
+      editor.hidden = true;
+    }
+  }
+
+  function agvUpWorkspaceOpenModuleEditor(moduleId){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const editor =
+      agvUpWorkspaceById("workspaceModuleEditor");
+
+    const heading =
+      agvUpWorkspaceById("workspaceModuleEditorHeading");
+
+    const title =
+      agvUpWorkspaceById("workspaceModuleTitle");
+
+    const description =
+      agvUpWorkspaceById("workspaceModuleDescription");
+
+    const draftButton =
+      agvUpWorkspaceById("workspaceSaveModuleBtn");
+
+    const publishButton =
+      agvUpWorkspaceById("workspacePublishModuleBtn");
+
+    const existing = moduleId
+      ? data.modules.find(function(item){
+          return (
+            item.id === moduleId &&
+            item.classId === course.id
+          );
+        })
+      : null;
+
+    agvUpWorkspaceEditingModuleId =
+      existing?.id || "";
+
+    agvUpWorkspaceEditingModuleCourseId =
+      course.id;
+
+    if (title) {
+      title.value = existing?.title || "";
+    }
+
+    if (description) {
+      description.value =
+        existing?.description || "";
+    }
+
+    if (heading) {
+      heading.textContent = existing
+        ? "Edit Module"
+        : "Add a New Module";
+    }
+
+    if (draftButton) {
+      draftButton.textContent = existing
+        ? "Save as Draft"
+        : "Save Draft";
+    }
+
+    if (publishButton) {
+      publishButton.textContent = existing
+        ? "Save & Publish"
+        : "Publish Module";
+    }
+
+    if (editor) {
+      editor.hidden = false;
+    }
+
+    if (title) {
+      title.focus();
+      title.select();
+    }
+
+    agvUpWorkspaceSetStatus(
+      existing
+        ? "Editing " + existing.title + "."
+        : "Enter a title, then save a draft or publish the module.",
+      "warn"
+    );
+  }
+
+  function agvUpWorkspaceSaveModule(requestedStatus){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const title = String(
+      agvUpWorkspaceById("workspaceModuleTitle")?.value || ""
+    ).trim();
+
+    if (!title) {
+      agvUpWorkspaceSetStatus(
+        "Enter a module title.",
+        "bad"
+      );
+
+      agvUpWorkspaceById("workspaceModuleTitle")?.focus();
+      return;
+    }
+
+    const description = String(
+      agvUpWorkspaceById(
+        "workspaceModuleDescription"
+      )?.value || ""
+    ).trim();
+
+    const status =
+      requestedStatus === "Published"
+        ? "Published"
+        : "Draft";
+
+    let moduleRecord = null;
+    let wasEditing = false;
+
+    if (agvUpWorkspaceEditingModuleId) {
+      moduleRecord = data.modules.find(function(item){
+        return (
+          item.id === agvUpWorkspaceEditingModuleId &&
+          item.classId === course.id
+        );
+      }) || null;
+
+      if (!moduleRecord) {
+        agvUpWorkspaceSetStatus(
+          "The module being edited could not be found.",
+          "bad"
+        );
+
+        return;
+      }
+
+      wasEditing = true;
+      moduleRecord.title = title;
+      moduleRecord.description = description;
+      moduleRecord.status = status;
+      moduleRecord.updatedAt =
+        new Date().toISOString();
+    } else {
+      moduleRecord = {
+        id:uid("MODULE"),
+        classId:course.id,
+        title:title,
+        description:description,
+        status:status,
+        position:data.modules.filter(function(item){
+          return item.classId === course.id;
+        }).length + 1,
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      };
+
+      data.modules.push(moduleRecord);
+    }
+
+    agvUpWorkspaceNormalizeModulePositions(
+      course.id
+    );
+
+    saveData();
+    agvUpWorkspaceCloseModuleEditor();
+    agvUpWorkspaceRenderWiredContent();
+
+    agvUpWorkspaceSetStatus(
+      (
+        wasEditing
+          ? "Module updated"
+          : "Module added"
+      ) +
+      " as " +
+      status +
+      ". " +
+      (
+        status === "Published"
+          ? "Click Publish / Update Handout when you are ready to send the change to students."
+          : "Students will not see this module until it is published."
+      ),
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceToggleModuleStatus(moduleId){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const moduleRecord =
+      data.modules.find(function(item){
+        return (
+          item.id === moduleId &&
+          item.classId === course.id
+        );
+      });
+
+    if (!moduleRecord) return;
+
+    moduleRecord.status =
+      String(moduleRecord.status || "Draft")
+        .toLowerCase() === "published"
+        ? "Draft"
+        : "Published";
+
+    moduleRecord.updatedAt =
+      new Date().toISOString();
+
+    saveData();
+    agvUpWorkspaceRenderWiredContent();
+
+    agvUpWorkspaceSetStatus(
+      moduleRecord.status === "Published"
+        ? "Module published. Click Publish / Update Handout to make it visible on the student handout."
+        : "Module hidden from the next published student handout.",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceMoveModule(moduleId,direction){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    agvUpWorkspaceNormalizeModulePositions(
+      course.id
+    );
+
+    const modules = data.modules
+      .filter(function(item){
+        return item.classId === course.id;
+      })
+      .sort(function(a,b){
+        return Number(a.position || 0) -
+          Number(b.position || 0);
+      });
+
+    const currentIndex =
+      modules.findIndex(function(item){
+        return item.id === moduleId;
+      });
+
+    if (currentIndex < 0) return;
+
+    const targetIndex =
+      currentIndex + direction;
+
+    if (
+      targetIndex < 0 ||
+      targetIndex >= modules.length
+    ) {
+      return;
+    }
+
+    const currentPosition =
+      modules[currentIndex].position;
+
+    modules[currentIndex].position =
+      modules[targetIndex].position;
+
+    modules[targetIndex].position =
+      currentPosition;
+
+    saveData();
+    agvUpWorkspaceRenderWiredContent();
+
+    agvUpWorkspaceSetStatus(
+      "Module order updated. Republish the Student Handout when ready.",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceDuplicateModule(moduleId){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const source =
+      data.modules.find(function(item){
+        return (
+          item.id === moduleId &&
+          item.classId === course.id
+        );
+      });
+
+    if (!source) return;
+
+    data.modules.push({
+      id:uid("MODULE"),
+      classId:course.id,
+      title:String(
+        source.title || "Module"
+      ) + " (Copy)",
+      description:String(
+        source.description || ""
+      ),
+      status:"Draft",
+      position:data.modules.filter(function(item){
+        return item.classId === course.id;
+      }).length + 1,
+      createdAt:new Date().toISOString(),
+      updatedAt:new Date().toISOString()
+    });
+
+    agvUpWorkspaceNormalizeModulePositions(
+      course.id
+    );
+
+    saveData();
+    agvUpWorkspaceRenderWiredContent();
+
+    agvUpWorkspaceSetStatus(
+      "Module duplicated as a draft.",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceDeleteModule(moduleId){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const moduleRecord =
+      data.modules.find(function(item){
+        return (
+          item.id === moduleId &&
+          item.classId === course.id
+        );
+      });
+
+    if (!moduleRecord) return;
+
+    const approved = confirm(
+      'Delete "' +
+      String(moduleRecord.title || "this module") +
+      '"? This cannot be undone.'
+    );
+
+    if (!approved) return;
+
+    data.modules = data.modules.filter(function(item){
+      return item.id !== moduleId;
+    });
+
+    agvUpWorkspaceNormalizeModulePositions(
+      course.id
+    );
+
+    if (
+      agvUpWorkspaceEditingModuleId ===
+      moduleId
+    ) {
+      agvUpWorkspaceCloseModuleEditor();
+    }
+
+    saveData();
+    agvUpWorkspaceRenderWiredContent();
+
+    agvUpWorkspaceSetStatus(
+      "Module deleted. Republish the Student Handout when ready.",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceHandleModuleAction(
+    action,
+    moduleId
+  ){
+    if (action === "edit") {
+      agvUpWorkspaceOpenModuleEditor(moduleId);
+      return;
+    }
+
+    if (action === "toggle") {
+      agvUpWorkspaceToggleModuleStatus(moduleId);
+      return;
+    }
+
+    if (action === "up") {
+      agvUpWorkspaceMoveModule(moduleId,-1);
+      return;
+    }
+
+    if (action === "down") {
+      agvUpWorkspaceMoveModule(moduleId,1);
+      return;
+    }
+
+    if (action === "duplicate") {
+      agvUpWorkspaceDuplicateModule(moduleId);
+      return;
+    }
+
+    if (action === "delete") {
+      agvUpWorkspaceDeleteModule(moduleId);
+    }
+  }
+
+  function agvUpWorkspaceModuleActionButtons(
+    item,
+    index,
+    total
+  ){
+    if (!agvUpWorkspaceCanEdit()) return "";
+
+    const published =
+      String(item.status || "Draft")
+        .toLowerCase() === "published";
+
+    return (
+      '<div class="agvUpModuleActions">' +
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton" ' +
+      'data-agv-up-module-action="edit" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '">Edit</button>' +
+
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton" ' +
+      'data-agv-up-module-action="toggle" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '">' +
+      (
+        published
+          ? "Hide"
+          : "Publish"
+      ) +
+      '</button>' +
+
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton" ' +
+      'data-agv-up-module-action="up" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '"' +
+      (
+        index === 0
+          ? " disabled"
+          : ""
+      ) +
+      '>Move Up</button>' +
+
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton" ' +
+      'data-agv-up-module-action="down" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '"' +
+      (
+        index === total - 1
+          ? " disabled"
+          : ""
+      ) +
+      '>Move Down</button>' +
+
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton" ' +
+      'data-agv-up-module-action="duplicate" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '">Duplicate</button>' +
+
+      '<button type="button" ' +
+      'class="agvUpModuleActionButton agvUpModuleDeleteButton" ' +
+      'data-agv-up-module-action="delete" ' +
+      'data-agv-up-module-id="' +
+      workspaceEscape(item.id) +
+      '">Delete</button>' +
+      "</div>"
+    );
+  }
+
+  function agvUpWorkspaceSaveAssignment(){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const title = String(
+      agvUpWorkspaceById("workspaceAssignmentTitle")?.value || ""
+    ).trim();
+
+    if (!title) {
+      agvUpWorkspaceSetStatus(
+        "Enter an assignment title.",
+        "bad"
+      );
+
+      return;
+    }
+
+    data.assignments.push({
+      id:uid("ASSIGNMENT"),
+      classId:course.id,
+      title:title,
+      description:String(
+        agvUpWorkspaceById("workspaceAssignmentDescription")?.value || ""
+      ).trim(),
+      dueDate:String(
+        agvUpWorkspaceById("workspaceAssignmentDueDate")?.value || ""
+      ),
+      pointsPossible:Number(
+        agvUpWorkspaceById("workspaceAssignmentPoints")?.value || 0
+      ),
+      status:"Published",
+      createdAt:new Date().toISOString()
+    });
+
+    agvUpWorkspaceClear([
+      "workspaceAssignmentTitle",
+      "workspaceAssignmentDescription",
+      "workspaceAssignmentDueDate"
+    ]);
+
+    saveData();
+
+    agvUpWorkspaceSetStatus(
+      "Assignment added to " + workspaceCourseTitle(course) + ".",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceSaveAnnouncement(){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const title = String(
+      agvUpWorkspaceById("workspaceAnnouncementTitle")?.value || ""
+    ).trim();
+
+    const message = String(
+      agvUpWorkspaceById("workspaceAnnouncementMessage")?.value || ""
+    ).trim();
+
+    if (!title || !message) {
+      agvUpWorkspaceSetStatus(
+        "Enter an announcement title and message.",
+        "bad"
+      );
+
+      return;
+    }
+
+    data.announcements.unshift({
+      id:uid("ANNOUNCEMENT"),
+      classId:course.id,
+      title:title,
+      message:message,
+      createdAt:new Date().toISOString()
+    });
+
+    agvUpWorkspaceClear([
+      "workspaceAnnouncementTitle",
+      "workspaceAnnouncementMessage"
+    ]);
+
+    saveData();
+
+    agvUpWorkspaceSetStatus(
+      "Announcement posted to " + workspaceCourseTitle(course) + ".",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceSaveCalendar(){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const course = agvUpWorkspaceRequireCourse();
+    if (!course) return;
+
+    const title = String(
+      agvUpWorkspaceById("workspaceCalendarTitle")?.value || ""
+    ).trim();
+
+    const date = String(
+      agvUpWorkspaceById("workspaceCalendarDate")?.value || ""
+    );
+
+    if (!title || !date) {
+      agvUpWorkspaceSetStatus(
+        "Enter an event title and date.",
+        "bad"
+      );
+
+      return;
+    }
+
+    data.calendarEvents.push({
+      id:uid("EVENT"),
+      classId:course.id,
+      title:title,
+      date:date,
+      time:String(
+        agvUpWorkspaceById("workspaceCalendarTime")?.value || ""
+      ),
+      location:String(
+        agvUpWorkspaceById("workspaceCalendarLocation")?.value || ""
+      ).trim(),
+      details:String(
+        agvUpWorkspaceById("workspaceCalendarDetails")?.value || ""
+      ).trim(),
+      createdAt:new Date().toISOString()
+    });
+
+    agvUpWorkspaceClear([
+      "workspaceCalendarTitle",
+      "workspaceCalendarDate",
+      "workspaceCalendarTime",
+      "workspaceCalendarLocation",
+      "workspaceCalendarDetails"
+    ]);
+
+    saveData();
+
+    agvUpWorkspaceSetStatus(
+      "Calendar event added to " + workspaceCourseTitle(course) + ".",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceDelete(type,id){
+    if (!agvUpWorkspaceRequireEditor()) return;
+
+    const collections = {
+      module:"modules",
+      assignment:"assignments",
+      announcement:"announcements",
+      calendar:"calendarEvents"
+    };
+
+    const key = collections[type];
+
+    if (!key || !Array.isArray(data[key])) return;
+
+    const approved = confirm(
+      "Remove this " + type + " from the active course?"
+    );
+
+    if (!approved) return;
+
+    data[key] = data[key].filter(function(item){
+      return item.id !== id;
+    });
+
+    saveData();
+
+    agvUpWorkspaceSetStatus(
+      "Course " + type + " removed.",
+      "ok"
+    );
+  }
+
+  function agvUpWorkspaceItemActions(type,id){
+    if (!agvUpWorkspaceCanEdit()) return "";
+
+    return (
+      '<button type="button" ' +
+      'class="workspaceDeleteButton" ' +
+      'data-agv-up-delete-type="' +
+      workspaceEscape(type) +
+      '" data-agv-up-delete-id="' +
+      workspaceEscape(id) +
+      '">Remove</button>'
+    );
+  }
+
+  function agvUpWorkspaceRenderWiredContent(){
+    const course = agvUpWorkspaceCourse();
+    const canEdit = agvUpWorkspaceCanEdit();
+
+    [
+      "workspaceAssignmentEditor",
+      "workspaceAnnouncementEditor",
+      "workspaceCalendarEditor"
+    ].forEach(function(id){
+      const editor = agvUpWorkspaceById(id);
+
+      if (editor) {
+        editor.style.display =
+          canEdit && course
+            ? ""
+            : "none";
+      }
+    });
+
+    if (!course) {
+      agvUpWorkspaceSetStatus(
+        "Select a course to view and manage its learning content.",
+        "warn"
+      );
+
+      return;
+    }
+
+    if (canEdit) {
+      agvUpWorkspaceSetStatus(
+        "Course content editing is active for " +
+        workspaceCourseTitle(course) +
+        ".",
+        "ok"
+      );
+    } else {
+      agvUpWorkspaceSetStatus(
+        "Student read-only view is active for " +
+        workspaceCourseTitle(course) +
+        ".",
+        "warn"
+      );
+    }
+
+    const modules = data.modules
+      .filter(function(item){
+        return item.classId === course.id;
+      })
+      .sort(function(a,b){
+        return Number(a.position || 0) -
+          Number(b.position || 0);
+      });
+
+    const assignments = data.assignments
+      .filter(function(item){
+        return item.classId === course.id;
+      })
+      .sort(function(a,b){
+        return String(a.dueDate || "9999").localeCompare(
+          String(b.dueDate || "9999")
+        );
+      });
+
+    const announcements = data.announcements
+      .filter(function(item){
+        return item.classId === course.id;
+      });
+
+    const calendarEvents = data.calendarEvents
+      .filter(function(item){
+        return item.classId === course.id;
+      })
+      .sort(function(a,b){
+        return (
+          String(a.date || "") +
+          String(a.time || "")
+        ).localeCompare(
+          String(b.date || "") +
+          String(b.time || "")
+        );
+      });
+
+    const moduleOpenButton =
+      agvUpWorkspaceById(
+        "workspaceOpenModuleEditorBtn"
+      );
+
+    const moduleEditor =
+      agvUpWorkspaceById(
+        "workspaceModuleEditor"
+      );
+
+    const moduleBuilderHint =
+      agvUpWorkspaceById(
+        "workspaceModuleBuilderHint"
+      );
+
+    if (moduleOpenButton) {
+      moduleOpenButton.style.display =
+        canEdit && course
+          ? ""
+          : "none";
+
+      moduleOpenButton.disabled =
+        !(canEdit && course);
+    }
+
+    if (
+      !course ||
+      !canEdit ||
+      (
+        moduleEditor &&
+        !moduleEditor.hidden &&
+        agvUpWorkspaceEditingModuleCourseId &&
+        agvUpWorkspaceEditingModuleCourseId !==
+          course.id
+      )
+    ) {
+      agvUpWorkspaceCloseModuleEditor();
+    }
+
+    if (moduleBuilderHint) {
+      if (!course) {
+        moduleBuilderHint.textContent =
+          "Select a course to begin building modules.";
+      } else if (!canEdit) {
+        moduleBuilderHint.textContent =
+          "Students can view published modules but cannot change them.";
+      } else if (!modules.length) {
+        moduleBuilderHint.textContent =
+          "Press Add Module to create the first lesson.";
+      } else {
+        moduleBuilderHint.textContent =
+          modules.length +
+          (
+            modules.length === 1
+              ? " module is"
+              : " modules are"
+          ) +
+          " currently in this course.";
+      }
+    }
+
+    const moduleTarget =
+      agvUpWorkspaceById("workspaceModules");
+
+    if (moduleTarget) {
+      moduleTarget.innerHTML = modules.length
+        ? modules.map(function(item,index){
+            const published =
+              String(item.status || "Draft")
+                .toLowerCase() === "published";
+
+            return (
+              '<article class="agvUpModuleCard">' +
+              '<div class="agvUpModuleCardHeader">' +
+              "<div>" +
+              '<h4 class="agvUpModuleCardTitle">' +
+              workspaceEscape(
+                item.title ||
+                "Module " + (index + 1)
+              ) +
+              "</h4>" +
+              '<p class="agvUpModuleCardDescription">' +
+              workspaceEscape(
+                item.description ||
+                "No description added."
+              ) +
+              "</p>" +
+              "</div>" +
+              '<span class="agvUpModuleStatusBadge' +
+              (
+                published
+                  ? " isPublished"
+                  : ""
+              ) +
+              '">' +
+              (
+                published
+                  ? "Published"
+                  : "Draft"
+              ) +
+              "</span>" +
+              "</div>" +
+              agvUpWorkspaceModuleActionButtons(
+                item,
+                index,
+                modules.length
+              ) +
+              "</article>"
+            );
+          }).join("")
+        : workspaceEmpty(
+            canEdit
+              ? "No modules yet. Press Add Module to create the first lesson."
+              : "No published modules are available yet."
+          );
+
+      moduleTarget.onclick = canEdit
+        ? function(event){
+            const button = event.target.closest(
+              "[data-agv-up-module-action]"
+            );
+
+            if (
+              !button ||
+              !moduleTarget.contains(button) ||
+              button.disabled
+            ) {
+              return;
+            }
+
+            agvUpWorkspaceHandleModuleAction(
+              button.getAttribute(
+                "data-agv-up-module-action"
+              ),
+              button.getAttribute(
+                "data-agv-up-module-id"
+              )
+            );
+          }
+        : null;
+    }
+
+    const assignmentTarget =
+      agvUpWorkspaceById("workspaceAssignments");
+
+    if (assignmentTarget) {
+      assignmentTarget.innerHTML = assignments.length
+        ? assignments.map(function(item){
+            return (
+              '<div class="workspaceItem">' +
+              "<b>" +
+              workspaceEscape(item.title || "Assignment") +
+              "</b>" +
+              "<small>" +
+              workspaceEscape(
+                item.description ||
+                "No assignment instructions provided."
+              ) +
+              "</small>" +
+              '<div class="workspaceItemMeta">' +
+              "<span>Due: " +
+              workspaceEscape(
+                item.dueDate ||
+                "Not scheduled"
+              ) +
+              "</span>" +
+              "<span>" +
+              workspaceEscape(
+                item.pointsPossible == null
+                  ? 0
+                  : item.pointsPossible
+              ) +
+              " points</span>" +
+              "</div>" +
+              agvUpWorkspaceItemActions(
+                "assignment",
+                item.id
+              ) +
+              "</div>"
+            );
+          }).join("")
+        : workspaceEmpty(
+            "No assignments have been added to this course yet."
+          );
+    }
+
+    const announcementTarget =
+      agvUpWorkspaceById("workspaceAnnouncements");
+
+    if (announcementTarget) {
+      announcementTarget.innerHTML = announcements.length
+        ? announcements.map(function(item){
+            return (
+              '<div class="workspaceItem">' +
+              "<b>" +
+              workspaceEscape(
+                item.title ||
+                "Course Announcement"
+              ) +
+              "</b>" +
+              "<small>" +
+              workspaceEscape(
+                item.message ||
+                "Announcement posted."
+              ) +
+              "</small>" +
+              '<div class="workspaceItemMeta">' +
+              "<span>" +
+              workspaceEscape(
+                item.createdAt
+                  ? new Date(item.createdAt).toLocaleDateString()
+                  : "Posted"
+              ) +
+              "</span>" +
+              "</div>" +
+              agvUpWorkspaceItemActions(
+                "announcement",
+                item.id
+              ) +
+              "</div>"
+            );
+          }).join("")
+        : workspaceEmpty(
+            "No announcements have been posted for this course."
+          );
+    }
+
+    const calendarTarget =
+      agvUpWorkspaceById("workspaceCalendar");
+
+    if (calendarTarget) {
+      calendarTarget.innerHTML = calendarEvents.length
+        ? calendarEvents.map(function(item){
+            return (
+              '<div class="workspaceItem">' +
+              "<b>" +
+              workspaceEscape(
+                item.title ||
+                "Course Event"
+              ) +
+              "</b>" +
+              "<small>" +
+              workspaceEscape(
+                item.details ||
+                item.location ||
+                "Course event"
+              ) +
+              "</small>" +
+              '<div class="workspaceItemMeta">' +
+              "<span>" +
+              workspaceEscape(
+                item.date ||
+                "Date not scheduled"
+              ) +
+              "</span>" +
+              (
+                item.time
+                  ? "<span>" +
+                    workspaceEscape(item.time) +
+                    "</span>"
+                  : ""
+              ) +
+              (
+                item.location
+                  ? "<span>" +
+                    workspaceEscape(item.location) +
+                    "</span>"
+                  : ""
+              ) +
+              "</div>" +
+              agvUpWorkspaceItemActions(
+                "calendar",
+                item.id
+              ) +
+              "</div>"
+            );
+          }).join("")
+        : workspaceEmpty(
+            "No calendar events have been scheduled for this course."
+          );
+    }
+
+    document.querySelectorAll(
+      "[data-agv-up-delete-type]"
+    ).forEach(function(button){
+      button.onclick = function(){
+        agvUpWorkspaceDelete(
+          this.getAttribute(
+            "data-agv-up-delete-type"
+          ),
+          this.getAttribute(
+            "data-agv-up-delete-id"
+          )
+        );
+      };
+    });
+  }
+
+  const originalRenderCourseWorkspace =
+    renderCourseWorkspace;
+
+  renderCourseWorkspace = function(){
+    originalRenderCourseWorkspace();
+    agvUpWorkspaceRenderWiredContent();
+  };
+
+  const originalApplyRoleMode =
+    applyRoleMode;
+
+  applyRoleMode = function(){
+    originalApplyRoleMode();
+    agvUpWorkspaceRenderWiredContent();
+  };
+
+  const moduleOpenButton =
+    agvUpWorkspaceById(
+      "workspaceOpenModuleEditorBtn"
+    );
+
+  if (moduleOpenButton) {
+    moduleOpenButton.onclick = function(){
+      agvUpWorkspaceOpenModuleEditor("");
+    };
+  }
+
+  const moduleDraftButton =
+    agvUpWorkspaceById("workspaceSaveModuleBtn");
+
+  if (moduleDraftButton) {
+    moduleDraftButton.onclick = function(){
+      agvUpWorkspaceSaveModule("Draft");
+    };
+  }
+
+  const modulePublishButton =
+    agvUpWorkspaceById(
+      "workspacePublishModuleBtn"
+    );
+
+  if (modulePublishButton) {
+    modulePublishButton.onclick = function(){
+      agvUpWorkspaceSaveModule("Published");
+    };
+  }
+
+  const moduleCancelButton =
+    agvUpWorkspaceById(
+      "workspaceCancelModuleBtn"
+    );
+
+  if (moduleCancelButton) {
+    moduleCancelButton.onclick =
+      agvUpWorkspaceCloseModuleEditor;
+  }
+
+  const assignmentButton =
+    agvUpWorkspaceById("workspaceSaveAssignmentBtn");
+
+  if (assignmentButton) {
+    assignmentButton.onclick =
+      agvUpWorkspaceSaveAssignment;
+  }
+
+  const announcementButton =
+    agvUpWorkspaceById("workspaceSaveAnnouncementBtn");
+
+  if (announcementButton) {
+    announcementButton.onclick =
+      agvUpWorkspaceSaveAnnouncement;
+  }
+
+  const calendarButton =
+    agvUpWorkspaceById("workspaceSaveCalendarBtn");
+
+  if (calendarButton) {
+    calendarButton.onclick =
+      agvUpWorkspaceSaveCalendar;
+  }
+
+  agvUpWorkspaceRenderWiredContent();
+
+  /* PASS_AGV_UP_STUDENT_HANDOUTS_3A */
+
+  const AGV_UP_HANDOUT_KEYS_STORAGE =
+    "agvUniversityPalStudentHandoutKeys";
+
+  function agvUpHandoutById(id){
+    return document.getElementById(id);
+  }
+
+  function agvUpHandoutRoleCanPublish(){
+    const role = getRoleMode();
+
+    return (
+      role === "registrar" ||
+      role === "instructor"
+    );
+  }
+
+  function agvUpHandoutCurrentCourse(){
+    const selectedId =
+      data.activeWorkspaceClassId ||
+      agvUpHandoutById("workspaceClassSelect")?.value ||
+      "";
+
+    return data.classes.find(function(course){
+      return course.id === selectedId;
+    }) || null;
+  }
+
+  function agvUpHandoutLoadKeys(){
+    try {
+      const parsed = JSON.parse(
+        localStorage.getItem(
+          AGV_UP_HANDOUT_KEYS_STORAGE
+        ) || "{}"
+      );
+
+      return (
+        parsed &&
+        typeof parsed === "object" &&
+        !Array.isArray(parsed)
+      )
+        ? parsed
+        : {};
+    } catch(error) {
+      return {};
+    }
+  }
+
+  function agvUpHandoutSaveKeys(keys){
+    localStorage.setItem(
+      AGV_UP_HANDOUT_KEYS_STORAGE,
+      JSON.stringify(keys)
+    );
+  }
+
+  function agvUpHandoutRandomEditToken(){
+    if (
+      window.crypto &&
+      typeof window.crypto.getRandomValues === "function"
+    ) {
+      const bytes = new Uint8Array(32);
+
+      window.crypto.getRandomValues(bytes);
+
+      return Array.from(bytes)
+        .map(function(value){
+          return value.toString(16).padStart(2,"0");
+        })
+        .join("");
+    }
+
+    return (
+      agvUpUuid().replace(/-/g,"") +
+      agvUpUuid().replace(/-/g,"")
+    );
+  }
+
+  function agvUpHandoutEnsureKeys(course){
+    const keys = agvUpHandoutLoadKeys();
+    const existing = keys[course.id] || {};
+
+    if (!existing.publicToken) {
+      existing.publicToken = agvUpUuid();
+    }
+
+    if (!existing.editToken) {
+      existing.editToken =
+        agvUpHandoutRandomEditToken();
+    }
+
+    keys[course.id] = existing;
+    agvUpHandoutSaveKeys(keys);
+
+    return existing;
+  }
+
+  function agvUpHandoutCourseKeys(course){
+    if (!course) return null;
+
+    const keys = agvUpHandoutLoadKeys();
+
+    return keys[course.id] || null;
+  }
+
+  function agvUpHandoutSetStatus(message,type){
+    const element =
+      agvUpHandoutById("agvUpHandoutStatus");
+
+    if (!element) return;
+
+    const cssClass =
+      type === "ok"
+        ? "ok"
+        : type === "bad"
+          ? "bad"
+          : "warn";
+
+    element.innerHTML =
+      '<span class="' +
+      cssClass +
+      '">' +
+      workspaceEscape(message) +
+      "</span>";
+  }
+
+  function agvUpHandoutValidUuidOrNull(value){
+    const normalized = String(value || "").trim();
+
+    return (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        .test(normalized)
+    )
+      ? normalized
+      : null;
+  }
+
+  function agvUpHandoutBuildLink(publicToken){
+    const settings = loadSupabaseSettings();
+
+    if (
+      !settings.url ||
+      !settings.anonKey ||
+      !publicToken
+    ) {
+      return "";
+    }
+
+    const hash = new URLSearchParams();
+
+    hash.set("agvUpHandout",publicToken);
+    hash.set("agvUpSbUrl",settings.url);
+    hash.set("agvUpSbKey",settings.anonKey);
+
+    return (
+      window.location.origin +
+      window.location.pathname +
+      "#" +
+      hash.toString()
+    );
+  }
+
+  function agvUpHandoutRenderTeacherPanel(){
+    const panel =
+      agvUpHandoutById("agvUpHandoutTeacherPanel");
+
+    if (!panel) return;
+
+    const course = agvUpHandoutCurrentCourse();
+    const canPublish = agvUpHandoutRoleCanPublish();
+
+    panel.style.display =
+      canPublish
+        ? ""
+        : "none";
+
+    if (!canPublish) return;
+
+    const keys = agvUpHandoutCourseKeys(course);
+    const link =
+      keys?.publicToken
+        ? agvUpHandoutBuildLink(keys.publicToken)
+        : "";
+
+    const titleInput =
+      agvUpHandoutById("agvUpHandoutTitle");
+
+    const introductionInput =
+      agvUpHandoutById(
+        "agvUpHandoutIntroduction"
+      );
+
+    const linkInput =
+      agvUpHandoutById("agvUpHandoutLink");
+
+    const publishButton =
+      agvUpHandoutById("agvUpPublishHandoutBtn");
+
+    const copyButton =
+      agvUpHandoutById("agvUpCopyHandoutBtn");
+
+    const openButton =
+      agvUpHandoutById("agvUpOpenHandoutBtn");
+
+    const unpublishButton =
+      agvUpHandoutById("agvUpUnpublishHandoutBtn");
+
+    if (titleInput) {
+      titleInput.value =
+        keys?.handoutTitle ||
+        (
+          course
+            ? "Student Handout — " +
+              workspaceCourseTitle(course)
+            : "Student Handout"
+        );
+    }
+
+    if (introductionInput) {
+      introductionInput.value =
+        keys?.introduction || "";
+    }
+
+    if (linkInput) {
+      linkInput.value = link;
+    }
+
+    if (publishButton) {
+      publishButton.disabled = !course;
+    }
+
+    if (copyButton) {
+      copyButton.disabled = !link;
+    }
+
+    if (openButton) {
+      openButton.disabled = !link;
+    }
+
+    if (unpublishButton) {
+      unpublishButton.disabled =
+        !course ||
+        !keys?.publicToken ||
+        !keys?.editToken;
+    }
+
+    if (!course) {
+      agvUpHandoutSetStatus(
+        "Select a course before publishing its student handout.",
+        "warn"
+      );
+
+      return;
+    }
+
+    if (
+      !loadSupabaseSettings().url ||
+      !loadSupabaseSettings().anonKey
+    ) {
+      agvUpHandoutSetStatus(
+        "Connect Supabase before publishing the student handout.",
+        "warn"
+      );
+
+      return;
+    }
+
+    if (keys?.lastPublishedAt) {
+      agvUpHandoutSetStatus(
+        "Student handout is available. Republish after making course updates.",
+        "ok"
+      );
+    } else {
+      agvUpHandoutSetStatus(
+        "Ready to publish a read-only handout for " +
+        workspaceCourseTitle(course) +
+        ".",
+        "warn"
+      );
+    }
+  }
+
+  function agvUpHandoutCourseItems(collection,course){
+    return collection.filter(function(item){
+      return item.classId === course.id;
+    });
+  }
+
+  async function agvUpPublishStudentHandout(){
+    if (!agvUpHandoutRoleCanPublish()) {
+      agvUpHandoutSetStatus(
+        "Only an Instructor or Registrar can publish a handout.",
+        "bad"
+      );
+
+      return;
+    }
+
+    const course = agvUpHandoutCurrentCourse();
+
+    if (!course) {
+      agvUpHandoutSetStatus(
+        "Select a course before publishing.",
+        "bad"
+      );
+
+      return;
+    }
+
+    const client = initSupabaseClient();
+
+    if (!client) {
+      agvUpHandoutSetStatus(
+        "Supabase is not connected. Save and test the Supabase settings first.",
+        "bad"
+      );
+
+      return;
+    }
+
+    const keys = agvUpHandoutEnsureKeys(course);
+
+    const handoutTitle = String(
+      agvUpHandoutById("agvUpHandoutTitle")?.value ||
+      "Student Handout"
+    ).trim();
+
+    const introduction = String(
+      agvUpHandoutById(
+        "agvUpHandoutIntroduction"
+      )?.value || ""
+    ).trim();
+
+    const modules =
+      agvUpHandoutCourseItems(data.modules,course)
+        .filter(function(item){
+          return String(
+            item.status || "Published"
+          ).toLowerCase() === "published";
+        })
+        .sort(function(a,b){
+          return Number(a.position || 0) -
+            Number(b.position || 0);
+        });
+
+    const assignments =
+      agvUpHandoutCourseItems(
+        data.assignments,
+        course
+      ).sort(function(a,b){
+        return String(a.dueDate || "")
+          .localeCompare(String(b.dueDate || ""));
+      });
+
+    const announcements =
+      agvUpHandoutCourseItems(
+        data.announcements,
+        course
+      ).sort(function(a,b){
+        return String(b.createdAt || "")
+          .localeCompare(String(a.createdAt || ""));
+      });
+
+    const calendarEvents =
+      agvUpHandoutCourseItems(
+        data.calendarEvents,
+        course
+      ).sort(function(a,b){
+        return (
+          String(a.date || "") +
+          String(a.time || "")
+        ).localeCompare(
+          String(b.date || "") +
+          String(b.time || "")
+        );
+      });
+
+    agvUpHandoutSetStatus(
+      "Publishing the latest course handout...",
+      "warn"
+    );
+
+    const result = await client.rpc(
+      "agv_up_publish_student_handout",
+      {
+        p_public_token:keys.publicToken,
+        p_edit_token:keys.editToken,
+        p_local_class_id:String(course.id || ""),
+        p_supabase_class_id:
+          agvUpHandoutValidUuidOrNull(
+            course.supabaseId
+          ),
+        p_course_name:
+          workspaceCourseTitle(course),
+        p_class_code:
+          course.classCode ||
+          course.code ||
+          null,
+        p_instructor_name:
+          course.instructor ||
+          course.instructorName ||
+          null,
+        p_handout_title:
+          handoutTitle || "Student Handout",
+        p_introduction:
+          introduction || null,
+        p_modules:modules,
+        p_assignments:assignments,
+        p_announcements:announcements,
+        p_calendar_events:calendarEvents,
+        p_expires_at:null
+      }
+    );
+
+    if (result.error) {
+      agvUpHandoutSetStatus(
+        "Handout publish failed: " +
+        result.error.message,
+        "bad"
+      );
+
+      return;
+    }
+
+    const allKeys = agvUpHandoutLoadKeys();
+
+    allKeys[course.id] = {
+      publicToken:keys.publicToken,
+      editToken:keys.editToken,
+      handoutTitle:
+        handoutTitle || "Student Handout",
+      introduction:introduction,
+      lastPublishedAt:
+        new Date().toISOString(),
+      version:
+        result.data?.[0]?.version || null
+    };
+
+    agvUpHandoutSaveKeys(allKeys);
+    agvUpHandoutRenderTeacherPanel();
+
+    agvUpHandoutSetStatus(
+      "Student handout published successfully. The link is ready to copy.",
+      "ok"
+    );
+  }
+
+  async function agvUpCopyStudentHandoutLink(){
+    const course = agvUpHandoutCurrentCourse();
+    const keys = agvUpHandoutCourseKeys(course);
+    const link =
+      keys?.publicToken
+        ? agvUpHandoutBuildLink(keys.publicToken)
+        : "";
+
+    if (!link) {
+      agvUpHandoutSetStatus(
+        "Publish the handout before copying its student link.",
+        "bad"
+      );
+
+      return;
+    }
+
+    try {
+      if (
+        navigator.clipboard &&
+        typeof navigator.clipboard.writeText ===
+          "function"
+      ) {
+        await navigator.clipboard.writeText(link);
+      } else {
+        const temporary =
+          document.createElement("textarea");
+
+        temporary.value = link;
+        temporary.style.position = "fixed";
+        temporary.style.opacity = "0";
+
+        document.body.appendChild(temporary);
+        temporary.select();
+        document.execCommand("copy");
+        temporary.remove();
+      }
+
+      agvUpHandoutSetStatus(
+        "Student handout link copied.",
+        "ok"
+      );
+    } catch(error) {
+      agvUpHandoutSetStatus(
+        "The link could not be copied automatically. Try Copy Student Link again or use Open Student Handout.",
+        "bad"
+      );
+    }
+  }
+
+  function agvUpOpenStudentHandout(){
+    const course = agvUpHandoutCurrentCourse();
+    const keys = agvUpHandoutCourseKeys(course);
+    const link =
+      keys?.publicToken
+        ? agvUpHandoutBuildLink(keys.publicToken)
+        : "";
+
+    if (!link) {
+      agvUpHandoutSetStatus(
+        "Publish the handout before opening it.",
+        "bad"
+      );
+
+      return;
+    }
+
+    window.open(
+      link,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  }
+
+  async function agvUpUnpublishStudentHandout(){
+    if (!agvUpHandoutRoleCanPublish()) {
+      agvUpHandoutSetStatus(
+        "Only an Instructor or Registrar can unpublish a handout.",
+        "bad"
+      );
+
+      return;
+    }
+
+    const course = agvUpHandoutCurrentCourse();
+    const keys = agvUpHandoutCourseKeys(course);
+
+    if (
+      !course ||
+      !keys?.publicToken ||
+      !keys?.editToken
+    ) {
+      agvUpHandoutSetStatus(
+        "No published handout is available for this course.",
+        "bad"
+      );
+
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Unpublish this student handout? The shared link will stop displaying the course information."
+    );
+
+    if (!confirmed) return;
+
+    const client = initSupabaseClient();
+
+    if (!client) {
+      agvUpHandoutSetStatus(
+        "Supabase is not connected.",
+        "bad"
+      );
+
+      return;
+    }
+
+    agvUpHandoutSetStatus(
+      "Unpublishing the student handout...",
+      "warn"
+    );
+
+    const result = await client.rpc(
+      "agv_up_unpublish_student_handout",
+      {
+        p_public_token:keys.publicToken,
+        p_edit_token:keys.editToken
+      }
+    );
+
+    if (result.error) {
+      agvUpHandoutSetStatus(
+        "Handout unpublish failed: " +
+        result.error.message,
+        "bad"
+      );
+
+      return;
+    }
+
+    const allKeys = agvUpHandoutLoadKeys();
+
+    allKeys[course.id] = {
+      ...keys,
+      lastPublishedAt:null,
+      unpublishedAt:new Date().toISOString()
+    };
+
+    agvUpHandoutSaveKeys(allKeys);
+    agvUpHandoutRenderTeacherPanel();
+
+    agvUpHandoutSetStatus(
+      "Student handout unpublished. Republish to reactivate the same link.",
+      "ok"
+    );
+  }
+
+  function agvUpHandoutFormatDate(value){
+    if (!value) return "";
+
+    const date = new Date(
+      String(value).length === 10
+        ? String(value) + "T12:00:00"
+        : value
+    );
+
+    if (Number.isNaN(date.getTime())) {
+      return String(value);
+    }
+
+    return date.toLocaleDateString(
+      undefined,
+      {
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }
+    );
+  }
+
+  function agvUpHandoutFormatText(value){
+    const escaped = workspaceEscape(value || "")
+      .replace(/\r?\n/g,"<br>");
+
+    return escaped.replace(
+      /(https?:\/\/[^\s<]+)/gi,
+      function(url){
+        return (
+          '<a href="' +
+          url +
+          '" target="_blank" rel="noopener noreferrer">' +
+          url +
+          "</a>"
+        );
+      }
+    );
+  }
+
+  function agvUpHandoutPublicItems(
+    items,
+    itemRenderer,
+    emptyMessage
+  ){
+    if (!Array.isArray(items) || !items.length) {
+      return (
+        '<div class="agvUpHandoutPublicEmpty">' +
+        workspaceEscape(emptyMessage) +
+        "</div>"
+      );
+    }
+
+    return items.map(itemRenderer).join("");
+  }
+
+  function agvUpRenderPublicStudentHandout(handout){
+    const target =
+      agvUpHandoutById(
+        "agvUpStudentHandoutPublicContent"
+      );
+
+    if (!target) return;
+
+    const modules =
+      Array.isArray(handout.modules)
+        ? handout.modules
+        : [];
+
+    const assignments =
+      Array.isArray(handout.assignments)
+        ? handout.assignments
+        : [];
+
+    const announcements =
+      Array.isArray(handout.announcements)
+        ? handout.announcements
+        : [];
+
+    const calendarEvents =
+      Array.isArray(handout.calendar_events)
+        ? handout.calendar_events
+        : [];
+
+    const moduleHtml =
+      agvUpHandoutPublicItems(
+        modules,
+        function(item){
+          return (
+            '<article class="agvUpHandoutPublicItem">' +
+              "<h3>" +
+                workspaceEscape(
+                  item.title || "Study Help"
+                ) +
+              "</h3>" +
+              '<div class="agvUpHandoutPublicItemText">' +
+                agvUpHandoutFormatText(
+                  item.description ||
+                  item.details ||
+                  ""
+                ) +
+              "</div>" +
+            "</article>"
+          );
+        },
+        "No study-help modules have been published yet."
+      );
+
+    const assignmentHtml =
+      agvUpHandoutPublicItems(
+        assignments,
+        function(item){
+          const dueDate =
+            item.dueDate ||
+            item.due_date ||
+            "";
+
+          const points =
+            item.pointsPossible ??
+            item.points_possible ??
+            "";
+
+          const metaParts = [];
+
+          if (dueDate) {
+            metaParts.push(
+              "Due " +
+              agvUpHandoutFormatDate(dueDate)
+            );
+          }
+
+          if (
+            points !== "" &&
+            Number(points) > 0
+          ) {
+            metaParts.push(
+              Number(points) + " points"
+            );
+          }
+
+          return (
+            '<article class="agvUpHandoutPublicItem">' +
+              "<h3>" +
+                workspaceEscape(
+                  item.title || "Assignment"
+                ) +
+              "</h3>" +
+              (
+                metaParts.length
+                  ? '<div class="agvUpHandoutPublicItemMeta">' +
+                    workspaceEscape(
+                      metaParts.join(" · ")
+                    ) +
+                    "</div>"
+                  : ""
+              ) +
+              '<div class="agvUpHandoutPublicItemText">' +
+                agvUpHandoutFormatText(
+                  item.description ||
+                  item.instructions ||
+                  ""
+                ) +
+              "</div>" +
+            "</article>"
+          );
+        },
+        "No assignments have been published yet."
+      );
+
+    const announcementHtml =
+      agvUpHandoutPublicItems(
+        announcements,
+        function(item){
+          return (
+            '<article class="agvUpHandoutPublicItem">' +
+              "<h3>" +
+                workspaceEscape(
+                  item.title || "Announcement"
+                ) +
+              "</h3>" +
+              (
+                item.createdAt
+                  ? '<div class="agvUpHandoutPublicItemMeta">' +
+                    workspaceEscape(
+                      agvUpHandoutFormatDate(
+                        item.createdAt
+                      )
+                    ) +
+                    "</div>"
+                  : ""
+              ) +
+              '<div class="agvUpHandoutPublicItemText">' +
+                agvUpHandoutFormatText(
+                  item.message ||
+                  item.description ||
+                  ""
+                ) +
+              "</div>" +
+            "</article>"
+          );
+        },
+        "No announcements have been posted yet."
+      );
+
+    const calendarHtml =
+      agvUpHandoutPublicItems(
+        calendarEvents,
+        function(item){
+          const metaParts = [];
+
+          if (item.date) {
+            metaParts.push(
+              agvUpHandoutFormatDate(item.date)
+            );
+          }
+
+          if (item.time) {
+            metaParts.push(item.time);
+          }
+
+          if (item.location) {
+            metaParts.push(item.location);
+          }
+
+          return (
+            '<article class="agvUpHandoutPublicItem">' +
+              "<h3>" +
+                workspaceEscape(
+                  item.title || "Course Event"
+                ) +
+              "</h3>" +
+              (
+                metaParts.length
+                  ? '<div class="agvUpHandoutPublicItemMeta">' +
+                    agvUpHandoutFormatText(
+                      metaParts.join(" · ")
+                    ) +
+                    "</div>"
+                  : ""
+              ) +
+              '<div class="agvUpHandoutPublicItemText">' +
+                agvUpHandoutFormatText(
+                  item.details || ""
+                ) +
+              "</div>" +
+            "</article>"
+          );
+        },
+        "No course events have been scheduled yet."
+      );
+
+    const classCode =
+      handout.class_code
+        ? "Class Code: " +
+          workspaceEscape(handout.class_code)
+        : "";
+
+    const instructor =
+      handout.instructor_name
+        ? "Instructor: " +
+          workspaceEscape(
+            handout.instructor_name
+          )
+        : "";
+
+    const meta = [
+      classCode,
+      instructor
+    ].filter(Boolean).join(" · ");
+
+    target.innerHTML =
+      '<header class="agvUpHandoutPublicHero">' +
+        "<h1>" +
+          workspaceEscape(
+            handout.handout_title ||
+            "Student Handout"
+          ) +
+        "</h1>" +
+        '<p class="agvUpHandoutCourseName">' +
+          workspaceEscape(
+            handout.course_name ||
+            "Course"
+          ) +
+        "</p>" +
+        (
+          meta
+            ? '<div class="agvUpHandoutCourseMeta">' +
+              meta +
+              "</div>"
+            : ""
+        ) +
+        (
+          handout.introduction
+            ? '<div class="agvUpHandoutIntroduction">' +
+              agvUpHandoutFormatText(
+                handout.introduction
+              ) +
+              "</div>"
+            : ""
+        ) +
+      "</header>" +
+
+      '<main class="agvUpHandoutPublicGrid">' +
+        '<section class="agvUpHandoutPublicSection">' +
+          "<h2>Announcements</h2>" +
+          announcementHtml +
+        "</section>" +
+
+        '<section class="agvUpHandoutPublicSection">' +
+          "<h2>Assignments</h2>" +
+          assignmentHtml +
+        "</section>" +
+
+        '<section class="agvUpHandoutPublicSection">' +
+          "<h2>Study Helps and Modules</h2>" +
+          moduleHtml +
+        "</section>" +
+
+        '<section class="agvUpHandoutPublicSection">' +
+          "<h2>Course Calendar</h2>" +
+          calendarHtml +
+        "</section>" +
+      "</main>" +
+
+      '<footer class="agvUpHandoutPublicFooter">' +
+        "Read-only course information published through AGV University Pal." +
+        (
+          handout.updated_at
+            ? "<br>Last updated " +
+              workspaceEscape(
+                agvUpHandoutFormatDate(
+                  handout.updated_at
+                )
+              )
+            : ""
+        ) +
+      "</footer>";
+  }
+
+  function agvUpRenderPublicHandoutError(message){
+    const target =
+      agvUpHandoutById(
+        "agvUpStudentHandoutPublicContent"
+      );
+
+    if (!target) return;
+
+    target.innerHTML =
+      '<div class="agvUpHandoutPublicHero">' +
+        "<h1>Student Handout Unavailable</h1>" +
+        '<p class="agvUpHandoutCourseMeta">' +
+          workspaceEscape(message) +
+        "</p>" +
+      "</div>";
+  }
+
+  function agvUpHandoutReadLinkParameters(){
+    const hash = new URLSearchParams(
+      String(window.location.hash || "")
+        .replace(/^#/,"")
+    );
+
+    const query = new URLSearchParams(
+      window.location.search
+    );
+
+    return {
+      publicToken:
+        hash.get("agvUpHandout") ||
+        query.get("agvUpHandout") ||
+        "",
+      supabaseUrl:
+        hash.get("agvUpSbUrl") ||
+        query.get("agvUpSbUrl") ||
+        "",
+      supabaseAnonKey:
+        hash.get("agvUpSbKey") ||
+        query.get("agvUpSbKey") ||
+        ""
+    };
+  }
+
+  async function agvUpLoadPublicStudentHandout(){
+    const parameters =
+      agvUpHandoutReadLinkParameters();
+
+    if (!parameters.publicToken) {
+      return false;
+    }
+
+    const overlay =
+      agvUpHandoutById(
+        "agvUpStudentHandoutPublicView"
+      );
+
+    if (overlay) {
+      overlay.style.display = "block";
+    }
+
+    const storedSettings =
+      loadSupabaseSettings();
+
+    const supabaseUrl =
+      parameters.supabaseUrl ||
+      storedSettings.url ||
+      "";
+
+    const supabaseAnonKey =
+      parameters.supabaseAnonKey ||
+      storedSettings.anonKey ||
+      "";
+
+    if (
+      !supabaseUrl ||
+      !supabaseAnonKey
+    ) {
+      agvUpRenderPublicHandoutError(
+        "This handout link is missing its public Supabase connection information."
+      );
+
+      return true;
+    }
+
+    if (
+      !window.supabase ||
+      !window.supabase.createClient
+    ) {
+      agvUpRenderPublicHandoutError(
+        "The handout service could not load. Check the internet connection and refresh."
+      );
+
+      return true;
+    }
+
+    const publicClient =
+      window.supabase.createClient(
+        supabaseUrl,
+        supabaseAnonKey
+      );
+
+    const result = await publicClient.rpc(
+      "agv_up_get_student_handout",
+      {
+        p_public_token:
+          parameters.publicToken
+      }
+    );
+
+    if (result.error) {
+      agvUpRenderPublicHandoutError(
+        "The course handout could not be loaded: " +
+        result.error.message
+      );
+
+      return true;
+    }
+
+    const handout =
+      Array.isArray(result.data)
+        ? result.data[0]
+        : result.data;
+
+    if (!handout) {
+      agvUpRenderPublicHandoutError(
+        "This handout is unpublished, expired, or no longer available."
+      );
+
+      return true;
+    }
+
+    agvUpRenderPublicStudentHandout(handout);
+
+    return true;
+  }
+
+  function agvUpHandoutBindControls(){
+    const publishButton =
+      agvUpHandoutById(
+        "agvUpPublishHandoutBtn"
+      );
+
+    const copyButton =
+      agvUpHandoutById(
+        "agvUpCopyHandoutBtn"
+      );
+
+    const openButton =
+      agvUpHandoutById(
+        "agvUpOpenHandoutBtn"
+      );
+
+    const unpublishButton =
+      agvUpHandoutById(
+        "agvUpUnpublishHandoutBtn"
+      );
+
+    const courseSelect =
+      agvUpHandoutById(
+        "workspaceClassSelect"
+      );
+
+    if (publishButton) {
+      publishButton.onclick =
+        agvUpPublishStudentHandout;
+    }
+
+    if (copyButton) {
+      copyButton.onclick =
+        agvUpCopyStudentHandoutLink;
+    }
+
+    if (openButton) {
+      openButton.onclick =
+        agvUpOpenStudentHandout;
+    }
+
+    if (unpublishButton) {
+      unpublishButton.onclick =
+        agvUpUnpublishStudentHandout;
+    }
+
+    if (courseSelect) {
+      courseSelect.addEventListener(
+        "change",
+        function(){
+          window.setTimeout(
+            agvUpHandoutRenderTeacherPanel,
+            0
+          );
+        }
+      );
+    }
+  }
+
+  const agvUpHandoutOriginalRenderCourseWorkspace =
+    renderCourseWorkspace;
+
+  renderCourseWorkspace = function(){
+    agvUpHandoutOriginalRenderCourseWorkspace();
+    agvUpHandoutRenderTeacherPanel();
+  };
+
+  const agvUpHandoutOriginalApplyRoleMode =
+    applyRoleMode;
+
+  applyRoleMode = function(){
+    agvUpHandoutOriginalApplyRoleMode();
+    agvUpHandoutRenderTeacherPanel();
+  };
+
+  function agvUpHandoutInitialize(){
+    agvUpHandoutBindControls();
+    agvUpHandoutRenderTeacherPanel();
+    agvUpLoadPublicStudentHandout();
+  }
+
   renderAll();
   applyRoleMode();
+  agvUpHandoutInitialize();
 })();
+
+  /* AGV_UP_STUDENT_RESOURCES_3B */
+  const AGV_UP_RESOURCE_API_STORAGE =
+    "agvUniversityPalResourceApiBase";
+
+  const AGV_UP_RESOURCE_API_HASH =
+    "agvUpResourceApi";
+
+  const AGV_UP_RESOURCE_DOCUMENT_LIMIT =
+    25 * 1024 * 1024;
+
+  const AGV_UP_RESOURCE_VIDEO_LIMIT =
+    250 * 1024 * 1024;
+
+  let agvUpResourceReplaceId = "";
+  let agvUpResourceTeacherItems = [];
+
+  function agvUpResourceById(id){
+    return document.getElementById(id);
+  }
+
+  function agvUpResourceEscape(value){
+    return workspaceEscape(
+      String(value == null ? "" : value)
+    );
+  }
+
+  function agvUpResourceHashParameters(){
+    return new URLSearchParams(
+      String(window.location.hash || "")
+        .replace(/^#/,"")
+    );
+  }
+
+  function agvUpResourceApiBase(){
+    const parameters =
+      agvUpResourceHashParameters();
+
+    const hashValue = String(
+      parameters.get(
+        AGV_UP_RESOURCE_API_HASH
+      ) || ""
+    ).trim();
+
+    if (hashValue) {
+      return hashValue.replace(/\/+$/,"");
+    }
+
+    const storedValue = String(
+      localStorage.getItem(
+        AGV_UP_RESOURCE_API_STORAGE
+      ) || ""
+    ).trim();
+
+    if (storedValue) {
+      return storedValue.replace(/\/+$/,"");
+    }
+
+    if (
+      window.location.hostname === "127.0.0.1" ||
+      window.location.hostname === "localhost"
+    ) {
+      return "http://127.0.0.1:8802";
+    }
+
+    return "";
+  }
+
+  function agvUpResourceSessionToken(){
+    try {
+      return (
+        localStorage.getItem(
+          "agv_auth_token"
+        ) ||
+        localStorage.getItem(
+          "agv_server_token"
+        ) ||
+        localStorage.getItem(
+          "agvToken"
+        ) ||
+        localStorage.getItem(
+          "token"
+        ) ||
+        ""
+      );
+    } catch(error) {
+      return "";
+    }
+  }
+
+  function agvUpResourceSetStatus(
+    message,
+    type
+  ){
+    const target =
+      agvUpResourceById(
+        "agvUpResourceStatus"
+      );
+
+    if (!target) return;
+
+    target.textContent =
+      String(message || "");
+
+    target.style.background =
+      type === "error"
+        ? "#fee2e2"
+        : type === "success"
+          ? "#dcfce7"
+          : "#eff6ff";
+
+    target.style.color =
+      type === "error"
+        ? "#991b1b"
+        : type === "success"
+          ? "#166534"
+          : "#334155";
+  }
+
+  function agvUpResourceFormatBytes(bytes){
+    const value = Number(bytes || 0);
+
+    if (!Number.isFinite(value) || value <= 0) {
+      return "";
+    }
+
+    const units = [
+      "B",
+      "KB",
+      "MB",
+      "GB"
+    ];
+
+    let size = value;
+    let index = 0;
+
+    while (
+      size >= 1024 &&
+      index < units.length - 1
+    ) {
+      size /= 1024;
+      index += 1;
+    }
+
+    return (
+      size.toFixed(
+        index === 0 ? 0 : 1
+      ) +
+      " " +
+      units[index]
+    );
+  }
+
+  async function agvUpResourceFetch(
+    endpoint,
+    options
+  ){
+    const apiBase =
+      agvUpResourceApiBase();
+
+    if (!apiBase) {
+      throw new Error(
+        "Enter and save the University Pal Resource API URL."
+      );
+    }
+
+    const settings = options || {};
+    const headers = {
+      ...(settings.headers || {})
+    };
+
+    if (settings.json !== false) {
+      headers["Content-Type"] =
+        "application/json";
+    }
+
+    if (settings.auth !== false) {
+      const token =
+        agvUpResourceSessionToken();
+
+      if (!token) {
+        throw new Error(
+          "A verified AGV login is required. Sign in to AGV again."
+        );
+      }
+
+      headers.Authorization =
+        "Bearer " + token;
+    }
+
+    const response = await fetch(
+      apiBase + endpoint,
+      {
+        ...settings,
+        headers,
+        body:
+          settings.body &&
+          typeof settings.body !== "string"
+            ? JSON.stringify(
+                settings.body
+              )
+            : settings.body
+      }
+    );
+
+    const result = await response
+      .json()
+      .catch(function(){
+        return null;
+      });
+
+    if (
+      !response.ok ||
+      !result ||
+      result.ok !== true
+    ) {
+      throw new Error(
+        result?.error ||
+        "The University Pal resource request failed."
+      );
+    }
+
+    return result;
+  }
+
+  function agvUpResourceContext(){
+    const course =
+      agvUpHandoutCurrentCourse();
+
+    const keys =
+      agvUpHandoutCourseKeys(course);
+
+    return {
+      course,
+      keys
+    };
+  }
+
+  function agvUpResourceRequireContext(){
+    const context =
+      agvUpResourceContext();
+
+    if (!context.course) {
+      throw new Error(
+        "Select a course before managing student resources."
+      );
+    }
+
+    if (
+      !context.keys?.publicToken ||
+      !context.keys?.editToken
+    ) {
+      throw new Error(
+        "Publish the Student Handout before adding workbook materials."
+      );
+    }
+
+    return context;
+  }
+
+  function agvUpResourceCreateTeacherPanel(){
+    let panel =
+      agvUpResourceById(
+        "agvUpResourceTeacherPanel"
+      );
+
+    if (panel) return panel;
+
+    const handoutPanel =
+      agvUpHandoutById(
+        "agvUpHandoutTeacherPanel"
+      );
+
+    if (!handoutPanel) return null;
+
+    panel = document.createElement(
+      "section"
+    );
+
+    panel.id =
+      "agvUpResourceTeacherPanel";
+
+    panel.className =
+      "agvUpResourcePanel";
+
+    panel.innerHTML = `
+      <h3>Student Resources &amp; Workbook Materials</h3>
+
+      <p class="agvUpResourcePanelIntro">
+        Upload Word, Excel, PDF, text, and MP4 files, or add
+        Google Drive and approved external links. Students receive
+        the materials through the same read-only handout link.
+      </p>
+
+      <div class="agvUpResourceApiGrid">
+        <div class="agvUpResourceFull">
+          <label for="agvUpResourceApiBase">
+            Resource API URL
+          </label>
+
+          <input
+            id="agvUpResourceApiBase"
+            type="url"
+            autocomplete="off"
+            placeholder="http://127.0.0.1:8802"
+          />
+        </div>
+      </div>
+
+      <div class="agvUpResourceToolbar">
+        <button
+          id="agvUpResourceSaveApiBtn"
+          class="agvUpResourceButton agvUpResourceButtonSecondary"
+          type="button"
+        >
+          Save &amp; Test Resource API
+        </button>
+
+        <button
+          id="agvUpResourceRefreshBtn"
+          class="agvUpResourceButton"
+          type="button"
+        >
+          Refresh Resources
+        </button>
+      </div>
+
+      <div
+        id="agvUpResourceStatus"
+        class="agvUpResourceStatus"
+      >
+        Publish a Student Handout, then add course materials.
+      </div>
+
+      <div class="agvUpResourceEditors">
+        <div class="agvUpResourceEditorCard">
+          <h4 id="agvUpTeacherComputerUploadHeading">
+            Upload From Teacher's Computer
+          </h4>
+
+          <p class="agvUpResourceEditorNote">
+            Accepted: PDF, TXT, DOC, DOCX, XLS, XLSX, and MP4.
+            Documents are limited to 25 MB and MP4 videos to 250 MB
+            during this local validation pass.
+          </p>
+
+          <div class="agvUpResourceEditorGrid">
+            <div class="agvUpResourceFull">
+              <label for="agvUpResourceFile">
+                Select File
+              </label>
+
+              <input
+                id="agvUpResourceFile"
+                type="file"
+                accept=".pdf,.txt,.doc,.docx,.xls,.xlsx,.mp4"
+              />
+            </div>
+
+            <div>
+              <label for="agvUpResourceFileTitle">
+                Resource Title
+              </label>
+
+              <input
+                id="agvUpResourceFileTitle"
+                type="text"
+                maxlength="240"
+                placeholder="Optional title"
+              />
+            </div>
+
+            <div>
+              <label for="agvUpResourceFileCategory">
+                Category
+              </label>
+
+              <input
+                id="agvUpResourceFileCategory"
+                type="text"
+                maxlength="120"
+                placeholder="Workbook, Study Guide, Video Lesson"
+              />
+            </div>
+
+            <div class="agvUpResourceFull">
+              <label for="agvUpResourceFileDescription">
+                Instructions or Description
+              </label>
+
+              <textarea
+                id="agvUpResourceFileDescription"
+                maxlength="4000"
+                placeholder="Tell students how to use this material."
+              ></textarea>
+            </div>
+
+            <div>
+              <label for="agvUpResourceFileDisplayMode">
+                Display
+              </label>
+
+              <select id="agvUpResourceFileDisplayMode">
+                <option value="">Automatic</option>
+                <option value="download">Download</option>
+                <option value="inline">Read Online</option>
+                <option value="video">Video Player</option>
+              </select>
+            </div>
+          </div>
+
+          <label class="agvUpResourceCheckbox">
+            <input
+              id="agvUpResourceFileVisible"
+              type="checkbox"
+              checked
+            />
+            Publish this resource to students
+          </label>
+
+          <div class="agvUpResourceToolbar">
+            <button
+              id="agvUpResourceUploadBtn"
+              class="agvUpResourceButton"
+              type="button"
+            >
+              Upload to Student Handout
+            </button>
+          </div>
+        </div>
+
+        <div class="agvUpResourceEditorCard">
+          <h4>Add Google Drive or External Link</h4>
+
+          <p class="agvUpResourceEditorNote">
+            Google Drive files must have sharing permission that
+            allows your students to open them.
+          </p>
+
+          <div class="agvUpResourceEditorGrid">
+            <div class="agvUpResourceFull">
+              <label for="agvUpResourceExternalUrl">
+                Resource URL
+              </label>
+
+              <input
+                id="agvUpResourceExternalUrl"
+                type="url"
+                maxlength="4000"
+                placeholder="https://drive.google.com/..."
+              />
+            </div>
+
+            <div>
+              <label for="agvUpResourceExternalTitle">
+                Resource Title
+              </label>
+
+              <input
+                id="agvUpResourceExternalTitle"
+                type="text"
+                maxlength="240"
+                placeholder="Required title"
+              />
+            </div>
+
+            <div>
+              <label for="agvUpResourceExternalCategory">
+                Category
+              </label>
+
+              <input
+                id="agvUpResourceExternalCategory"
+                type="text"
+                maxlength="120"
+                placeholder="External Resource"
+              />
+            </div>
+
+            <div class="agvUpResourceFull">
+              <label for="agvUpResourceExternalDescription">
+                Instructions or Description
+              </label>
+
+              <textarea
+                id="agvUpResourceExternalDescription"
+                maxlength="4000"
+                placeholder="Explain what students should review."
+              ></textarea>
+            </div>
+          </div>
+
+          <label class="agvUpResourceCheckbox">
+            <input
+              id="agvUpResourceExternalVisible"
+              type="checkbox"
+              checked
+            />
+            Publish this link to students
+          </label>
+
+          <div class="agvUpResourceToolbar">
+            <button
+              id="agvUpResourceExternalBtn"
+              class="agvUpResourceButton"
+              type="button"
+            >
+              Add External Resource
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="agvUpResourceList"
+        class="agvUpResourceList"
+      ></div>
+    `;
+
+    handoutPanel.insertAdjacentElement(
+      "afterend",
+      panel
+    );
+
+    return panel;
+  }
+
+  async function agvUpResourceSaveApi(){
+    const input =
+      agvUpResourceById(
+        "agvUpResourceApiBase"
+      );
+
+    const value = String(
+      input?.value || ""
+    )
+      .trim()
+      .replace(/\/+$/,"");
+
+    if (!value) {
+      agvUpResourceSetStatus(
+        "Enter the Resource API URL.",
+        "error"
+      );
+
+      return;
+    }
+
+    try {
+      const parsed = new URL(value);
+
+      if (
+        parsed.protocol !== "http:" &&
+        parsed.protocol !== "https:"
+      ) {
+        throw new Error(
+          "Only HTTP and HTTPS API URLs are supported."
+        );
+      }
+
+      const response = await fetch(
+        value + "/health"
+      );
+
+      const health = await response
+        .json()
+        .catch(function(){
+          return null;
+        });
+
+      if (
+        !response.ok ||
+        health?.ok !== true ||
+        health?.storageBucketReady !== true ||
+        health?.privateStorage !== true ||
+        health?.directServiceRoleExposure !== false
+      ) {
+        throw new Error(
+          health?.storageBootstrapError ||
+          "The Resource API did not pass its security health check."
+        );
+      }
+
+      localStorage.setItem(
+        AGV_UP_RESOURCE_API_STORAGE,
+        value
+      );
+
+      input.value = value;
+
+      agvUpResourceSetStatus(
+        "Resource API verified. Private storage and signed delivery are ready.",
+        "success"
+      );
+
+      agvUpResourceUpdateHandoutLink();
+      await agvUpResourceLoadTeacherList();
+    } catch(error) {
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to verify the Resource API.",
+        "error"
+      );
+    }
+  }
+
+  function agvUpResourceUpdateHandoutLink(){
+    const context =
+      agvUpResourceContext();
+
+    const linkInput =
+      agvUpHandoutById(
+        "agvUpHandoutLink"
+      );
+
+    if (
+      linkInput &&
+      context.keys?.publicToken
+    ) {
+      linkInput.value =
+        agvUpHandoutBuildLink(
+          context.keys.publicToken
+        );
+    }
+  }
+
+  function agvUpResourceRenderTeacherList(){
+    const target =
+      agvUpResourceById(
+        "agvUpResourceList"
+      );
+
+    if (!target) return;
+
+    if (!agvUpResourceTeacherItems.length) {
+      target.innerHTML = `
+        <div class="agvUpHandoutPublicEmpty">
+          No workbook materials or student resources have been added
+          for this course.
+        </div>
+      `;
+
+      return;
+    }
+
+    target.innerHTML =
+      agvUpResourceTeacherItems.map(
+        function(resource){
+          const fileMeta = [
+            resource.category,
+            resource.originalFileName,
+            agvUpResourceFormatBytes(
+              resource.fileSizeBytes
+            ),
+            resource.isVisible
+              ? "Visible to students"
+              : "Hidden from students"
+          ].filter(Boolean);
+
+          return `
+            <article
+              class="agvUpResourceItem"
+              data-resource-id="${agvUpResourceEscape(resource.id)}"
+            >
+              <div class="agvUpResourceItemHeader">
+                <div>
+                  <h4>${agvUpResourceEscape(resource.title)}</h4>
+
+                  <div class="agvUpResourceItemMeta">
+                    ${agvUpResourceEscape(fileMeta.join(" Â· "))}
+                  </div>
+                </div>
+
+                <span class="agvUpResourceBadge">
+                  ${agvUpResourceEscape(
+                    resource.resourceKind === "external_link"
+                      ? "External Link"
+                      : resource.displayMode
+                  )}
+                </span>
+              </div>
+
+              ${
+                resource.description
+                  ? `
+                    <div class="agvUpResourceItemDescription">
+                      ${agvUpResourceEscape(resource.description)}
+                    </div>
+                  `
+                  : ""
+              }
+
+              <div class="agvUpResourceToolbar">
+                ${
+                  resource.accessUrl
+                    ? `
+                      <a
+                        class="agvUpResourceButton agvUpResourceButtonSecondary"
+                        href="${agvUpResourceEscape(resource.accessUrl)}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Open
+                      </a>
+                    `
+                    : ""
+                }
+
+                ${
+                  resource.resourceKind === "file"
+                    ? `
+                      <button
+                        class="agvUpResourceButton agvUpResourceReplaceButton"
+                        type="button"
+                        data-resource-id="${agvUpResourceEscape(resource.id)}"
+                      >
+                        Replace
+                      </button>
+                    `
+                    : ""
+                }
+
+                <button
+                  class="agvUpResourceButton agvUpResourceButtonVisibility agvUpResourceVisibilityButton"
+                  type="button"
+                  data-resource-id="${agvUpResourceEscape(resource.id)}"
+                  data-visible="${resource.isVisible ? "true" : "false"}"
+                >
+                  ${resource.isVisible ? "Hide" : "Publish"}
+                </button>
+
+                <button
+                  class="agvUpResourceButton agvUpResourceButtonDanger agvUpResourceDeleteButton"
+                  type="button"
+                  data-resource-id="${agvUpResourceEscape(resource.id)}"
+                >
+                  Remove
+                </button>
+              </div>
+            </article>
+          `;
+        }
+      ).join("");
+
+    target
+      .querySelectorAll(
+        ".agvUpResourceVisibilityButton"
+      )
+      .forEach(function(button){
+        button.addEventListener(
+          "click",
+          function(){
+            agvUpResourceSetVisibility(
+              button.dataset.resourceId,
+              button.dataset.visible !== "true"
+            );
+          }
+        );
+      });
+
+    target
+      .querySelectorAll(
+        ".agvUpResourceDeleteButton"
+      )
+      .forEach(function(button){
+        button.addEventListener(
+          "click",
+          function(){
+            agvUpResourceDelete(
+              button.dataset.resourceId
+            );
+          }
+        );
+      });
+
+    target
+      .querySelectorAll(
+        ".agvUpResourceReplaceButton"
+      )
+      .forEach(function(button){
+        button.addEventListener(
+          "click",
+          function(){
+            const resource =
+              agvUpResourceTeacherItems.find(
+                function(item){
+                  return (
+                    item.id ===
+                    button.dataset.resourceId
+                  );
+                }
+              );
+
+            agvUpResourceReplaceId =
+              button.dataset.resourceId || "";
+
+            const title =
+              agvUpResourceById(
+                "agvUpResourceFileTitle"
+              );
+
+            const category =
+              agvUpResourceById(
+                "agvUpResourceFileCategory"
+              );
+
+            const description =
+              agvUpResourceById(
+                "agvUpResourceFileDescription"
+              );
+
+            const fileInput =
+              agvUpResourceById(
+                "agvUpResourceFile"
+              );
+
+            if (title) {
+              title.value =
+                resource?.title || "";
+            }
+
+            if (category) {
+              category.value =
+                resource?.category || "";
+            }
+
+            if (description) {
+              description.value =
+                resource?.description || "";
+            }
+
+            if (fileInput) {
+              fileInput.value = "";
+              fileInput.focus();
+            }
+
+            agvUpResourceSetStatus(
+              "Select the replacement file, then choose Upload Resource. The old file will be removed only after the new upload succeeds."
+            );
+          }
+        );
+      });
+  }
+
+  async function agvUpResourceLoadTeacherList(){
+    const panel =
+      agvUpResourceById(
+        "agvUpResourceTeacherPanel"
+      );
+
+    if (!panel || panel.style.display === "none") {
+      return;
+    }
+
+    try {
+      const context =
+        agvUpResourceRequireContext();
+
+      agvUpResourceSetStatus(
+        "Loading student resources..."
+      );
+
+      const result =
+        await agvUpResourceFetch(
+          "/api/university-pal/resources/manage/list",
+          {
+            method:"POST",
+            body:{
+              publicToken:
+                context.keys.publicToken,
+              editToken:
+                context.keys.editToken
+            }
+          }
+        );
+
+      agvUpResourceTeacherItems =
+        Array.isArray(result.resources)
+          ? result.resources
+          : [];
+
+      agvUpResourceRenderTeacherList();
+
+      agvUpResourceSetStatus(
+        agvUpResourceTeacherItems.length
+          ? (
+              agvUpResourceTeacherItems.length +
+              " student resource(s) loaded."
+            )
+          : "No student resources have been added yet.",
+        "success"
+      );
+    } catch(error) {
+      agvUpResourceTeacherItems = [];
+      agvUpResourceRenderTeacherList();
+
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to load student resources.",
+        "error"
+      );
+    }
+  }
+
+  async function agvUpResourceUploadFile(){
+    const uploadButton =
+      agvUpResourceById(
+        "agvUpResourceUploadBtn"
+      );
+
+    try {
+      const context =
+        agvUpResourceRequireContext();
+
+      const fileInput =
+        agvUpResourceById(
+          "agvUpResourceFile"
+        );
+
+      const file =
+        fileInput?.files?.[0];
+
+      if (!file) {
+        throw new Error(
+          "Select a course file to upload."
+        );
+      }
+
+      const extension =
+        "." +
+        String(
+          file.name.split(".").pop() || ""
+        ).toLowerCase();
+
+      const isVideo =
+        extension === ".mp4";
+
+      const maximum =
+        isVideo
+          ? AGV_UP_RESOURCE_VIDEO_LIMIT
+          : AGV_UP_RESOURCE_DOCUMENT_LIMIT;
+
+      if (file.size > maximum) {
+        throw new Error(
+          isVideo
+            ? "MP4 videos are limited to 250 MB during this validation pass."
+            : "Documents are limited to 25 MB during this validation pass."
+        );
+      }
+
+      if (uploadButton) {
+        uploadButton.disabled = true;
+      }
+
+      agvUpResourceSetStatus(
+        "Creating protected upload authorization..."
+      );
+
+      const ticket =
+        await agvUpResourceFetch(
+          "/api/university-pal/resources/upload-ticket",
+          {
+            method:"POST",
+            body:{
+              publicToken:
+                context.keys.publicToken,
+              editToken:
+                context.keys.editToken,
+              title:
+                agvUpResourceById(
+                  "agvUpResourceFileTitle"
+                )?.value || "",
+              description:
+                agvUpResourceById(
+                  "agvUpResourceFileDescription"
+                )?.value || "",
+              category:
+                agvUpResourceById(
+                  "agvUpResourceFileCategory"
+                )?.value || "",
+              displayMode:
+                agvUpResourceById(
+                  "agvUpResourceFileDisplayMode"
+                )?.value || "",
+              file:{
+                originalFileName:file.name,
+                fileSizeBytes:file.size,
+                mimeType:
+                  file.type ||
+                  "application/octet-stream"
+              }
+            }
+          }
+        );
+
+      const supabaseClient =
+        initSupabaseClient();
+
+      if (!supabaseClient) {
+        throw new Error(
+          "Connect University Pal to Supabase before uploading files."
+        );
+      }
+
+      agvUpResourceSetStatus(
+        "Uploading " +
+        file.name +
+        " to protected storage..."
+      );
+
+      const uploadResult =
+        await supabaseClient.storage
+          .from(ticket.bucket)
+          .uploadToSignedUrl(
+            ticket.path,
+            ticket.uploadToken,
+            file,
+            {
+              contentType:
+                ticket.mimeType,
+              upsert:false
+            }
+          );
+
+      if (uploadResult.error) {
+        throw uploadResult.error;
+      }
+
+      agvUpResourceSetStatus(
+        "Upload complete. Publishing resource metadata..."
+      );
+
+      await agvUpResourceFetch(
+        "/api/university-pal/resources/complete-upload",
+        {
+          method:"POST",
+          body:{
+            editToken:
+              context.keys.editToken,
+            uploadTicket:
+              ticket.uploadTicket,
+            isVisible:
+              agvUpResourceById(
+                "agvUpResourceFileVisible"
+              )?.checked !== false
+          }
+        }
+      );
+
+      if (agvUpResourceReplaceId) {
+        const oldResourceId =
+          agvUpResourceReplaceId;
+
+        agvUpResourceReplaceId = "";
+
+        await agvUpResourceFetch(
+          "/api/university-pal/resources/" +
+          encodeURIComponent(
+            oldResourceId
+          ),
+          {
+            method:"DELETE",
+            body:{
+              publicToken:
+                context.keys.publicToken,
+              editToken:
+                context.keys.editToken
+            }
+          }
+        );
+      }
+
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+      [
+        "agvUpResourceFileTitle",
+        "agvUpResourceFileCategory",
+        "agvUpResourceFileDescription"
+      ].forEach(function(id){
+        const element =
+          agvUpResourceById(id);
+
+        if (element) {
+          element.value = "";
+        }
+      });
+
+      agvUpResourceSetStatus(
+        "File uploaded successfully. Students can now access it from the Student Handout.",
+        "success"
+      );
+
+      await agvUpResourceLoadTeacherList();
+    } catch(error) {
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to upload the student resource.",
+        "error"
+      );
+    } finally {
+      if (uploadButton) {
+        uploadButton.disabled = false;
+      }
+    }
+  }
+
+  async function agvUpResourceAddExternal(){
+    const button =
+      agvUpResourceById(
+        "agvUpResourceExternalBtn"
+      );
+
+    try {
+      const context =
+        agvUpResourceRequireContext();
+
+      const externalUrl = String(
+        agvUpResourceById(
+          "agvUpResourceExternalUrl"
+        )?.value || ""
+      ).trim();
+
+      const title = String(
+        agvUpResourceById(
+          "agvUpResourceExternalTitle"
+        )?.value || ""
+      ).trim();
+
+      if (!externalUrl || !title) {
+        throw new Error(
+          "Enter both the external resource URL and title."
+        );
+      }
+
+      if (button) {
+        button.disabled = true;
+      }
+
+      agvUpResourceSetStatus(
+        "Adding external student resource..."
+      );
+
+      await agvUpResourceFetch(
+        "/api/university-pal/resources/external",
+        {
+          method:"POST",
+          body:{
+            publicToken:
+              context.keys.publicToken,
+            editToken:
+              context.keys.editToken,
+            externalUrl,
+            title,
+            description:
+              agvUpResourceById(
+                "agvUpResourceExternalDescription"
+              )?.value || "",
+            category:
+              agvUpResourceById(
+                "agvUpResourceExternalCategory"
+              )?.value || "",
+            isVisible:
+              agvUpResourceById(
+                "agvUpResourceExternalVisible"
+              )?.checked !== false
+          }
+        }
+      );
+
+      [
+        "agvUpResourceExternalUrl",
+        "agvUpResourceExternalTitle",
+        "agvUpResourceExternalCategory",
+        "agvUpResourceExternalDescription"
+      ].forEach(function(id){
+        const element =
+          agvUpResourceById(id);
+
+        if (element) {
+          element.value = "";
+        }
+      });
+
+      agvUpResourceSetStatus(
+        "External resource added successfully.",
+        "success"
+      );
+
+      await agvUpResourceLoadTeacherList();
+    } catch(error) {
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to add the external resource.",
+        "error"
+      );
+    } finally {
+      if (button) {
+        button.disabled = false;
+      }
+    }
+  }
+
+  async function agvUpResourceSetVisibility(
+    resourceId,
+    isVisible
+  ){
+    try {
+      const context =
+        agvUpResourceRequireContext();
+
+      agvUpResourceSetStatus(
+        isVisible
+          ? "Publishing resource..."
+          : "Hiding resource..."
+      );
+
+      await agvUpResourceFetch(
+        "/api/university-pal/resources/" +
+        encodeURIComponent(resourceId),
+        {
+          method:"PATCH",
+          body:{
+            publicToken:
+              context.keys.publicToken,
+            editToken:
+              context.keys.editToken,
+            isVisible
+          }
+        }
+      );
+
+      await agvUpResourceLoadTeacherList();
+    } catch(error) {
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to change resource visibility.",
+        "error"
+      );
+    }
+  }
+
+  async function agvUpResourceDelete(
+    resourceId
+  ){
+    const resource =
+      agvUpResourceTeacherItems.find(
+        function(item){
+          return item.id === resourceId;
+        }
+      );
+
+    const approved = window.confirm(
+      "Remove this student resource?\n\n" +
+      (
+        resource?.title ||
+        "Selected resource"
+      )
+    );
+
+    if (!approved) return;
+
+    try {
+      const context =
+        agvUpResourceRequireContext();
+
+      agvUpResourceSetStatus(
+        "Removing student resource..."
+      );
+
+      await agvUpResourceFetch(
+        "/api/university-pal/resources/" +
+        encodeURIComponent(resourceId),
+        {
+          method:"DELETE",
+          body:{
+            publicToken:
+              context.keys.publicToken,
+            editToken:
+              context.keys.editToken
+          }
+        }
+      );
+
+      agvUpResourceSetStatus(
+        "Student resource removed.",
+        "success"
+      );
+
+      await agvUpResourceLoadTeacherList();
+    } catch(error) {
+      agvUpResourceSetStatus(
+        error?.message ||
+        "Unable to remove the student resource.",
+        "error"
+      );
+    }
+  }
+
+  function agvUpResourceRenderTeacherPanel(){
+    const panel =
+      agvUpResourceCreateTeacherPanel();
+
+    if (!panel) return;
+
+    const canPublish =
+      agvUpHandoutRoleCanPublish();
+
+    panel.style.display =
+      canPublish
+        ? "block"
+        : "none";
+
+    if (!canPublish) return;
+
+    const apiInput =
+      agvUpResourceById(
+        "agvUpResourceApiBase"
+      );
+
+    if (apiInput) {
+      apiInput.value =
+        agvUpResourceApiBase();
+    }
+
+    agvUpResourceUpdateHandoutLink();
+
+    const context =
+      agvUpResourceContext();
+
+    if (!context.course) {
+      agvUpResourceTeacherItems = [];
+      agvUpResourceRenderTeacherList();
+
+      agvUpResourceSetStatus(
+        "Select a course before managing student resources."
+      );
+
+      return;
+    }
+
+    if (
+      !context.keys?.publicToken ||
+      !context.keys?.editToken
+    ) {
+      agvUpResourceTeacherItems = [];
+      agvUpResourceRenderTeacherList();
+
+      agvUpResourceSetStatus(
+        "Publish the Student Handout before adding workbook materials."
+      );
+
+      return;
+    }
+
+    agvUpResourceLoadTeacherList();
+  }
+
+  function agvUpResourceBindControls(){
+    const saveApiButton =
+      agvUpResourceById(
+        "agvUpResourceSaveApiBtn"
+      );
+
+    const refreshButton =
+      agvUpResourceById(
+        "agvUpResourceRefreshBtn"
+      );
+
+    const uploadButton =
+      agvUpResourceById(
+        "agvUpResourceUploadBtn"
+      );
+
+    const externalButton =
+      agvUpResourceById(
+        "agvUpResourceExternalBtn"
+      );
+
+    if (saveApiButton) {
+      saveApiButton.onclick =
+        agvUpResourceSaveApi;
+    }
+
+    if (refreshButton) {
+      refreshButton.onclick =
+        agvUpResourceLoadTeacherList;
+    }
+
+    if (uploadButton) {
+      uploadButton.onclick =
+        agvUpResourceUploadFile;
+    }
+
+    if (externalButton) {
+      externalButton.onclick =
+        agvUpResourceAddExternal;
+    }
+  }
+
+  function agvUpResourcePublicItemHtml(
+    resource
+  ){
+    const title =
+      agvUpResourceEscape(
+        resource.title ||
+        "Course Resource"
+      );
+
+    const description =
+      resource.description
+        ? `
+          <div class="agvUpHandoutPublicItemText">
+            ${agvUpResourceEscape(resource.description)}
+          </div>
+        `
+        : "";
+
+    const meta = [
+      resource.category,
+      resource.originalFileName,
+      agvUpResourceFormatBytes(
+        resource.fileSizeBytes
+      )
+    ].filter(Boolean).join(" Â· ");
+
+    const url =
+      agvUpResourceEscape(
+        resource.accessUrl || ""
+      );
+
+    let accessHtml = "";
+
+    if (
+      resource.displayMode === "video" &&
+      resource.accessUrl
+    ) {
+      accessHtml = `
+        <video
+          class="agvUpPublicResourceVideo"
+          controls
+          preload="metadata"
+          src="${url}"
+        ></video>
+
+        <a
+          class="agvUpPublicResourceLink"
+          href="${url}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open Video
+        </a>
+      `;
+    } else if (
+      resource.displayMode === "inline" &&
+      resource.mimeType === "application/pdf" &&
+      resource.accessUrl
+    ) {
+      accessHtml = `
+        <iframe
+          class="agvUpPublicResourceFrame"
+          src="${url}"
+          title="${title}"
+        ></iframe>
+
+        <a
+          class="agvUpPublicResourceLink"
+          href="${url}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open or Download PDF
+        </a>
+      `;
+    } else if (
+      resource.displayMode === "inline" &&
+      resource.mimeType === "text/plain" &&
+      resource.accessUrl
+    ) {
+      accessHtml = `
+        <pre
+          class="agvUpPublicResourceText"
+          data-agv-up-text-url="${url}"
+        >Loading text resource...</pre>
+
+        <a
+          class="agvUpPublicResourceLink"
+          href="${url}"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Open Text File
+        </a>
+      `;
+    } else if (resource.accessUrl) {
+      accessHtml = `
+        <a
+          class="agvUpPublicResourceLink"
+          href="${url}"
+          target="_blank"
+          rel="noopener noreferrer"
+          ${
+            resource.resourceKind === "file" &&
+            resource.displayMode === "download"
+              ? "download"
+              : ""
+          }
+        >
+          ${
+            resource.resourceKind === "external_link"
+              ? "Open Resource"
+              : "Open or Download"
+          }
+        </a>
+      `;
+    }
+
+    return `
+      <article class="agvUpHandoutPublicItem">
+        <h3>${title}</h3>
+
+        ${
+          meta
+            ? `
+              <div class="agvUpHandoutPublicItemMeta">
+                ${agvUpResourceEscape(meta)}
+              </div>
+            `
+            : ""
+        }
+
+        ${description}
+        ${accessHtml}
+      </article>
+    `;
+  }
+
+  async function agvUpResourceLoadPublicText(){
+    const elements = document.querySelectorAll(
+      "[data-agv-up-text-url]"
+    );
+
+    for (const element of elements) {
+      const url =
+        element.getAttribute(
+          "data-agv-up-text-url"
+        );
+
+      if (!url) continue;
+
+      try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(
+            "Unable to read text resource."
+          );
+        }
+
+        element.textContent =
+          await response.text();
+      } catch(error) {
+        element.textContent =
+          "This text resource could not be displayed here. Use Open Text File.";
+      }
+    }
+  }
+
+  async function agvUpResourceLoadPublic(
+    publicToken
+  ){
+    const target =
+      agvUpHandoutById(
+        "agvUpStudentHandoutPublicContent"
+      );
+
+    if (!target || !publicToken) return;
+
+    const existing =
+      agvUpResourceById(
+        "agvUpPublicResourcesSection"
+      );
+
+    if (existing) {
+      existing.remove();
+    }
+
+    const apiBase =
+      agvUpResourceApiBase();
+
+    if (!apiBase) {
+      return;
+    }
+
+    try {
+      const result =
+        await agvUpResourceFetch(
+          "/api/university-pal/resources/public/" +
+          encodeURIComponent(publicToken),
+          {
+            method:"GET",
+            auth:false,
+            json:false
+          }
+        );
+
+      const resources =
+        Array.isArray(result.resources)
+          ? result.resources
+          : [];
+
+      if (!resources.length) return;
+
+      const section =
+        document.createElement(
+          "section"
+        );
+
+      section.id =
+        "agvUpPublicResourcesSection";
+
+      section.className =
+        "agvUpHandoutPublicSection agvUpPublicResourceSection";
+
+      section.innerHTML = `
+        <h2>Course Resources &amp; Workbook Materials</h2>
+
+        ${resources.map(
+          agvUpResourcePublicItemHtml
+        ).join("")}
+      `;
+
+      const publicGrid =
+        target.querySelector(
+          ".agvUpHandoutPublicGrid"
+        );
+
+      if (publicGrid) {
+        publicGrid.appendChild(section);
+      } else {
+        target.appendChild(section);
+      }
+
+      await agvUpResourceLoadPublicText();
+    } catch(error) {
+      console.warn(
+        "AGV University Pal resource display:",
+        error?.message || error
+      );
+    }
+  }
+
+  const agvUpOriginalHandoutBuildLink =
+    agvUpHandoutBuildLink;
+
+  agvUpHandoutBuildLink = function(
+    publicToken
+  ){
+    const originalLink =
+      agvUpOriginalHandoutBuildLink(
+        publicToken
+      );
+
+    const apiBase =
+      agvUpResourceApiBase();
+
+    if (!originalLink || !apiBase) {
+      return originalLink;
+    }
+
+    try {
+      const url = new URL(
+        originalLink,
+        window.location.href
+      );
+
+      const parameters =
+        new URLSearchParams(
+          String(url.hash || "")
+            .replace(/^#/,"")
+        );
+
+      parameters.set(
+        AGV_UP_RESOURCE_API_HASH,
+        apiBase
+      );
+
+      url.hash =
+        parameters.toString();
+
+      return url.toString();
+    } catch(error) {
+      return originalLink;
+    }
+  };
+
+  const agvUpOriginalTeacherRender =
+    agvUpHandoutRenderTeacherPanel;
+
+  agvUpHandoutRenderTeacherPanel =
+    function(){
+      const result =
+        agvUpOriginalTeacherRender.apply(
+          this,
+          arguments
+        );
+
+      window.setTimeout(
+        agvUpResourceRenderTeacherPanel,
+        0
+      );
+
+      return result;
+    };
+
+  const agvUpOriginalPublicRender =
+    agvUpRenderPublicStudentHandout;
+
+  agvUpRenderPublicStudentHandout =
+    function(handout){
+      const result =
+        agvUpOriginalPublicRender.apply(
+          this,
+          arguments
+        );
+
+      window.setTimeout(
+        function(){
+          agvUpResourceLoadPublic(
+            handout?.public_token || ""
+          );
+        },
+        0
+      );
+
+      return result;
+    };
+
+  function agvUpResourceInitialize(){
+    const panel =
+      agvUpResourceCreateTeacherPanel();
+
+    if (panel) {
+      agvUpResourceBindControls();
+      agvUpResourceRenderTeacherPanel();
+    }
+
+    const parameters =
+      agvUpHandoutReadLinkParameters();
+
+    if (parameters?.publicToken) {
+      window.setTimeout(
+        function(){
+          agvUpResourceLoadPublic(
+            parameters.publicToken
+          );
+        },
+        1200
+      );
+    }
+  }
+
+  if (
+    document.readyState === "loading"
+  ) {
+    document.addEventListener(
+      "DOMContentLoaded",
+      agvUpResourceInitialize,
+      {
+        once:true
+      }
+    );
+  } else {
+    agvUpResourceInitialize();
+  }
+  /* PASS_AGV_UP_TEACHER_COMPUTER_UPLOAD_SHORTCUT_3E_JS */
+
+  function agvUpOpenTeacherComputerUpload(){
+    const course =
+      typeof agvUpHandoutCurrentCourse === "function"
+        ? agvUpHandoutCurrentCourse()
+        : null;
+
+    const keys =
+      typeof agvUpHandoutCourseKeys === "function"
+        ? agvUpHandoutCourseKeys(course)
+        : null;
+
+    if (!course) {
+      if (
+        typeof agvUpHandoutSetStatus === "function"
+      ) {
+        agvUpHandoutSetStatus(
+          "Select a course before uploading a file.",
+          "bad"
+        );
+      }
+
+      return;
+    }
+
+    if (
+      !keys?.publicToken ||
+      !keys?.editToken ||
+      !keys?.lastPublishedAt
+    ) {
+      if (
+        typeof agvUpHandoutSetStatus === "function"
+      ) {
+        agvUpHandoutSetStatus(
+          "Publish the Student Handout before uploading course files.",
+          "bad"
+        );
+      }
+
+      return;
+    }
+
+    const resourcePanel =
+      document.getElementById(
+        "agvUpResourceTeacherPanel"
+      );
+
+    const uploadHeading =
+      document.getElementById(
+        "agvUpTeacherComputerUploadHeading"
+      );
+
+    const fileInput =
+      document.getElementById(
+        "agvUpResourceFile"
+      );
+
+    if (resourcePanel) {
+      resourcePanel.style.display = "";
+    }
+
+    const scrollTarget =
+      uploadHeading ||
+      fileInput ||
+      resourcePanel;
+
+    if (scrollTarget) {
+      scrollTarget.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+      });
+    }
+
+    if (!fileInput) {
+      if (
+        typeof agvUpHandoutSetStatus === "function"
+      ) {
+        agvUpHandoutSetStatus(
+          "The course file selector could not be opened.",
+          "bad"
+        );
+      }
+
+      return;
+    }
+
+    fileInput.click();
+
+    if (
+      typeof agvUpHandoutSetStatus === "function"
+    ) {
+      agvUpHandoutSetStatus(
+        "Choose a PDF, Word, Excel, TXT, or MP4 file. Then add an optional title and click Upload to Student Handout.",
+        "ok"
+      );
+    }
+  }
+
+  function agvUpWireTeacherComputerUploadShortcut(){
+    const button =
+      document.getElementById(
+        "agvUpUploadFromComputerBtn"
+      );
+
+    if (button) {
+      button.onclick =
+        agvUpOpenTeacherComputerUpload;
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener(
+      "DOMContentLoaded",
+      agvUpWireTeacherComputerUploadShortcut
+    );
+  } else {
+    agvUpWireTeacherComputerUploadShortcut();
+  }
 </script>
+
 </body>
 </html>
 

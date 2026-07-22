@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -1903,10 +1903,9 @@
             : window.location.origin
         );
 
+      // Public lineup always reads the protected live registry.
       const NETWORK_API_BASE =
-        isLocal
-          ? `${window.location.protocol}//${window.location.hostname}:8792`
-          : "https://agv-subscription-server.onrender.com";
+        "https://agv-subscription-server.onrender.com";
 
       async function loadNetworkStations() {
         try {

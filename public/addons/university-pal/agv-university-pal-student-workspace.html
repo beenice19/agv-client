@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  >
+
+  <title>
+    AGV University Pal — Course Workspace
+  </title>
+
+  <style>
+    :root {
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+      color-scheme: dark;
+      background: #07101f;
+      color: #f8fafc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(
+          circle at 12% 5%,
+          rgba(47,111,237,.23),
+          transparent 32%
+        ),
+        linear-gradient(
+          145deg,
+          #07101f,
+          #101c31
+        );
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    .topBar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .backLink,
+    .actionButton {
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 42px;
+      padding: 9px 14px;
+      border: 1px solid rgba(246,200,76,.55);
+      border-radius: 11px;
+      background: rgba(15,23,42,.74);
+      color: #f6c84c;
+      font-weight: 900;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .hero {
+      padding: 26px;
+      border: 1px solid rgba(148,163,184,.22);
+      border-radius: 22px;
+      background: rgba(15,23,42,.84);
+      box-shadow: 0 22px 55px rgba(0,0,0,.25);
+    }
+
+    .badge {
+      color: #5b93ff;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0;
+      font-size: clamp(30px, 6vw, 48px);
+    }
+
+    .hero p {
+      max-width: 760px;
+      margin: 0;
+      color: #b6c2d4;
+      line-height: 1.65;
+    }
+
+    .studentSummary {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-top: 18px;
+      padding: 17px;
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 16px;
+      background: rgba(6,78,59,.18);
+    }
+
+    .studentSummary strong {
+      display: block;
+      color: #dcfce7;
+      font-size: 19px;
+    }
+
+    .studentSummary span {
+      color: #a7f3d0;
+      font-size: 13px;
+    }
+
+    .courseList {
+      display: grid;
+      gap: 17px;
+      margin-top: 20px;
+    }
+
+    .courseCard {
+      padding: 21px;
+      border: 1px solid rgba(91,147,255,.3);
+      border-radius: 19px;
+      background: rgba(23,33,54,.92);
+      box-shadow: 0 16px 36px rgba(0,0,0,.2);
+    }
+
+    .courseHeader {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .courseCode {
+      color: #f6c84c;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .08em;
+    }
+
+    .courseCard h2 {
+      margin: 5px 0;
+      font-size: 24px;
+    }
+
+    .courseMeta {
+      color: #a8b4c7;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .statusBadge {
+      align-self: flex-start;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(47,111,237,.2);
+      color: #bfdbfe;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .courseActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    .resourceSection {
+      margin-top: 18px;
+      padding-top: 17px;
+      border-top: 1px solid rgba(148,163,184,.18);
+    }
+
+    .resourceSection h3 {
+      margin: 0 0 10px;
+      color: #dbeafe;
+    }
+
+    .resourceItem {
+      margin-top: 10px;
+      padding: 14px;
+      border: 1px solid rgba(148,163,184,.2);
+      border-radius: 14px;
+      background: rgba(2,6,23,.38);
+    }
+
+    .resourceItem:first-of-type {
+      margin-top: 0;
+    }
+
+    .resourceTitle {
+      color: #f8fafc;
+      font-weight: 900;
+    }
+
+    .resourceMeta,
+    .resourceDescription {
+      margin-top: 5px;
+      color: #a8b4c7;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .resourceAction {
+      display: inline-flex;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 9px;
+      background: #2f6fed;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 900;
+      text-decoration: none;
+    }
+
+    .notice {
+      margin-top: 20px;
+      padding: 17px;
+      border: 1px dashed rgba(148,163,184,.35);
+      border-radius: 16px;
+      background: rgba(15,23,42,.7);
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+
+    .error {
+      border-color: rgba(248,113,113,.4);
+      color: #fecaca;
+    }
+
+    .sentinel {
+      margin-top: 24px;
+      text-align: center;
+      color: #86efac;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- PASS_AGV_UP_STUDENT_COURSE_WORKSPACE_2A -->
+
+  <main class="shell">
+    <div class="topBar">
+      <a
+        class="backLink"
+        href="/addons/university-pal/agv-university-pal.html?returnedFromStudentWorkspace=1"
+      >
+        ← Back to AGV University Pal
+      </a>
+
+      <button
+        type="button"
+        id="refreshWorkspaceBtn"
+        class="actionButton"
+      >
+        Refresh Materials
+      </button>
+    </div>
+
+    <header class="hero">
+      <div class="badge">
+        AGV University Pal
+      </div>
+
+      <h1>Course Workspace</h1>
+
+      <p>
+        Open your registered classes, receive teacher handouts,
+        and access course documents, workbooks, notes, links,
+        and video lessons.
+      </p>
+
+      <div
+        id="studentSummary"
+        class="studentSummary"
+        hidden
+      >
+        <div>
+          <strong id="studentName">
+            Student
+          </strong>
+
+          <span id="studentEmail"></span>
+        </div>
+
+        <span id="registrationCount"></span>
+      </div>
+    </header>
+
+    <section
+      id="accessMessage"
+      class="notice error"
+      hidden
+    ></section>
+
+    <section
+      id="emptyMessage"
+      class="notice"
+      hidden
+    ></section>
+
+    <section
+      id="courseList"
+      class="courseList"
+      aria-live="polite"
+    ></section>
+
+    <div class="sentinel">
+      Protected by AGV Sentinel
+    </div>
+  </main>
+
+  <script src="/addons/university-pal/agv-up-student-course-workspace.js"></script>
+</body>
+</html>
