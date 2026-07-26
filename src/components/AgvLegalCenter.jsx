@@ -10,6 +10,7 @@ import agvCommunityStandards from "../legal/agvCommunityStandards";
 import agvSecurityIncidentResponsePolicy from "../legal/agvSecurityIncidentResponsePolicy";
 import agvAiUseDisclosurePolicy from "../legal/agvAiUseDisclosurePolicy";
 import agvAccessibilityStatement from "../legal/agvAccessibilityStatement";
+import agvJurisdictionReviewGuide from "../legal/agvJurisdictionReviewGuide";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -23,23 +24,7 @@ const legalDocuments = [
   agvSecurityIncidentResponsePolicy,
   agvAiUseDisclosurePolicy,
   agvAccessibilityStatement,
-  {
-    id: "jurisdiction",
-    category: "Compliance",
-    title: "Jurisdiction Review Guide",
-    status: "Guidance Only",
-    summary:
-      "Helps AGV leadership and hosts identify location-specific legal questions without automatically blocking, redirecting, or approving activity.",
-    sections: [
-      "Host and event location",
-      "Ticketing and fundraising rules",
-      "Games, contests, and bingo review",
-      "Consumer-protection requirements",
-      "Privacy and recording consent",
-      "Tax and licensing questions",
-      "When local counsel should review",
-    ],
-  },
+  agvJurisdictionReviewGuide,
 ];
 
 const categories = [
