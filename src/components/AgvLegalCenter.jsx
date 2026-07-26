@@ -3,29 +3,14 @@ import agvTermsOfService from "../legal/agvTermsOfService";
 import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
 import agvHostAgreement from "../legal/agvHostAgreement";
 import agvViewerAgreement from "../legal/agvViewerAgreement";
+import agvTicketRefundPolicy from "../legal/agvTicketRefundPolicy";
 
 const legalDocuments = [
   agvTermsOfService,
   agvPrivacyPolicy,
   agvHostAgreement,
   agvViewerAgreement,
-  {
-    id: "ticket-policy",
-    category: "Payments",
-    title: "Ticketing, Cancellation and Refund Policy",
-    status: "Founder Review",
-    summary:
-      "Describes ticket delivery, event changes, cancellations, refund eligibility, processing responsibilities, and host obligations.",
-    sections: [
-      "Ticket delivery",
-      "Event cancellation",
-      "Event postponement",
-      "Refund eligibility",
-      "Host-funded refunds",
-      "Processing timelines",
-      "Nonrefundable charges",
-    ],
-  },
+  agvTicketRefundPolicy,
   {
     id: "chargebacks",
     category: "Payments",
