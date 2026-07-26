@@ -8,6 +8,7 @@ import agvChargebackPolicy from "../legal/agvChargebackPolicy";
 import agvDmcaCopyrightPolicy from "../legal/agvDmcaCopyrightPolicy";
 import agvCommunityStandards from "../legal/agvCommunityStandards";
 import agvSecurityIncidentResponsePolicy from "../legal/agvSecurityIncidentResponsePolicy";
+import agvAiUseDisclosurePolicy from "../legal/agvAiUseDisclosurePolicy";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -19,22 +20,7 @@ const legalDocuments = [
   agvDmcaCopyrightPolicy,
   agvCommunityStandards,
   agvSecurityIncidentResponsePolicy,
-  {
-    id: "ai",
-    category: "Technology",
-    title: "AI Use and Disclosure Policy",
-    status: "Founder Review",
-    summary:
-      "Explains how AGV AI features may assist users, where human judgment remains necessary, and how users should treat generated output.",
-    sections: [
-      "AI-assisted features",
-      "Accuracy limitations",
-      "Human review responsibility",
-      "Education-use disclosures",
-      "Prohibited AI use",
-      "Privacy and submitted content",
-    ],
-  },
+  agvAiUseDisclosurePolicy,
   {
     id: "accessibility",
     category: "Platform",
