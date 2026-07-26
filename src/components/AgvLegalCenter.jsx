@@ -2,27 +2,13 @@ import React, { useMemo, useState } from "react";
 import agvTermsOfService from "../legal/agvTermsOfService";
 import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
 import agvHostAgreement from "../legal/agvHostAgreement";
+import agvViewerAgreement from "../legal/agvViewerAgreement";
 
 const legalDocuments = [
   agvTermsOfService,
   agvPrivacyPolicy,
   agvHostAgreement,
-  {
-    id: "viewer-agreement",
-    category: "Users",
-    title: "AGV Viewer and User Agreement",
-    status: "Founder Review",
-    summary:
-      "Sets expectations for viewers, participants, guests, students, and other users interacting with AGV experiences.",
-    sections: [
-      "Account and access rules",
-      "Community participation",
-      "Ticket and event access",
-      "Recording and privacy expectations",
-      "Prohibited conduct",
-      "Reporting concerns",
-    ],
-  },
+  agvViewerAgreement,
   {
     id: "ticket-policy",
     category: "Payments",
