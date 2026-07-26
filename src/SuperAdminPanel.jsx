@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AgvOperationsWorker from "./components/AgvOperationsWorker.jsx";
+import AgvSupportWorker from "./components/AgvSupportWorker.jsx";
 
 const ROOM_STORAGE_KEY = "agv_super_admin_rooms";
 const NETWORK_STATION_STORAGE_KEY = "agv_network_stations";
@@ -1136,6 +1137,9 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
 
       <div style={{ maxWidth: 1180, margin: "0 auto 18px" }}>
         <AgvOperationsWorker />
+      </div>
+      <div style={{ maxWidth: 1180, margin: "0 auto 18px" }}>
+        <AgvSupportWorker />
       </div>
       <section style={styles.planCard}>
         <div>
