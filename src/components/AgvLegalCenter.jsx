@@ -7,6 +7,7 @@ import agvTicketRefundPolicy from "../legal/agvTicketRefundPolicy";
 import agvChargebackPolicy from "../legal/agvChargebackPolicy";
 import agvDmcaCopyrightPolicy from "../legal/agvDmcaCopyrightPolicy";
 import agvCommunityStandards from "../legal/agvCommunityStandards";
+import agvSecurityIncidentResponsePolicy from "../legal/agvSecurityIncidentResponsePolicy";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -17,23 +18,7 @@ const legalDocuments = [
   agvChargebackPolicy,
   agvDmcaCopyrightPolicy,
   agvCommunityStandards,
-  {
-    id: "security",
-    category: "Safety",
-    title: "Security and Incident Response Policy",
-    status: "Founder Review",
-    summary:
-      "Documents AGV's approach to account protection, incident reporting, containment, recovery, records, and user notification.",
-    sections: [
-      "Account protection",
-      "Security reporting",
-      "Incident classification",
-      "Containment and recovery",
-      "Evidence preservation",
-      "Notification procedures",
-      "Post-incident review",
-    ],
-  },
+  agvSecurityIncidentResponsePolicy,
   {
     id: "ai",
     category: "Technology",
