@@ -1,27 +1,12 @@
 import React, { useMemo, useState } from "react";
 import agvTermsOfService from "../legal/agvTermsOfService";
 import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
+import agvHostAgreement from "../legal/agvHostAgreement";
 
 const legalDocuments = [
   agvTermsOfService,
   agvPrivacyPolicy,
-  {
-    id: "host-agreement",
-    category: "Hosts",
-    title: "AGV Host Agreement",
-    status: "Founder Review",
-    summary:
-      "Establishes host responsibilities for broadcasts, events, audience management, content rights, ticketing, and compliance.",
-    sections: [
-      "Host eligibility",
-      "Broadcast and event responsibility",
-      "Content ownership and permissions",
-      "Ticket-sale obligations",
-      "Audience safety and moderation",
-      "Payout eligibility",
-      "Compliance and removal rights",
-    ],
-  },
+  agvHostAgreement,
   {
     id: "viewer-agreement",
     category: "Users",
