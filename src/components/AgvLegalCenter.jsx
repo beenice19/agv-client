@@ -1,25 +1,10 @@
 import React, { useMemo, useState } from "react";
 import agvTermsOfService from "../legal/agvTermsOfService";
+import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
 
 const legalDocuments = [
   agvTermsOfService,
-  {
-    id: "privacy",
-    category: "Platform",
-    title: "AGV Privacy Policy",
-    status: "Founder Review",
-    summary:
-      "Explains what information AGV collects, why it is used, how it is protected, and the choices available to users.",
-    sections: [
-      "Information collected",
-      "How information is used",
-      "Cookies and device data",
-      "Payment-provider information",
-      "Data retention",
-      "User privacy choices",
-      "Security and contact procedures",
-    ],
-  },
+  agvPrivacyPolicy,
   {
     id: "host-agreement",
     category: "Hosts",
