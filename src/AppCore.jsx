@@ -6,6 +6,7 @@ import {
   stopAgvScreenShare,
   disconnectAgvLiveKitRoom,
 } from "./agvLiveKitBridge";
+import AgvLegalCenter from "./components/AgvLegalCenter";
 
 const CHAT_API_BASE =
   import.meta.env.VITE_AGV_CHAT_API_URL || "http://127.0.0.1:8788";
@@ -359,6 +360,7 @@ export default function AppCore({ entryRole = "viewer" }) {
   const [roleMode] = useState(entryRole === "host" ? "host" : "viewer");
   const [selectedPanel, setSelectedPanel] = useState("chat");
   const [vendorFinanceDockOpen, setVendorFinanceDockOpen] = useState(false); // PASS_VENDOR_FINANCE_DOCK_3A
+  const [legalCenterOpen, setLegalCenterOpen] = useState(false); // LEGAL-CENTER-V2-SAFE-REBUILD
   const [hostFinancialOnboardingStep, setHostFinancialOnboardingStep] = useState(1); // PASS_HOST_FINANCIAL_DOCK_VISUAL_ONBOARDING_1
   const [vendorDockList, setVendorDockList] = useState([]); // PASS_REAL_VENDOR_DATABASE_DOCK
   const [vendorDockRecord, setVendorDockRecord] = useState(null); // PASS_REAL_VENDOR_DATABASE_DOCK
@@ -5640,6 +5642,25 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               >
                 Open Host Financial Dock
               </button>
+              {/* LEGAL-CENTER-V2-SAFE-REBUILD */}
+              <button
+                type="button"
+                onClick={() => setLegalCenterOpen(true)}
+                style={{
+                  width: "100%",
+                  marginBottom: 12,
+                  border: "1px solid rgba(96,165,250,0.52)",
+                  borderRadius: 16,
+                  padding: "13px 14px",
+                  background: "linear-gradient(135deg, rgba(30,64,175,0.30), rgba(15,23,42,0.92))",
+                  color: "#dbeafe",
+                  fontWeight: 950,
+                  cursor: "pointer",
+                  boxShadow: "0 14px 34px rgba(0,0,0,0.25)",
+                }}
+              >
+                Open AGV Legal Center
+              </button>
 
               <div style={styles.controlBox}>
                 
@@ -6176,6 +6197,11 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
             </div>
           ) : null}
         </aside>
+      {/* LEGAL-CENTER-V2-SAFE-REBUILD */}
+      <AgvLegalCenter
+        open={legalCenterOpen}
+        onClose={() => setLegalCenterOpen(false)}
+      />
       {/* PASS_LAUNCH_LOCK_3C1_VENDOR_FINANCIAL_DOCK_CLIENT_ONLY */}
       {vendorFinanceDockOpen ? (
         <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.76)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
