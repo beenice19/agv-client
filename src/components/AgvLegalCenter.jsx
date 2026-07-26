@@ -5,6 +5,7 @@ import agvHostAgreement from "../legal/agvHostAgreement";
 import agvViewerAgreement from "../legal/agvViewerAgreement";
 import agvTicketRefundPolicy from "../legal/agvTicketRefundPolicy";
 import agvChargebackPolicy from "../legal/agvChargebackPolicy";
+import agvDmcaCopyrightPolicy from "../legal/agvDmcaCopyrightPolicy";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -13,22 +14,7 @@ const legalDocuments = [
   agvViewerAgreement,
   agvTicketRefundPolicy,
   agvChargebackPolicy,
-  {
-    id: "dmca",
-    category: "Content",
-    title: "DMCA and Copyright Policy",
-    status: "Founder Review",
-    summary:
-      "Provides procedures for copyright notices, counter-notices, repeat infringement, content removal, and rights-holder communication.",
-    sections: [
-      "Copyright-owner notices",
-      "Required notice information",
-      "Content removal",
-      "Counter-notice procedure",
-      "Repeat-infringer policy",
-      "Designated-agent information",
-    ],
-  },
+  agvDmcaCopyrightPolicy,
   {
     id: "community",
     category: "Safety",
