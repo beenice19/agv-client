@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+﻿import React, { useMemo, useState } from "react";
 import agvTermsOfService from "../legal/agvTermsOfService";
 import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
 import agvHostAgreement from "../legal/agvHostAgreement";
@@ -6,6 +6,7 @@ import agvViewerAgreement from "../legal/agvViewerAgreement";
 import agvTicketRefundPolicy from "../legal/agvTicketRefundPolicy";
 import agvChargebackPolicy from "../legal/agvChargebackPolicy";
 import agvDmcaCopyrightPolicy from "../legal/agvDmcaCopyrightPolicy";
+import agvCommunityStandards from "../legal/agvCommunityStandards";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -15,22 +16,7 @@ const legalDocuments = [
   agvTicketRefundPolicy,
   agvChargebackPolicy,
   agvDmcaCopyrightPolicy,
-  {
-    id: "community",
-    category: "Safety",
-    title: "AGV Community Standards",
-    status: "Founder Review",
-    summary:
-      "Defines behavioral and content standards for safe broadcasts, classrooms, events, chats, and community spaces.",
-    sections: [
-      "Harassment and threats",
-      "Hate and discriminatory conduct",
-      "Sexual and exploitative content",
-      "Fraud and impersonation",
-      "Dangerous and illegal conduct",
-      "Enforcement and appeals",
-    ],
-  },
+  agvCommunityStandards,
   {
     id: "security",
     category: "Safety",
