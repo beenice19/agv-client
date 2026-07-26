@@ -9,6 +9,7 @@ import agvDmcaCopyrightPolicy from "../legal/agvDmcaCopyrightPolicy";
 import agvCommunityStandards from "../legal/agvCommunityStandards";
 import agvSecurityIncidentResponsePolicy from "../legal/agvSecurityIncidentResponsePolicy";
 import agvAiUseDisclosurePolicy from "../legal/agvAiUseDisclosurePolicy";
+import agvAccessibilityStatement from "../legal/agvAccessibilityStatement";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -21,21 +22,7 @@ const legalDocuments = [
   agvCommunityStandards,
   agvSecurityIncidentResponsePolicy,
   agvAiUseDisclosurePolicy,
-  {
-    id: "accessibility",
-    category: "Platform",
-    title: "Accessibility Statement",
-    status: "Founder Review",
-    summary:
-      "States AGV's commitment to improving access and provides a process for reporting barriers or requesting assistance.",
-    sections: [
-      "Accessibility commitment",
-      "Supported experiences",
-      "Known limitations",
-      "Feedback and assistance",
-      "Continuous improvement",
-    ],
-  },
+  agvAccessibilityStatement,
   {
     id: "jurisdiction",
     category: "Compliance",
