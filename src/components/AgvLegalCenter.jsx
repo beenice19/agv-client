@@ -4,6 +4,7 @@ import agvPrivacyPolicy from "../legal/agvPrivacyPolicy";
 import agvHostAgreement from "../legal/agvHostAgreement";
 import agvViewerAgreement from "../legal/agvViewerAgreement";
 import agvTicketRefundPolicy from "../legal/agvTicketRefundPolicy";
+import agvChargebackPolicy from "../legal/agvChargebackPolicy";
 
 const legalDocuments = [
   agvTermsOfService,
@@ -11,22 +12,7 @@ const legalDocuments = [
   agvHostAgreement,
   agvViewerAgreement,
   agvTicketRefundPolicy,
-  {
-    id: "chargebacks",
-    category: "Payments",
-    title: "Chargeback and Payment Dispute Policy",
-    status: "Founder Review",
-    summary:
-      "Defines how AGV and hosts respond to payment disputes, evidence requests, reversals, fees, and repeated chargeback activity.",
-    sections: [
-      "Dispute notification",
-      "Required host evidence",
-      "Ticket and attendance records",
-      "Refund versus chargeback handling",
-      "Reversal responsibility",
-      "Repeated-dispute safeguards",
-    ],
-  },
+  agvChargebackPolicy,
   {
     id: "dmca",
     category: "Content",
