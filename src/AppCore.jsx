@@ -6440,7 +6440,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                           </div>
                         </div>
                         <div style={{ padding: 14, borderRadius: 16, border: "1px solid rgba(96,165,250,0.25)", background: "rgba(59,130,246,0.08)" }}>
-                          <div style={{ fontSize: 22 }}>ðŸ’³</div>
                           <div style={{ marginTop: 7, fontWeight: 950, color: "#bfdbfe" }}>Eligible debit card</div>
                           <div style={{ marginTop: 4, color: "#cbd5e1", fontSize: 12, lineHeight: 1.5 }}>
                             Availability depends on Stripe eligibility and location.
@@ -6620,9 +6619,6 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 11, alignItems: "center" }}>
-                      <div style={{ width: 42, height: 42, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(59,130,246,0.15)", color: "#93c5fd", fontSize: 20 }}>
-                        ðŸ’³
-                      </div>
                       <div>
                         <div style={{ color: "#93c5fd", fontWeight: 950 }}>
                           AGV Payment Method
