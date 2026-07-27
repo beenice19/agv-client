@@ -39,3 +39,6 @@ src/*.GOLD-STABLE*.js
 src/*.GOLD-STABLE*.jsx
 src/*BACKUP*.js
 src/*BACKUP*.jsx
+
+# Local rollback backups - never commit
+*.bak
