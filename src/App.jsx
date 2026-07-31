@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import AppCore from "./AppCore.jsx";
 import { createAgvLiveKitRoom, disconnectAgvLiveKitRoom } from "./agvLiveKitBridge.js";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
+import AgvNetworkViewerShell from "./components/AgvNetworkViewerShell.jsx";
 
 // PASS34D_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
@@ -228,6 +229,31 @@ export default function App() {
       return <AgvBroadcastLayoutPage />;
     }
   } catch {}
+  
+
+  // PASS CU-10I6 PUBLIC AGV NETWORK VIEWER ROUTE
+  try {
+    const params = new URLSearchParams(window.location.search);
+
+    const publicAgvNetworkRequest =
+      window.location.pathname === "/agv-network" ||
+      window.location.pathname === "/agv-network/" ||
+      params.get("agvNetwork") === "1";
+
+    const ownerRequest =
+      window.location.pathname === "/agv-owner" ||
+      window.location.pathname === "/agv-owner.html" ||
+      params.get("agvOwner") === "1" ||
+      params.get("owner") === "1" ||
+      params.get("superAdmin") === "1" ||
+      window.location.hash === "#agv-owner";
+
+    if (publicAgvNetworkRequest && !ownerRequest) {
+      // PASS CU-10J1 AGV NETWORK VIEWER SHELL ROUTE
+      return <AgvNetworkViewerShell />;
+    }
+  } catch {}
+
   const [entryMode, setEntryMode] = useState("");
   const [directViewerEntry, setDirectViewerEntry] = useState(false);
   const [ticketApproved, setTicketApproved] = useState(false);
