@@ -61,6 +61,14 @@ function EmptySection({ title, description }) {
 }
 
 export default function AgvNetworkViewerShell() {
+  // PASS CU-10J2 AGV NETWORK RESPONSIVE VALIDATION AND POLISH
+  const [viewportWidth, setViewportWidth] = useState(() =>
+    typeof window === "undefined" ? 1440 : window.innerWidth
+  );
+
+  const isMobile = viewportWidth < 680;
+  const isTablet = viewportWidth >= 680 && viewportWidth < 1040;
+
   const [activeSection, setActiveSection] = useState("home");
 
   const [stations, setStations] = useState([]);
@@ -179,6 +187,19 @@ export default function AgvNetworkViewerShell() {
     loadOnDemand();
   }, []);
 
+  useEffect(() => {
+    function handleResize() {
+      setViewportWidth(window.innerWidth);
+    }
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const liveCount = useMemo(
     () =>
       stations.filter(
@@ -202,7 +223,15 @@ export default function AgvNetworkViewerShell() {
 
   return (
     <div style={styles.shell}>
-      <header style={styles.header}>
+      <header
+        style={{
+          ...styles.header,
+          padding: isMobile
+            ? "14px 16px"
+            : styles.header.padding,
+          alignItems: isMobile ? "flex-start" : "center",
+        }}
+      >
         <div style={styles.brand}>
           <div style={styles.logo}>AGV</div>
 
@@ -214,7 +243,15 @@ export default function AgvNetworkViewerShell() {
           </div>
         </div>
 
-        <div style={styles.headerActions}>
+        <div
+          style={{
+            ...styles.headerActions,
+            width: isMobile ? "100%" : "auto",
+            justifyContent: isMobile
+              ? "space-between"
+              : "flex-start",
+          }}
+        >
           <div style={styles.statusBadge}>
             <span style={styles.statusDot} />
             {liveCount} live station{liveCount === 1 ? "" : "s"}
@@ -232,7 +269,14 @@ export default function AgvNetworkViewerShell() {
         </div>
       </header>
 
-      <nav style={styles.navigation}>
+      <nav
+        style={{
+          ...styles.navigation,
+          padding: isMobile
+            ? "10px 12px"
+            : styles.navigation.padding,
+        }}
+      >
         {NAV_ITEMS.map((item) => (
           <button
             key={item.id}
@@ -249,13 +293,48 @@ export default function AgvNetworkViewerShell() {
         ))}
       </nav>
 
-      <main style={styles.main}>
+      <main
+        style={{
+          ...styles.main,
+          width: isMobile
+            ? "calc(100% - 20px)"
+            : styles.main.width,
+          padding: isMobile
+            ? "16px 0 36px"
+            : styles.main.padding,
+        }}
+      >
         {activeSection === "home" ? (
           <>
-            <section style={styles.hero}>
+            <section
+              style={{
+                ...styles.hero,
+                gridTemplateColumns:
+                  isMobile || isTablet
+                    ? "minmax(0, 1fr)"
+                    : styles.hero.gridTemplateColumns,
+                padding: isMobile
+                  ? "24px 18px"
+                  : styles.hero.padding,
+                gap: isMobile ? 20 : styles.hero.gap,
+                borderRadius: isMobile
+                  ? 20
+                  : styles.hero.borderRadius,
+              }}
+            >
               <div>
                 <div style={styles.eyebrow}>AVANT GLOBAL VISION</div>
-                <h2 style={styles.heroTitle}>
+                <h2
+                  style={{
+                    ...styles.heroTitle,
+                    fontSize: isMobile
+                      ? 38
+                      : styles.heroTitle.fontSize,
+                    lineHeight: isMobile
+                      ? 1.04
+                      : styles.heroTitle.lineHeight,
+                  }}
+                >
                   Watch AGV Network
                 </h2>
                 <p style={styles.heroText}>
@@ -283,7 +362,16 @@ export default function AgvNetworkViewerShell() {
                 </div>
               </div>
 
-              <div style={styles.heroMetrics}>
+              <div
+                style={{
+                  ...styles.heroMetrics,
+                  gridTemplateColumns: isMobile
+                    ? "minmax(0, 1fr)"
+                    : isTablet
+                      ? "repeat(3, minmax(0, 1fr))"
+                      : styles.heroMetrics.gridTemplateColumns,
+                }}
+              >
                 <div style={styles.metric}>
                   <span style={styles.metricLabel}>Live Stations</span>
                   <strong style={styles.metricValue}>{liveCount}</strong>
@@ -324,7 +412,14 @@ export default function AgvNetworkViewerShell() {
               ) : stationsError ? (
                 <div style={styles.errorBox}>{stationsError}</div>
               ) : (
-                <div style={styles.cardGrid}>
+                <div
+                  style={{
+                    ...styles.cardGrid,
+                    gridTemplateColumns: isMobile
+                      ? "minmax(0, 1fr)"
+                      : styles.cardGrid.gridTemplateColumns,
+                  }}
+                >
                   {stations.slice(0, 3).map((station) => (
                     <button
                       key={station.id}
@@ -381,7 +476,14 @@ export default function AgvNetworkViewerShell() {
               ) : mediaError ? (
                 <div style={styles.errorBox}>{mediaError}</div>
               ) : mediaItems.length ? (
-                <div style={styles.cardGrid}>
+                <div
+                  style={{
+                    ...styles.cardGrid,
+                    gridTemplateColumns: isMobile
+                      ? "minmax(0, 1fr)"
+                      : styles.cardGrid.gridTemplateColumns,
+                  }}
+                >
                   {mediaItems.slice(0, 3).map((item) => (
                     <button
                       key={item.intakeId}
@@ -419,7 +521,17 @@ export default function AgvNetworkViewerShell() {
         ) : null}
 
         {activeSection === "live" ? (
-          <section style={styles.viewerSection}>
+          <section
+            style={{
+              ...styles.viewerSection,
+              padding: isMobile
+                ? "16px 12px"
+                : styles.viewerSection.padding,
+              borderRadius: isMobile
+                ? 18
+                : styles.viewerSection.borderRadius,
+            }}
+          >
             <div style={styles.sectionHeader}>
               <div>
                 <div style={styles.sectionEyebrow}>AGV NETWORK</div>
@@ -441,8 +553,26 @@ export default function AgvNetworkViewerShell() {
             ) : null}
 
             {selectedStation ? (
-              <div style={styles.playerLayout}>
-                <div style={styles.playerPanel}>
+              <div
+                style={{
+                  ...styles.playerLayout,
+                  gridTemplateColumns:
+                    isMobile || isTablet
+                      ? "minmax(0, 1fr)"
+                      : styles.playerLayout.gridTemplateColumns,
+                }}
+              >
+                <div
+                  style={{
+                    ...styles.playerPanel,
+                    padding: isMobile
+                      ? 10
+                      : styles.playerPanel.padding,
+                    borderRadius: isMobile
+                      ? 14
+                      : styles.playerPanel.borderRadius,
+                  }}
+                >
                   <div style={styles.playerHeader}>
                     <span style={styles.livePill}>
                       {selectedStation.badge || "LIVE"}
@@ -480,7 +610,14 @@ export default function AgvNetworkViewerShell() {
                   </div>
                 </div>
 
-                <aside style={styles.catalogPanel}>
+                <aside
+                  style={{
+                    ...styles.catalogPanel,
+                    position: "relative",
+                    maxHeight: isMobile ? "none" : "70vh",
+                    overflowY: "auto",
+                  }}
+                >
                   <div style={styles.catalogTitle}>Choose a station</div>
 
                   {stations.map((station) => {
@@ -519,7 +656,17 @@ export default function AgvNetworkViewerShell() {
         ) : null}
 
         {activeSection === "ondemand" ? (
-          <section style={styles.viewerSection}>
+          <section
+            style={{
+              ...styles.viewerSection,
+              padding: isMobile
+                ? "16px 12px"
+                : styles.viewerSection.padding,
+              borderRadius: isMobile
+                ? 18
+                : styles.viewerSection.borderRadius,
+            }}
+          >
             <div style={styles.sectionHeader}>
               <div>
                 <div style={styles.sectionEyebrow}>AGV NETWORK</div>
@@ -541,8 +688,26 @@ export default function AgvNetworkViewerShell() {
             ) : null}
 
             {selectedMedia ? (
-              <div style={styles.playerLayout}>
-                <div style={styles.playerPanel}>
+              <div
+                style={{
+                  ...styles.playerLayout,
+                  gridTemplateColumns:
+                    isMobile || isTablet
+                      ? "minmax(0, 1fr)"
+                      : styles.playerLayout.gridTemplateColumns,
+                }}
+              >
+                <div
+                  style={{
+                    ...styles.playerPanel,
+                    padding: isMobile
+                      ? 10
+                      : styles.playerPanel.padding,
+                    borderRadius: isMobile
+                      ? 14
+                      : styles.playerPanel.borderRadius,
+                  }}
+                >
                   <div style={styles.playerHeader}>
                     <span style={styles.onDemandPill}>ON DEMAND</span>
                     <span>Founder-approved public program</span>
@@ -572,7 +737,14 @@ export default function AgvNetworkViewerShell() {
                   </div>
                 </div>
 
-                <aside style={styles.catalogPanel}>
+                <aside
+                  style={{
+                    ...styles.catalogPanel,
+                    position: "relative",
+                    maxHeight: isMobile ? "none" : "70vh",
+                    overflowY: "auto",
+                  }}
+                >
                   <div style={styles.catalogTitle}>Choose a program</div>
 
                   {mediaItems.map((item) => {

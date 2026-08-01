@@ -656,6 +656,117 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
 
   const selectedRoomMessages = messagesByRoom[selectedRoomId] || [];
   const selectedRoomBulletins = bulletinsByRoom[selectedRoomId] || [];
+
+  // PASS CU-10I4 PUBLIC AGV NETWORK ON DEMAND VIEWER STATE
+  const [publicOnDemandItems, setPublicOnDemandItems] = useState([]);
+  const [publicOnDemandLoading, setPublicOnDemandLoading] = useState(false);
+  const [publicOnDemandError, setPublicOnDemandError] = useState("");
+  const [selectedPublicOnDemand, setSelectedPublicOnDemand] = useState(null);
+
+  // PASS CU-10I4 PUBLIC AGV NETWORK ON DEMAND VIEWER SHELF
+  async function loadPublicOnDemandCatalog(silent = false) {
+    if (!silent) {
+      setPublicOnDemandLoading(true);
+    }
+
+    setPublicOnDemandError("");
+
+    try {
+      const response = await fetch(`${ROOM_API_BASE}/api/media/public`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result?.ok) {
+        throw new Error(
+          result?.error ||
+            "AGV Network On Demand is temporarily unavailable."
+        );
+      }
+
+      const rawItems = Array.isArray(result.items)
+        ? result.items
+        : Array.isArray(result.media)
+          ? result.media
+          : [];
+
+      // PASS CU-10I7 PUBLIC CATALOG RESPONSE SHAPE FIX
+      // The SERVER public endpoint already excludes non-public media.
+      // Require only the public playback identity returned by that endpoint.
+      const items = rawItems.filter((item) => {
+        const intakeId = String(item?.intakeId || "").trim();
+        const playbackPath = String(
+          item?.playbackPath ||
+            item?.publicPublication?.playbackPath ||
+            ""
+        ).trim();
+
+        return Boolean(intakeId && playbackPath);
+      });
+
+      setPublicOnDemandItems(items);
+
+      setSelectedPublicOnDemand((current) => {
+        if (!items.length) {
+          return null;
+        }
+
+        const currentId = current?.intakeId;
+
+        return (
+          items.find((item) => item.intakeId === currentId) ||
+          items[0]
+        );
+      });
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.message ||
+        "AGV Network On Demand is temporarily unavailable.";
+
+      setPublicOnDemandError(message);
+      return false;
+    } finally {
+      if (!silent) {
+        setPublicOnDemandLoading(false);
+      }
+    }
+  }
+
+  function getPublicOnDemandPlaybackUrl(item) {
+    const intakeId = String(item?.intakeId || "").trim();
+    const playbackPath = String(
+      item?.playbackPath ||
+        item?.publicPublication?.playbackPath ||
+        ""
+    ).trim();
+
+    if (playbackPath) {
+      return playbackPath.startsWith("http")
+        ? playbackPath
+        : ROOM_API_BASE + playbackPath;
+    }
+
+    return intakeId
+      ? `${ROOM_API_BASE}/api/media/public/${encodeURIComponent(intakeId)}/playback`
+      : "";
+  }
+
+  useEffect(() => {
+    loadPublicOnDemandCatalog();
+
+    const publicCatalogPoll = window.setInterval(() => {
+      loadPublicOnDemandCatalog(true);
+    }, 60000);
+
+    return () => {
+      window.clearInterval(publicCatalogPoll);
+    };
+  }, []);
   // PASS_LAUNCH_110_B_FREE_TIER_AUTHORITY_HARDENING
   // A normal host entry must never inherit stale owner or Super Admin authority.
   useEffect(() => {
@@ -4582,6 +4693,7 @@ const [hostVendorAgreementAccepted, setHostVendorAgreementAccepted] = useState((
               {ticketMessage ? <div style={styles.ticketMessage}>{ticketMessage}</div> : null}
             </div>
           ) : null}
+                    {/* PASS OD-STAGE-01: ON-DEMAND SHELF REMOVED FROM ABOVE LIVE STAGE */}
           <div style={styles.stageShell}>
             {/* PASS_AGV_NETWORK_BROADCAST_1_EMBEDDED_PLAYER */}
             <div style={styles.stageTop}>

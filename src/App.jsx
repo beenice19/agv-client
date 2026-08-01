@@ -3,6 +3,8 @@ import AppCore from "./AppCore.jsx";
 import { createAgvLiveKitRoom, disconnectAgvLiveKitRoom } from "./agvLiveKitBridge.js";
 import SuperAdminPanel from "./SuperAdminPanel.jsx";
 import AgvNetworkViewerShell from "./components/AgvNetworkViewerShell.jsx";
+import AgvContentPartnerPortal from "./components/AgvContentPartnerPortal.jsx";
+import AgvContentPartnerSplash from "./components/AgvContentPartnerSplash.jsx";
 
 // PASS34D_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
@@ -230,6 +232,50 @@ export default function App() {
     }
   } catch {}
   
+
+  // PASS CP-MARKETING-01 PUBLIC CONTENT PARTNER SPLASH ROUTE
+  try {
+    const params = new URLSearchParams(window.location.search);
+
+    const contentPartnerSplashRequest =
+      window.location.pathname === "/content-partners" ||
+      window.location.pathname === "/content-partners/" ||
+      params.get("contentPartnerSplash") === "1";
+
+    const ownerRequest =
+      window.location.pathname === "/agv-owner" ||
+      window.location.pathname === "/agv-owner.html" ||
+      params.get("agvOwner") === "1" ||
+      params.get("owner") === "1" ||
+      params.get("superAdmin") === "1" ||
+      window.location.hash === "#agv-owner";
+
+    if (contentPartnerSplashRequest && !ownerRequest) {
+      return <AgvContentPartnerSplash />;
+    }
+  } catch {}
+
+  // PASS CP-01 AGV CONTENT PARTNER PORTAL ROUTE
+  try {
+    const params = new URLSearchParams(window.location.search);
+
+    const contentPartnerRequest =
+      window.location.pathname === "/content-partner" ||
+      window.location.pathname === "/content-partner/" ||
+      params.get("contentPartner") === "1";
+
+    const ownerRequest =
+      window.location.pathname === "/agv-owner" ||
+      window.location.pathname === "/agv-owner.html" ||
+      params.get("agvOwner") === "1" ||
+      params.get("owner") === "1" ||
+      params.get("superAdmin") === "1" ||
+      window.location.hash === "#agv-owner";
+
+    if (contentPartnerRequest && !ownerRequest) {
+      return <AgvContentPartnerPortal />;
+    }
+  } catch {}
 
   // PASS CU-10I6 PUBLIC AGV NETWORK VIEWER ROUTE
   try {
