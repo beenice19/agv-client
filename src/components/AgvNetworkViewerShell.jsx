@@ -19,6 +19,145 @@ const NAV_ITEMS = [
   { id: "archives", label: "Archives" },
 ];
 
+// PASS YTI-02 - PUBLIC YOUTUBE ON DEMAND PLAYBACK
+function isYouTubeOnDemandItem(item) {
+  const sourceType = String(
+    item?.sourceType || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const videoId = String(
+    item?.videoId || ""
+  ).trim();
+
+  return (
+    sourceType === "YOUTUBE" &&
+    /^[A-Za-z0-9_-]{11}$/.test(videoId)
+  );
+}
+
+// PASS PLEX-02 - PUBLIC PLEX EXTERNAL REDIRECT
+function isPlexExternalRedirectItem(item) {
+  const sourceType = String(
+    item?.sourceType || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const playbackMode = String(
+    item?.playbackMode || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const rightsStatus = String(
+    item?.rightsStatus || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  return (
+    sourceType ===
+      "PLEX_EXTERNAL_LINK" &&
+    playbackMode ===
+      "EXTERNAL_REDIRECT" &&
+    rightsStatus ===
+      "LINK_ONLY_NO_AGV_PLAYBACK" &&
+    item?.noAgvPlayback === true
+  );
+}
+
+function plexExternalRedirectUrl(item) {
+  if (
+    !isPlexExternalRedirectItem(
+      item
+    )
+  ) {
+    return "";
+  }
+
+  const rawUrl = String(
+    item?.externalUrl ||
+      item?.sourceUrl ||
+      ""
+  ).trim();
+
+  if (!rawUrl) {
+    return "";
+  }
+
+  try {
+    const parsed =
+      new URL(rawUrl);
+
+    const allowedHosts =
+      new Set([
+        "watch.plex.tv",
+        "l.plex.tv",
+      ]);
+
+    if (
+      parsed.protocol !== "https:" ||
+      !allowedHosts.has(
+        parsed.hostname.toLowerCase()
+      )
+    ) {
+      return "";
+    }
+
+    return parsed.href;
+  } catch {
+    return "";
+  }
+}
+
+function openPlexExternalRedirect(item) {
+  const destination =
+    plexExternalRedirectUrl(
+      item
+    );
+
+  if (!destination) {
+    return false;
+  }
+
+  const opened =
+    window.open(
+      destination,
+      "_blank",
+      "noopener,noreferrer"
+    );
+
+  if (opened) {
+    opened.opener = null;
+  } else {
+    window.location.assign(
+      destination
+    );
+  }
+
+  return true;
+}
+
+function mediaYouTubeEmbedUrl(item) {
+  if (!isYouTubeOnDemandItem(item)) {
+    return "";
+  }
+
+  const direct = String(
+    item?.embedUrl || ""
+  ).trim();
+
+  return direct.startsWith(
+    "https://www.youtube-nocookie.com/embed/"
+  )
+    ? direct
+    : "https://www.youtube-nocookie.com/embed/" +
+        encodeURIComponent(item.videoId) +
+        "?autoplay=1&playsinline=1&controls=1&fs=1&rel=0";
+}
+
 function mediaPlaybackUrl(item) {
   const playbackPath = String(item?.playbackPath || "").trim();
 
@@ -58,6 +197,43 @@ function EmptySection({ title, description }) {
       </div>
     </section>
   );
+}
+
+// PASS NTH-01 AGV NETWORK REAL THUMBNAILS
+function stationThumbnailUrl(station) {
+  const directThumbnail = String(
+    station?.thumbnail ||
+      station?.artwork ||
+      station?.imageUrl ||
+      ""
+  ).trim();
+
+  if (directThumbnail) return directThumbnail;
+
+  const videoId = String(
+    station?.videoId ||
+      station?.fallbackVideoId ||
+      ""
+  ).trim();
+
+  if (!videoId) return "";
+
+  return (
+    "https://i.ytimg.com/vi/" +
+    encodeURIComponent(videoId) +
+    "/hqdefault.jpg"
+  );
+}
+
+function mediaPosterUrl(item) {
+  return String(
+    item?.thumbnail ||
+      item?.poster ||
+      item?.posterUrl ||
+      item?.artwork ||
+      item?.artworkUrl ||
+      ""
+  ).trim();
 }
 
 export default function AgvNetworkViewerShell() {
@@ -158,19 +334,40 @@ export default function AgvNetworkViewerShell() {
         ? result.items.filter(
             (item) =>
               String(item?.intakeId || "").trim() &&
-              String(item?.playbackPath || "").trim()
+              (
+                String(item?.playbackPath || "").trim() ||
+                isYouTubeOnDemandItem(item) ||
+                isPlexExternalRedirectItem(item)
+              )
           )
         : [];
 
       setMediaItems(publicItems);
 
       setSelectedMedia((current) => {
-        if (!publicItems.length) return null;
+        if (!publicItems.length) {
+          return null;
+        }
+
+        const retained =
+          publicItems.find(
+            (item) =>
+              item.intakeId ===
+              current?.intakeId
+          );
+
+        if (retained) {
+          return retained;
+        }
 
         return (
           publicItems.find(
-            (item) => item.intakeId === current?.intakeId
-          ) || publicItems[0]
+            (item) =>
+              !isPlexExternalRedirectItem(
+                item
+              )
+          ) ||
+          publicItems[0]
         );
       });
     } catch (error) {
@@ -216,9 +413,23 @@ export default function AgvNetworkViewerShell() {
   }
 
   function openOnDemand(item) {
+    if (
+      isPlexExternalRedirectItem(
+        item
+      )
+    ) {
+      openPlexExternalRedirect(
+        item
+      );
+      return;
+    }
+
     setSelectedMedia(item);
     setActiveSection("ondemand");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }
 
   return (
@@ -256,6 +467,25 @@ export default function AgvNetworkViewerShell() {
             <span style={styles.statusDot} />
             {liveCount} live station{liveCount === 1 ? "" : "s"}
           </div>
+
+          {/* PASS CP-10 PUBLIC PARTNER SUBMISSION CTA */}
+          <button
+            type="button"
+            aria-label="Submit content to AGV"
+            style={{
+              ...styles.homeButton,
+              border: "1px solid rgba(250,204,21,0.62)",
+              background:
+                "linear-gradient(135deg, #facc15, #a16207)",
+              color: "#111827",
+              boxShadow: "0 8px 24px rgba(161,98,7,0.2)",
+            }}
+            onClick={() => {
+              window.location.href = "/content-partner";
+            }}
+          >
+            Submit Content to AGV
+          </button>
 
           <button
             type="button"
@@ -427,11 +657,47 @@ export default function AgvNetworkViewerShell() {
                       style={styles.contentCard}
                       onClick={() => openLiveStation(station)}
                     >
-                      <div style={styles.liveCardVisual}>
-                        <span style={styles.livePill}>
+                      <div
+                        style={{
+                          ...styles.liveCardVisual,
+                          position: "relative",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {stationThumbnailUrl(station) ? (
+                          <img
+                            src={stationThumbnailUrl(station)}
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            style={styles.cardThumbnailImage}
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : null}
+
+                        <div style={styles.cardThumbnailShade} />
+
+                        <span
+                          style={{
+                            ...styles.livePill,
+                            position: "relative",
+                            zIndex: 2,
+                          }}
+                        >
                           {station.badge || "LIVE"}
                         </span>
-                        <div style={styles.visualLogo}>AGV</div>
+
+                        <div
+                          style={{
+                            ...styles.visualLogo,
+                            position: "relative",
+                            zIndex: 2,
+                          }}
+                        >
+                          AGV
+                        </div>
                       </div>
 
                       <div style={styles.cardBody}>
@@ -491,12 +757,101 @@ export default function AgvNetworkViewerShell() {
                       style={styles.contentCard}
                       onClick={() => openOnDemand(item)}
                     >
-                      <div style={styles.onDemandVisual}>
-                        <div style={styles.playCircle}>▶</div>
+                      <div
+                        style={{
+                          ...styles.onDemandVisual,
+                          position: "relative",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {isPlexExternalRedirectItem(item) ? (
+                          <div
+                            aria-hidden="true"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              display: "grid",
+                              placeItems: "center",
+                              background:
+                                "radial-gradient(circle at top, rgba(229,160,13,0.3), rgba(15,23,42,0.96) 64%)",
+                              color: "#fbbf24",
+                              fontWeight: 950,
+                              fontSize: 34,
+                              letterSpacing: "0.12em",
+                            }}
+                          >
+                            PLEX
+                          </div>
+                        ) : isYouTubeOnDemandItem(item) ? (
+                          <img
+                            src={mediaPosterUrl(item)}
+                            alt=""
+                            aria-hidden="true"
+                            loading="lazy"
+                            style={styles.cardThumbnailImage}
+                            onError={(event) => {
+                              event.currentTarget.style.display = "none";
+                            }}
+                          />
+                        ) : (
+                          <video
+                            aria-hidden="true"
+                            tabIndex={-1}
+                            muted
+                            playsInline
+                            preload="metadata"
+                            poster={mediaPosterUrl(item) || undefined}
+                            src={mediaPlaybackUrl(item)}
+                            style={styles.cardThumbnailVideo}
+                            onLoadedMetadata={(event) => {
+                              const preview = event.currentTarget;
+
+                              try {
+                                const duration = Number(
+                                  preview.duration
+                                );
+                                const previewTime =
+                                  Number.isFinite(duration) &&
+                                  duration > 0
+                                    ? Math.min(
+                                        1,
+                                        duration / 20
+                                      )
+                                    : 0.25;
+
+                                preview.currentTime =
+                                  previewTime;
+                              } catch {}
+                            }}
+                            onError={(event) => {
+                              event.currentTarget.style.display =
+                                "none";
+                            }}
+                          />
+                        )}
+
+                        <div style={styles.cardThumbnailShade} />
+
+                        <div
+                          style={{
+                            ...styles.playCircle,
+                            position: "relative",
+                            zIndex: 2,
+                          }}
+                        >
+                          {isPlexExternalRedirectItem(item)
+                            ? "↗"
+                            : "▶"}
+                        </div>
                       </div>
 
                       <div style={styles.cardBody}>
-                        <div style={styles.cardCategory}>On Demand</div>
+                        <div style={styles.cardCategory}>
+                          {isPlexExternalRedirectItem(item)
+                            ? item.category ||
+                              "External Viewing Guide"
+                            : "On Demand"}
+                        </div>
                         <h3 style={styles.cardTitle}>
                           {item.title || "AGV Network Program"}
                         </h3>
@@ -505,7 +860,10 @@ export default function AgvNetworkViewerShell() {
                             "AGV Network On Demand presentation."}
                         </p>
                         <div style={styles.availableLabel}>
-                          Available Now
+                          {isPlexExternalRedirectItem(item)
+                            ? item.buttonLabel ||
+                              "View on Plex"
+                            : "Available Now"}
                         </div>
                       </div>
                     </button>
@@ -710,17 +1068,149 @@ export default function AgvNetworkViewerShell() {
                 >
                   <div style={styles.playerHeader}>
                     <span style={styles.onDemandPill}>ON DEMAND</span>
-                    <span>Founder-approved public program</span>
+                    <span>
+                      {isPlexExternalRedirectItem(
+                        selectedMedia
+                      )
+                        ? "External link-only listing"
+                        : "Founder-approved public program"}
+                    </span>
                   </div>
 
-                  <video
-                    key={selectedMedia.intakeId}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    src={mediaPlaybackUrl(selectedMedia)}
-                    style={styles.video}
-                  />
+                  {isPlexExternalRedirectItem(
+                    selectedMedia
+                  ) ? (
+                    <div
+                      style={{
+                        minHeight: isMobile
+                          ? 250
+                          : 360,
+                        display: "grid",
+                        alignContent: "center",
+                        justifyItems: "center",
+                        gap: 14,
+                        padding: isMobile
+                          ? 20
+                          : 34,
+                        borderRadius: 16,
+                        border:
+                          "1px solid rgba(250,204,21,0.34)",
+                        background:
+                          "radial-gradient(circle at top, rgba(229,160,13,0.18), rgba(2,6,23,0.95) 68%)",
+                        textAlign: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 78,
+                          height: 78,
+                          display: "grid",
+                          placeItems: "center",
+                          borderRadius: 18,
+                          border:
+                            "1px solid rgba(250,204,21,0.48)",
+                          background:
+                            "rgba(15,23,42,0.8)",
+                          color: "#fbbf24",
+                          fontWeight: 950,
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        PLEX
+                      </div>
+
+                      <div
+                        style={{
+                          color: "#fde68a",
+                          fontSize: 18,
+                          fontWeight: 900,
+                        }}
+                      >
+                        External Viewing Guide
+                      </div>
+
+                      <div
+                        style={{
+                          maxWidth: 560,
+                          color: "#cbd5e1",
+                          fontSize: 13,
+                          lineHeight: 1.65,
+                        }}
+                      >
+                        This title is listed by AGV
+                        for discovery only. AGV does
+                        not host, embed, download or
+                        play this program. Viewing
+                        availability is controlled by
+                        Plex and its listed providers.
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openPlexExternalRedirect(
+                            selectedMedia
+                          )
+                        }
+                        style={{
+                          marginTop: 4,
+                          padding:
+                            "12px 22px",
+                          borderRadius: 10,
+                          border:
+                            "1px solid rgba(250,204,21,0.72)",
+                          background:
+                            "linear-gradient(135deg, #facc15, #a16207)",
+                          color: "#111827",
+                          fontWeight: 900,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {selectedMedia.buttonLabel ||
+                          "View on Plex"} ↗
+                      </button>
+
+                      <div
+                        style={{
+                          color: "#94a3b8",
+                          fontSize: 11,
+                        }}
+                      >
+                        Opens an external Plex page
+                        in a separate browser tab.
+                      </div>
+                    </div>
+                  ) : isYouTubeOnDemandItem(
+                    selectedMedia
+                  ) ? (
+                    <div style={styles.videoFrame}>
+                      <iframe
+                        key={selectedMedia.intakeId}
+                        title={
+                          selectedMedia.title ||
+                          "AGV Network YouTube program"
+                        }
+                        src={mediaYouTubeEmbedUrl(
+                          selectedMedia
+                        )}
+                        style={styles.iframe}
+                        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <video
+                      key={selectedMedia.intakeId}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      src={mediaPlaybackUrl(
+                        selectedMedia
+                      )}
+                      style={styles.video}
+                    />
+                  )}
 
                   <h3 style={styles.playerTitle}>
                     {selectedMedia.title || "AGV Network Program"}
@@ -755,7 +1245,7 @@ export default function AgvNetworkViewerShell() {
                       <button
                         key={item.intakeId}
                         type="button"
-                        onClick={() => setSelectedMedia(item)}
+                        onClick={() => openOnDemand(item)}
                         style={
                           active
                             ? styles.catalogButtonActive
@@ -766,7 +1256,10 @@ export default function AgvNetworkViewerShell() {
                           {item.title || "AGV Network Program"}
                         </div>
                         <div style={styles.catalogButtonMeta}>
-                          Available Now
+                          {isPlexExternalRedirectItem(item)
+                            ? item.buttonLabel ||
+                              "View on Plex"
+                            : "Available Now"}
                         </div>
                       </button>
                     );
@@ -1057,6 +1550,36 @@ const styles = {
     color: "#f8fafc",
     textAlign: "left",
     cursor: "pointer",
+  },
+  cardThumbnailImage: {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    objectPosition: "center",
+    display: "block",
+    zIndex: 0,
+  },
+  cardThumbnailVideo: {
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    objectPosition: "center",
+    display: "block",
+    pointerEvents: "none",
+    zIndex: 0,
+    background: "#020617",
+  },
+  cardThumbnailShade: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 1,
+    pointerEvents: "none",
+    background:
+      "linear-gradient(180deg, rgba(2,6,23,0.08), rgba(2,6,23,0.2) 48%, rgba(2,6,23,0.78))",
   },
   liveCardVisual: {
     minHeight: 150,

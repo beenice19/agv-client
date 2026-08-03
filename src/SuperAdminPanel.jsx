@@ -265,6 +265,16 @@ export default function SuperAdminPanel({ onBack, onEnterHost }) {
     lastViewed: "",
     lastPublished: "",
     analyticsNotes: "",
+    sponsorEnabled: false,
+    sponsorName: "",
+    sponsorDisclosure: "",
+    campaignStart: "",
+    campaignEnd: "",
+    sponsorArtwork: "",
+    sponsorClickUrl: "",
+    sponsoredProgram: false,
+    impressions: 0,
+    sponsorWatchMinutes: 0,
   });
 
   const [editingNetworkStationId, setEditingNetworkStationId] = useState("");
@@ -358,6 +368,11 @@ const [controlledPublicConfirmation, setControlledPublicConfirmation] =
   useState("");
 const [controlledPublicRemovalReason, setControlledPublicRemovalReason] =
   useState("");
+// PASS FPA-02 - FOUNDER PUBLIC ACCESS CLIENT CONTROLS
+const [controlledPublicAccessMode, setControlledPublicAccessMode] =
+  useState("DISABLED");
+const [controlledPublicPublishAt, setControlledPublicPublishAt] =
+  useState("");
 // PASS CU-10F1 OWNER PRIVATE AGV NETWORK LIBRARY STATE
 const [ownerPrivateMediaItems, setOwnerPrivateMediaItems] = useState([]);
 const [ownerPrivateMediaLoading, setOwnerPrivateMediaLoading] =
@@ -371,6 +386,85 @@ const [ownerPrivateMediaPreviewExpiresAt, setOwnerPrivateMediaPreviewExpiresAt] 
   useState("");
 const [ownerPrivateMediaAction, setOwnerPrivateMediaAction] =
   useState("");
+// PASS FPA-03 - OWNER PRIVATE MEDIA PUBLIC ACCESS CONTROLS
+const [ownerPrivatePublicAccessMode, setOwnerPrivatePublicAccessMode] =
+  useState("DISABLED");
+const [ownerPrivatePublicPublishAt, setOwnerPrivatePublicPublishAt] =
+  useState("");
+const [ownerPrivatePublicConfirmation, setOwnerPrivatePublicConfirmation] =
+  useState("");
+const [ownerPrivatePublicAction, setOwnerPrivatePublicAction] =
+  useState("");
+const [ownerPrivatePublicError, setOwnerPrivatePublicError] =
+  useState("");
+
+// PASS FAD-02 - FOUNDER ADMIN HUMAN REVIEW CLIENT
+const [
+  founderAdminDecisionOpenContext,
+  setFounderAdminDecisionOpenContext,
+] = useState("");
+const [
+  founderAdminDecisionBasis,
+  setFounderAdminDecisionBasis,
+] = useState("OFFICIAL_PROVIDER_EMBED");
+const [
+  founderAdminDecisionEvidence,
+  setFounderAdminDecisionEvidence,
+] = useState("");
+const [
+  founderAdminDecisionSourceUrl,
+  setFounderAdminDecisionSourceUrl,
+] = useState("");
+const [
+  founderAdminDecisionAttribution,
+  setFounderAdminDecisionAttribution,
+] = useState("");
+const [
+  founderAdminDecisionNote,
+  setFounderAdminDecisionNote,
+] = useState("");
+const [
+  founderAdminDecisionAttestation,
+  setFounderAdminDecisionAttestation,
+] = useState("");
+const [
+  founderAdminDecisionAffirmed,
+  setFounderAdminDecisionAffirmed,
+] = useState(false);
+const [
+  founderAdminDecisionAction,
+  setFounderAdminDecisionAction,
+] = useState("");
+const [
+  founderAdminDecisionError,
+  setFounderAdminDecisionError,
+] = useState("");
+// PASS MRM-02 - SUPER ADMIN MEDIA REMOVAL CONTROLS
+const [
+  ownerPrivateMediaRemovalConfirmation,
+  setOwnerPrivateMediaRemovalConfirmation,
+] = useState("");
+const [
+  ownerPrivateMediaRemovalAction,
+  setOwnerPrivateMediaRemovalAction,
+] = useState("");
+// PASS PTK-03 - PARTNER MEDIA TAKEDOWN CONTROLS
+const [
+  ownerPartnerTakedownReason,
+  setOwnerPartnerTakedownReason,
+] = useState("");
+const [
+  ownerPartnerViolationCategory,
+  setOwnerPartnerViolationCategory,
+] = useState("PLATFORM_POLICY_VIOLATION");
+const [
+  ownerPartnerTakedownConfirmation,
+  setOwnerPartnerTakedownConfirmation,
+] = useState("");
+const [
+  ownerPartnerTakedownAction,
+  setOwnerPartnerTakedownAction,
+] = useState("");
 
 // PASS AGV-NETWORK-ARCHIVES-PUBLIC-CATALOG-01
 const [publicArchiveMediaItems, setPublicArchiveMediaItems] = useState([]);
@@ -1697,6 +1791,42 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
     );
     setControlledPublicConfirmation("");
     setControlledPublicRemovalReason("");
+
+    const storedPublicationMode =
+      item?.publicAccess === true
+        ? "ENABLED"
+        : item?.publicPublication?.publicationMode ===
+            "SCHEDULED" ||
+          item?.publicationControl?.mode ===
+            "SCHEDULED"
+          ? "SCHEDULED"
+          : "DISABLED";
+
+    const storedScheduledPublishAt =
+      item?.publicPublication?.scheduledPublishAt ||
+      item?.publicationControl?.scheduledPublishAt ||
+      "";
+
+    const parsedScheduledPublishAt =
+      storedScheduledPublishAt
+        ? new Date(storedScheduledPublishAt)
+        : null;
+
+    setControlledPublicAccessMode(
+      storedPublicationMode
+    );
+
+    setControlledPublicPublishAt(
+      parsedScheduledPublishAt &&
+      Number.isFinite(parsedScheduledPublishAt.getTime())
+        ? parsedScheduledPublishAt
+            .toLocaleString("sv-SE", {
+              hour12: false,
+            })
+            .replace(" ", "T")
+            .slice(0, 16)
+        : ""
+    );
   }
 
   async function requestFounderMediaPreview() {
@@ -2222,6 +2352,42 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
         intake?.rightsClearance?.attribution ||
         intake.attribution || ""
     );
+
+    const refreshedPublicationMode =
+      intake?.publicAccess === true
+        ? "ENABLED"
+        : intake?.publicPublication?.publicationMode ===
+            "SCHEDULED" ||
+          intake?.publicationControl?.mode ===
+            "SCHEDULED"
+          ? "SCHEDULED"
+          : "DISABLED";
+
+    const refreshedScheduledPublishAt =
+      intake?.publicPublication?.scheduledPublishAt ||
+      intake?.publicationControl?.scheduledPublishAt ||
+      "";
+
+    const parsedRefreshedPublishAt =
+      refreshedScheduledPublishAt
+        ? new Date(refreshedScheduledPublishAt)
+        : null;
+
+    setControlledPublicAccessMode(
+      refreshedPublicationMode
+    );
+
+    setControlledPublicPublishAt(
+      parsedRefreshedPublishAt &&
+      Number.isFinite(parsedRefreshedPublishAt.getTime())
+        ? parsedRefreshedPublishAt
+            .toLocaleString("sv-SE", {
+              hour12: false,
+            })
+            .replace(" ", "T")
+            .slice(0, 16)
+        : ""
+    );
   }
 
   async function stageFounderMediaForPublicPublication() {
@@ -2244,16 +2410,54 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
       return false;
     }
 
+    // PASS FPA-05 - FOUNDER SUBMISSION IS THE CLIENT AUTHORIZATION
+    const founderOwnedOriginalRequest =
+      selectedFounderMediaReview?.source !==
+        "AGV_CONTENT_PARTNER_PORTAL" &&
+      !selectedFounderMediaReview?.partnerSubmissionId &&
+      (selectedFounderMediaReview?.source ===
+        "AGV_FOUNDER_CONTROLLED_INTAKE" ||
+        (!selectedFounderMediaReview?.source &&
+          selectedFounderMediaReview?.createdBy?.globalRole ===
+            "superadmin"));
+
     const rightsStatus =
       getSelectedControlledRightsItem()?.rightsClearance?.status ||
       selectedFounderMediaReview?.rightsClearance?.status ||
       "";
 
-    if (rightsStatus !== "CLEARED_FOR_PUBLIC_PUBLISHING") {
+    if (
+      !founderOwnedOriginalRequest &&
+      rightsStatus !== "CLEARED_FOR_PUBLIC_PUBLISHING"
+    ) {
       setControlledPublicPublicationError(
-        "Founder-certified public rights clearance is required before staging."
+        "Separate rights clearance is required for Partner or outside content."
       );
       return false;
+    }
+
+    if (controlledPublicAccessMode === "DISABLED") {
+      setControlledPublicPublicationError(
+        "Public access remains disabled. Choose Enabled or Scheduled to continue."
+      );
+      return false;
+    }
+
+    if (controlledPublicAccessMode === "SCHEDULED") {
+      const scheduledTime = new Date(
+        controlledPublicPublishAt
+      ).getTime();
+
+      if (
+        !controlledPublicPublishAt ||
+        !Number.isFinite(scheduledTime) ||
+        scheduledTime <= Date.now()
+      ) {
+        setControlledPublicPublicationError(
+          "Select a valid future publication date and time."
+        );
+        return false;
+      }
     }
 
     setControlledPublicPublicationAction("stage");
@@ -2276,6 +2480,14 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
               controlledPublicDescription.trim(),
             publicAttribution:
               controlledPublicAttribution.trim(),
+            founderOwnedOriginal:
+              founderOwnedOriginalRequest,
+            publishAt:
+              controlledPublicAccessMode === "SCHEDULED"
+                ? new Date(
+                    controlledPublicPublishAt
+                  ).toISOString()
+                : "",
           }),
         }
       );
@@ -2722,6 +2934,1267 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
     setOwnerPrivateMediaPreviewUrl("");
     setOwnerPrivateMediaPreviewExpiresAt("");
     setOwnerPrivateMediaError("");
+    setOwnerPrivatePublicError("");
+    setOwnerPrivatePublicConfirmation("");
+    setOwnerPrivateMediaRemovalConfirmation("");
+    setOwnerPartnerTakedownReason("");
+    setOwnerPartnerViolationCategory(
+      "PLATFORM_POLICY_VIOLATION"
+    );
+    setOwnerPartnerTakedownConfirmation("");
+
+    const storedMode =
+      item?.publicAccess === true
+        ? "ENABLED"
+        : item?.publicPublication?.publicationMode ===
+            "SCHEDULED" ||
+          item?.publicationControl?.mode ===
+            "SCHEDULED"
+          ? "SCHEDULED"
+          : "DISABLED";
+
+    const storedPublishAt =
+      item?.publicPublication?.scheduledPublishAt ||
+      item?.publicationControl?.scheduledPublishAt ||
+      "";
+
+    const parsedPublishAt = storedPublishAt
+      ? new Date(storedPublishAt)
+      : null;
+
+    setOwnerPrivatePublicAccessMode(storedMode);
+    setOwnerPrivatePublicPublishAt(
+      parsedPublishAt &&
+      Number.isFinite(parsedPublishAt.getTime())
+        ? parsedPublishAt
+            .toLocaleString("sv-SE", {
+              hour12: false,
+            })
+            .replace(" ", "T")
+            .slice(0, 16)
+        : ""
+    );
+  }
+
+  // PASS FAD-02 - FOUNDER ADMIN HUMAN REVIEW CLIENT
+  function getFounderAdminDecisionDefaultBasis(item) {
+    const existingBasis = String(
+      item?.rightsClearance?.rightsBasis ||
+        item?.rightsBasis ||
+        ""
+    )
+      .trim()
+      .toUpperCase();
+
+    const allowedBases = new Set([
+      "OFFICIAL_PROVIDER_EMBED",
+      "PUBLIC_DOMAIN",
+      "GOVERNMENT_WORK",
+      "LICENSED",
+      "WRITTEN_PERMISSION",
+    ]);
+
+    if (allowedBases.has(existingBasis)) {
+      return existingBasis;
+    }
+
+    const sourceType = String(
+      item?.sourceType ||
+        item?.externalMedia?.sourceType ||
+        ""
+    )
+      .trim()
+      .toUpperCase();
+
+    if (
+      existingBasis === "EXTERNAL_PROVIDER_EMBED" ||
+      sourceType === "YOUTUBE" ||
+      item?.youtubeVideoId ||
+      item?.videoId
+    ) {
+      return "OFFICIAL_PROVIDER_EMBED";
+    }
+
+    if (
+      existingBasis.includes("PUBLIC_DOMAIN")
+    ) {
+      return "PUBLIC_DOMAIN";
+    }
+
+    if (
+      existingBasis.includes("GOVERNMENT")
+    ) {
+      return "GOVERNMENT_WORK";
+    }
+
+    if (
+      existingBasis.includes("LICENSE")
+    ) {
+      return "LICENSED";
+    }
+
+    if (
+      existingBasis.includes("PERMISSION")
+    ) {
+      return "WRITTEN_PERMISSION";
+    }
+
+    return "OFFICIAL_PROVIDER_EMBED";
+  }
+
+  function openFounderAdminDecision(
+    item,
+    contextKey
+  ) {
+    if (!item?.intakeId) {
+      return;
+    }
+
+    const sourceUrl = String(
+      item?.rightsClearance?.sourceUrl ||
+        item?.sourceUrl ||
+        item?.youtubeUrl ||
+        item?.directSourceUrl ||
+        item?.externalDownloadUrl ||
+        ""
+    ).trim();
+
+    const attribution = String(
+      item?.rightsClearance?.attribution ||
+        item?.attribution ||
+        item?.provider ||
+        ""
+    ).trim();
+
+    setFounderAdminDecisionBasis(
+      getFounderAdminDecisionDefaultBasis(
+        item
+      )
+    );
+
+    setFounderAdminDecisionEvidence(
+      String(
+        item?.rightsClearance
+          ?.evidenceReference ||
+          sourceUrl
+      ).trim()
+    );
+
+    setFounderAdminDecisionSourceUrl(
+      sourceUrl
+    );
+
+    setFounderAdminDecisionAttribution(
+      attribution
+    );
+
+    setFounderAdminDecisionNote(
+      ""
+    );
+
+    setFounderAdminDecisionAttestation(
+      "I personally reviewed this content, its source, and the available rights information. I approve it for AGV publication eligibility under the selected basis."
+    );
+
+    setFounderAdminDecisionAffirmed(
+      false
+    );
+
+    setFounderAdminDecisionError(
+      ""
+    );
+
+    setFounderAdminDecisionOpenContext(
+      contextKey
+    );
+  }
+
+  function closeFounderAdminDecision() {
+    if (founderAdminDecisionAction) {
+      return;
+    }
+
+    setFounderAdminDecisionOpenContext(
+      ""
+    );
+
+    setFounderAdminDecisionError(
+      ""
+    );
+
+    setFounderAdminDecisionAffirmed(
+      false
+    );
+  }
+
+  async function saveFounderAdminDecision(
+    item,
+    contextKey
+  ) {
+    const intakeId =
+      item?.intakeId;
+
+    if (!intakeId) {
+      setFounderAdminDecisionError(
+        "Select a media item before saving a Founder Admin Decision."
+      );
+      return false;
+    }
+
+    if (
+      founderAdminDecisionNote.trim()
+        .length < 10
+    ) {
+      setFounderAdminDecisionError(
+        "Enter a meaningful Founder review decision of at least 10 characters."
+      );
+      return false;
+    }
+
+    if (
+      founderAdminDecisionAttestation
+        .trim().length < 20
+    ) {
+      setFounderAdminDecisionError(
+        "Enter a Founder human-review attestation of at least 20 characters."
+      );
+      return false;
+    }
+
+    if (
+      !founderAdminDecisionEvidence.trim() &&
+      !founderAdminDecisionSourceUrl.trim()
+    ) {
+      setFounderAdminDecisionError(
+        "Enter an evidence reference or official source URL."
+      );
+      return false;
+    }
+
+    if (
+      !founderAdminDecisionAttribution.trim()
+    ) {
+      setFounderAdminDecisionError(
+        "Enter the provider attribution."
+      );
+      return false;
+    }
+
+    if (
+      !founderAdminDecisionAffirmed
+    ) {
+      setFounderAdminDecisionError(
+        "Confirm that this is your personal Founder human-review decision."
+      );
+      return false;
+    }
+
+    setFounderAdminDecisionAction(
+      contextKey
+    );
+
+    setFounderAdminDecisionError(
+      ""
+    );
+
+    try {
+      const response = await fetch(
+        AGV_SERVER_API_BASE +
+          "/api/media/review/" +
+          encodeURIComponent(intakeId) +
+          "/founder-admin-decision",
+        {
+          method: "POST",
+          headers:
+            getNetworkAdminHeaders(
+              true
+            ),
+          body: JSON.stringify({
+            decisionBasis:
+              founderAdminDecisionBasis,
+
+            evidenceReference:
+              founderAdminDecisionEvidence.trim(),
+
+            sourceUrl:
+              founderAdminDecisionSourceUrl.trim(),
+
+            attribution:
+              founderAdminDecisionAttribution.trim(),
+
+            founderDecisionNote:
+              founderAdminDecisionNote.trim(),
+
+            certificationStatement:
+              founderAdminDecisionAttestation.trim(),
+
+            confirmation:
+              "SAVE FOUNDER ADMIN DECISION",
+          }),
+        }
+      );
+
+      const result = await response
+        .json()
+        .catch(() => ({}));
+
+      if (
+        !response.ok ||
+        !result?.ok
+      ) {
+        throw new Error(
+          result?.error ||
+            "Could not save the Founder Admin Decision."
+        );
+      }
+
+      const updatedIntake =
+        result.intake;
+
+      if (
+        selectedFounderMediaReview
+          ?.intakeId === intakeId
+      ) {
+        setSelectedFounderMediaReview(
+          updatedIntake
+        );
+      }
+
+      if (
+        selectedOwnerPrivateMedia
+          ?.intakeId === intakeId
+      ) {
+        setSelectedOwnerPrivateMedia(
+          updatedIntake
+        );
+      }
+
+      setOwnerPrivateMediaItems(
+        (items) =>
+          items.map((entry) =>
+            entry?.intakeId ===
+            intakeId
+              ? updatedIntake
+              : entry
+          )
+      );
+
+      await loadControlledMediaRightsQueue();
+      await loadFounderMediaReviewItems();
+
+      setControlledPublicPublicationError(
+        ""
+      );
+
+      setOwnerPrivatePublicError(
+        ""
+      );
+
+      setFounderAdminDecisionOpenContext(
+        ""
+      );
+
+      setFounderAdminDecisionAffirmed(
+        false
+      );
+
+      setNetworkMessage(
+        result.message ||
+          "Founder Admin Decision saved. Public activation still requires a separate Founder Public Access Decision."
+      );
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.message ||
+        "Could not save the Founder Admin Decision.";
+
+      setFounderAdminDecisionError(
+        message
+      );
+
+      setNetworkMessage(message);
+
+      return false;
+    } finally {
+      setFounderAdminDecisionAction(
+        ""
+      );
+    }
+  }
+
+  function renderFounderAdminDecisionPanel(
+    item,
+    contextKey
+  ) {
+    if (!item?.intakeId) {
+      return null;
+    }
+
+    const isOpen =
+      founderAdminDecisionOpenContext ===
+      contextKey;
+
+    if (!isOpen) {
+      return (
+        <button
+          type="button"
+          onClick={() =>
+            openFounderAdminDecision(
+              item,
+              contextKey
+            )
+          }
+          style={{
+            ...styles.primaryButton,
+            marginTop: 10,
+            width: "100%",
+          }}
+        >
+          Save as Admin — Founder Review Decision
+        </button>
+      );
+    }
+
+    const isSaving =
+      founderAdminDecisionAction ===
+      contextKey;
+
+    const fieldStyle = {
+      width: "100%",
+      padding: 10,
+      borderRadius: 8,
+      border:
+        "1px solid rgba(250, 204, 21, 0.28)",
+      background:
+        "rgba(2, 6, 23, 0.72)",
+      color: "#f8fafc",
+      boxSizing: "border-box",
+    };
+
+    return (
+      <div
+        style={{
+          marginTop: 11,
+          padding: 14,
+          borderRadius: 11,
+          border:
+            "1px solid rgba(250, 204, 21, 0.42)",
+          background:
+            "rgba(120, 83, 9, 0.12)",
+        }}
+      >
+        <div
+          style={{
+            color: "#fde68a",
+            fontWeight: 900,
+            fontSize: 14,
+          }}
+        >
+          Founder Human Review Decision
+        </div>
+
+        <div
+          style={{
+            marginTop: 6,
+            color: "#cbd5e1",
+            fontSize: 12,
+            lineHeight: 1.55,
+          }}
+        >
+          This records your human decision and
+          public-publication eligibility. It
+          does not publish the media
+          automatically.
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: 11,
+            marginTop: 13,
+          }}
+        >
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Founder decision basis
+            <select
+              value={
+                founderAdminDecisionBasis
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionBasis(
+                  event.target.value
+                )
+              }
+              style={fieldStyle}
+            >
+              <option value="OFFICIAL_PROVIDER_EMBED">
+                Official provider embed
+              </option>
+              <option value="PUBLIC_DOMAIN">
+                Verified public domain
+              </option>
+              <option value="GOVERNMENT_WORK">
+                Government work
+              </option>
+              <option value="LICENSED">
+                Licensed content
+              </option>
+              <option value="WRITTEN_PERMISSION">
+                Written permission
+              </option>
+            </select>
+          </label>
+
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Evidence reference
+            <input
+              value={
+                founderAdminDecisionEvidence
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionEvidence(
+                  event.target.value
+                )
+              }
+              placeholder="Official channel, archive evidence, license, agreement, or permission reference"
+              style={fieldStyle}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Official source URL
+            <input
+              value={
+                founderAdminDecisionSourceUrl
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionSourceUrl(
+                  event.target.value
+                )
+              }
+              placeholder="https://..."
+              style={fieldStyle}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Provider attribution
+            <input
+              value={
+                founderAdminDecisionAttribution
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionAttribution(
+                  event.target.value
+                )
+              }
+              placeholder="Provider or rights holder"
+              style={fieldStyle}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Founder review decision
+            <textarea
+              value={
+                founderAdminDecisionNote
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionNote(
+                  event.target.value
+                )
+              }
+              rows={4}
+              placeholder="Describe what you reviewed and why you approve or decline publication eligibility."
+              style={{
+                ...fieldStyle,
+                resize: "vertical",
+              }}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "grid",
+              gap: 5,
+              color: "#e2e8f0",
+              fontSize: 12,
+            }}
+          >
+            Founder attestation
+            <textarea
+              value={
+                founderAdminDecisionAttestation
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionAttestation(
+                  event.target.value
+                )
+              }
+              rows={4}
+              style={{
+                ...fieldStyle,
+                resize: "vertical",
+              }}
+            />
+          </label>
+
+          <label
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 9,
+              color: "#fef3c7",
+              fontSize: 12,
+              lineHeight: 1.5,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={
+                founderAdminDecisionAffirmed
+              }
+              onChange={(event) =>
+                setFounderAdminDecisionAffirmed(
+                  event.target.checked
+                )
+              }
+              style={{
+                marginTop: 3,
+              }}
+            />
+
+            <span>
+              I confirm that I personally
+              reviewed this media and am saving
+              this as my Founder human-review
+              decision.
+            </span>
+          </label>
+
+          {founderAdminDecisionError ? (
+            <div
+              style={{
+                padding: 10,
+                borderRadius: 8,
+                border:
+                  "1px solid rgba(248, 113, 113, 0.42)",
+                background:
+                  "rgba(127, 29, 29, 0.2)",
+                color: "#fecaca",
+                fontSize: 12,
+              }}
+            >
+              {founderAdminDecisionError}
+            </div>
+          ) : null}
+
+          <div
+            style={{
+              display: "flex",
+              gap: 9,
+              flexWrap: "wrap",
+            }}
+          >
+            <button
+              type="button"
+              onClick={() =>
+                saveFounderAdminDecision(
+                  item,
+                  contextKey
+                )
+              }
+              disabled={isSaving}
+              style={{
+                ...styles.primaryButton,
+                flex: "1 1 260px",
+              }}
+            >
+              {isSaving
+                ? "Saving Founder Decision..."
+                : "Save as Admin — Founder Review Decision"}
+            </button>
+
+            <button
+              type="button"
+              onClick={
+                closeFounderAdminDecision
+              }
+              disabled={isSaving}
+              style={{
+                ...styles.primaryButton,
+                flex: "0 1 120px",
+                opacity: 0.76,
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  async function applyOwnerPrivatePublicAccessDecision() {
+    const intakeId = selectedOwnerPrivateMedia?.intakeId;
+
+    if (!intakeId) {
+      setOwnerPrivatePublicError(
+        "Select an Owner Private media item first."
+      );
+      return false;
+    }
+
+    if (ownerPrivatePublicAccessMode === "DISABLED") {
+      if (
+        selectedOwnerPrivateMedia?.status ===
+        "PUBLICATION_READY_STAGED"
+      ) {
+        setOwnerPrivatePublicAction("disable");
+        setOwnerPrivatePublicError("");
+
+        try {
+          const response = await fetch(
+            AGV_SERVER_API_BASE +
+              "/api/media/review/" +
+              encodeURIComponent(intakeId) +
+              "/public-unstage",
+            {
+              method: "POST",
+              headers: getNetworkAdminHeaders(true),
+              body: JSON.stringify({
+                reason:
+                  "Founder set Public Access to Disabled from Owner Private Media",
+              }),
+            }
+          );
+
+          const result = await response
+            .json()
+            .catch(() => ({}));
+
+          if (!response.ok || !result?.ok) {
+            throw new Error(
+              result?.error ||
+                "Could not disable public staging."
+            );
+          }
+
+          setSelectedOwnerPrivateMedia(result.intake);
+          setOwnerPrivatePublicPublishAt("");
+          setOwnerPrivatePublicConfirmation("");
+          setNetworkMessage(
+            "Public Access is disabled. AGV ownership certification remains preserved."
+          );
+          return true;
+        } catch (error) {
+          const message =
+            error?.message ||
+            "Could not disable public access.";
+
+          setOwnerPrivatePublicError(message);
+          setNetworkMessage(message);
+          return false;
+        } finally {
+          setOwnerPrivatePublicAction("");
+        }
+      }
+
+      setOwnerPrivatePublicPublishAt("");
+      setOwnerPrivatePublicConfirmation("");
+      setOwnerPrivatePublicError("");
+      setNetworkMessage(
+        "Public Access remains disabled. AGV ownership certification was not changed."
+      );
+      return true;
+    }
+
+    const founderOwnedOriginalRequest =
+      selectedOwnerPrivateMedia?.source !==
+        "AGV_CONTENT_PARTNER_PORTAL" &&
+      !selectedOwnerPrivateMedia?.partnerSubmissionId &&
+      (selectedOwnerPrivateMedia?.source ===
+        "AGV_FOUNDER_CONTROLLED_INTAKE" ||
+        (!selectedOwnerPrivateMedia?.source &&
+          selectedOwnerPrivateMedia?.createdBy?.globalRole ===
+            "superadmin"));
+
+    const rightsStatus =
+      selectedOwnerPrivateMedia?.rightsClearance?.status ||
+      "";
+
+    if (
+      !founderOwnedOriginalRequest &&
+      rightsStatus !== "CLEARED_FOR_PUBLIC_PUBLISHING"
+    ) {
+      setOwnerPrivatePublicError(
+        "Separate rights clearance is required for Partner or outside content."
+      );
+      return false;
+    }
+
+    let publishAt = null;
+
+    if (ownerPrivatePublicAccessMode === "SCHEDULED") {
+      const scheduledTime = new Date(
+        ownerPrivatePublicPublishAt
+      ).getTime();
+
+      if (
+        !ownerPrivatePublicPublishAt ||
+        !Number.isFinite(scheduledTime) ||
+        scheduledTime <= Date.now()
+      ) {
+        setOwnerPrivatePublicError(
+          "Select a valid future publication date and time."
+        );
+        return false;
+      }
+
+      publishAt = new Date(
+        ownerPrivatePublicPublishAt
+      ).toISOString();
+    }
+
+    if (ownerPrivatePublicAccessMode === "ENABLED") {
+      if (
+        ownerPrivatePublicConfirmation.trim() !==
+        "PUBLISH PUBLICLY"
+      ) {
+        setOwnerPrivatePublicError(
+          "Enter the exact Founder confirmation phrase: PUBLISH PUBLICLY"
+        );
+        return false;
+      }
+    }
+
+    setOwnerPrivatePublicAction("apply");
+    setOwnerPrivatePublicError("");
+
+    try {
+      const stageResponse = await fetch(
+        AGV_SERVER_API_BASE +
+          "/api/media/review/" +
+          encodeURIComponent(intakeId) +
+          "/public-stage",
+        {
+          method: "POST",
+          headers: getNetworkAdminHeaders(true),
+          body: JSON.stringify({
+            publicTitle:
+              selectedOwnerPrivateMedia.title ||
+              selectedOwnerPrivateMedia.filename,
+            publicDescription:
+              selectedOwnerPrivateMedia.description ||
+              "",
+            publicAttribution:
+              selectedOwnerPrivateMedia?.rightsClearance
+                ?.attribution ||
+              selectedOwnerPrivateMedia.attribution ||
+              "",
+            founderOwnedOriginal:
+              founderOwnedOriginalRequest,
+            publishAt:
+              ownerPrivatePublicAccessMode === "SCHEDULED"
+                ? publishAt
+                : "",
+          }),
+        }
+      );
+
+      const stageResult = await stageResponse
+        .json()
+        .catch(() => ({}));
+
+      if (!stageResponse.ok || !stageResult?.ok) {
+        throw new Error(
+          stageResult?.error ||
+            "Could not save the Founder public-access decision."
+        );
+      }
+
+      let updatedIntake = stageResult.intake;
+
+      if (ownerPrivatePublicAccessMode === "ENABLED") {
+        const activateResponse = await fetch(
+          AGV_SERVER_API_BASE +
+            "/api/media/review/" +
+            encodeURIComponent(intakeId) +
+            "/public-activate",
+          {
+            method: "POST",
+            headers: getNetworkAdminHeaders(true),
+            body: JSON.stringify({
+              confirmation: "PUBLISH PUBLICLY",
+            }),
+          }
+        );
+
+        const activateResult = await activateResponse
+          .json()
+          .catch(() => ({}));
+
+        if (!activateResponse.ok || !activateResult?.ok) {
+          throw new Error(
+            activateResult?.error ||
+              "The media was staged but could not be publicly activated."
+          );
+        }
+
+        updatedIntake = activateResult.intake;
+      }
+
+      setSelectedOwnerPrivateMedia(updatedIntake);
+      setOwnerPrivatePublicConfirmation("");
+
+      setNetworkMessage(
+        ownerPrivatePublicAccessMode === "ENABLED"
+          ? "Public Access enabled. This media is now published on AGV Network."
+          : "Scheduled publication saved. AGV ownership certification remains preserved."
+      );
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.message ||
+        "Could not apply the Founder public-access decision.";
+
+      setOwnerPrivatePublicError(message);
+      setNetworkMessage(message);
+      return false;
+    } finally {
+      setOwnerPrivatePublicAction("");
+    }
+  }
+
+  // PASS YTI-02 - OWNER PRIVATE YOUTUBE PLAYBACK
+  function ownerPrivateYouTubeEmbedUrl(item) {
+    const sourceType = String(
+      item?.sourceType ||
+        item?.externalMedia?.sourceType ||
+        ""
+    )
+      .trim()
+      .toUpperCase();
+
+    const videoId = String(
+      item?.videoId ||
+        item?.externalMedia?.videoId ||
+        ""
+    ).trim();
+
+    if (
+      sourceType !== "YOUTUBE" ||
+      !/^[A-Za-z0-9_-]{11}$/.test(videoId)
+    ) {
+      return "";
+    }
+
+    const direct = String(
+      item?.embedUrl ||
+        item?.externalMedia?.embedUrl ||
+        ""
+    ).trim();
+
+    return direct.startsWith(
+      "https://www.youtube-nocookie.com/embed/"
+    )
+      ? direct
+      : "https://www.youtube-nocookie.com/embed/" +
+          encodeURIComponent(videoId) +
+          "?autoplay=1&playsinline=1&controls=1&fs=1&rel=0";
+  }
+
+  // PASS PTK-03 - PARTNER MEDIA TAKEDOWN
+  function isOwnerPartnerMediaItem(item) {
+    return (
+      item?.source ===
+        "AGV_CONTENT_PARTNER_PORTAL" ||
+      Boolean(item?.partnerSubmissionId)
+    );
+  }
+
+  async function takeDownOwnerPartnerMediaItem() {
+    const item = selectedOwnerPrivateMedia;
+    const intakeId = item?.intakeId;
+
+    if (!intakeId) {
+      setOwnerPrivateMediaError(
+        "Select a Partner media item before takedown."
+      );
+      return false;
+    }
+
+    if (!isOwnerPartnerMediaItem(item)) {
+      setOwnerPrivateMediaError(
+        "The selected item is not linked to a Partner Portal submission."
+      );
+      return false;
+    }
+
+    if (
+      String(ownerPartnerTakedownReason)
+        .trim()
+        .length < 10
+    ) {
+      setOwnerPrivateMediaError(
+        "Enter a meaningful violation reason of at least 10 characters."
+      );
+      return false;
+    }
+
+    if (
+      ownerPartnerTakedownConfirmation !==
+      "TAKE DOWN PARTNER MEDIA"
+    ) {
+      setOwnerPrivateMediaError(
+        "Type TAKE DOWN PARTNER MEDIA exactly."
+      );
+      return false;
+    }
+
+    const title =
+      item?.title ||
+      item?.filename ||
+      intakeId;
+
+    const confirmed = window.confirm(
+      'Immediately take down "' +
+        title +
+        '"?\n\n' +
+        "Public playback will stop, the Partner submission will be suspended, " +
+        "and the media will remain preserved as compliance evidence."
+    );
+
+    if (!confirmed) {
+      return false;
+    }
+
+    setOwnerPartnerTakedownAction("takedown");
+    setOwnerPrivateMediaError("");
+
+    try {
+      const response = await fetch(
+        AGV_SERVER_API_BASE +
+          "/api/media/review/" +
+          encodeURIComponent(intakeId) +
+          "/partner-takedown",
+        {
+          method: "POST",
+          headers:
+            getNetworkAdminHeaders(true),
+          body: JSON.stringify({
+            confirmation:
+              "TAKE DOWN PARTNER MEDIA",
+            reason:
+              String(
+                ownerPartnerTakedownReason
+              ).trim(),
+            violationCategory:
+              ownerPartnerViolationCategory,
+          }),
+        }
+      );
+
+      const result = await response
+        .json()
+        .catch(() => ({}));
+
+      if (!response.ok || !result?.ok) {
+        throw new Error(
+          result?.error ||
+            "Could not take down the Partner media."
+        );
+      }
+
+      const updatedItem =
+        result?.intake || {
+          ...item,
+          status: "PUBLISHED_PRIVATE_TEST",
+          visibility: "Private",
+          publicAccess: false,
+          moderationStatus:
+            "PARTNER_TAKEDOWN_HOLD",
+        };
+
+      setOwnerPrivateMediaItems(
+        (currentItems) =>
+          currentItems.map((entry) =>
+            entry.intakeId === intakeId
+              ? updatedItem
+              : entry
+          )
+      );
+
+      setSelectedOwnerPrivateMedia(
+        updatedItem
+      );
+
+      setOwnerPrivateMediaPreviewUrl("");
+      setOwnerPrivateMediaPreviewExpiresAt("");
+      setOwnerPrivatePublicAccessMode(
+        "DISABLED"
+      );
+      setOwnerPrivatePublicConfirmation("");
+      setOwnerPrivatePublicPublishAt("");
+      setOwnerPartnerTakedownConfirmation("");
+
+      setNetworkMessage(
+        result?.message ||
+          title +
+            " was taken down and placed on a compliance hold."
+      );
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.message ||
+        "Could not take down the Partner media.";
+
+      setOwnerPrivateMediaError(message);
+      setNetworkMessage(message);
+      return false;
+    } finally {
+      setOwnerPartnerTakedownAction("");
+    }
+  }
+
+  // PASS MRM-02 - REMOVE MEDIA FROM AGV
+  async function removeOwnerPrivateMediaItem() {
+    const item = selectedOwnerPrivateMedia;
+    const intakeId = item?.intakeId;
+
+    if (!intakeId) {
+      setOwnerPrivateMediaError(
+        "Select an Owner Private media item before removal."
+      );
+      return false;
+    }
+
+    if (
+      ownerPrivateMediaRemovalConfirmation !==
+      "REMOVE FROM AGV"
+    ) {
+      setOwnerPrivateMediaError(
+        "Type REMOVE FROM AGV exactly before removing this media."
+      );
+      return false;
+    }
+
+    const title =
+      item?.title ||
+      item?.filename ||
+      intakeId;
+
+    const confirmed = window.confirm(
+      'Permanently remove "' +
+        title +
+        '" from AGV?\n\n' +
+        "This removes it from the private library and public AGV Network catalog. " +
+        "An external YouTube video will remain on YouTube."
+    );
+
+    if (!confirmed) {
+      return false;
+    }
+
+    setOwnerPrivateMediaRemovalAction("remove");
+    setOwnerPrivateMediaError("");
+
+    try {
+      const response = await fetch(
+        AGV_SERVER_API_BASE +
+          "/api/media/review/" +
+          encodeURIComponent(intakeId),
+        {
+          method: "DELETE",
+          headers: getNetworkAdminHeaders(true),
+          body: JSON.stringify({
+            confirmation: "REMOVE FROM AGV",
+          }),
+        }
+      );
+
+      const result = await response
+        .json()
+        .catch(() => ({}));
+
+      if (!response.ok || !result?.ok) {
+        throw new Error(
+          result?.error ||
+            "Could not remove the media from AGV."
+        );
+      }
+
+      const remainingItems =
+        ownerPrivateMediaItems.filter(
+          (entry) => entry.intakeId !== intakeId
+        );
+
+      setOwnerPrivateMediaItems(remainingItems);
+      setSelectedOwnerPrivateMedia(
+        remainingItems[0] || null
+      );
+      setOwnerPrivateMediaPreviewUrl("");
+      setOwnerPrivateMediaPreviewExpiresAt("");
+      setOwnerPrivateMediaRemovalConfirmation("");
+      setOwnerPrivatePublicConfirmation("");
+      setOwnerPrivatePublicAccessMode("DISABLED");
+      setOwnerPrivatePublicPublishAt("");
+
+      setNetworkMessage(
+        result?.message ||
+          title + " was permanently removed from AGV."
+      );
+
+      return true;
+    } catch (error) {
+      const message =
+        error?.message ||
+        "Could not remove the media from AGV.";
+
+      setOwnerPrivateMediaError(message);
+      setNetworkMessage(message);
+      return false;
+    } finally {
+      setOwnerPrivateMediaRemovalAction("");
+    }
   }
 
   async function playOwnerPrivateMediaItem() {
@@ -2737,6 +4210,26 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
     setOwnerPrivateMediaAction("preview");
     setOwnerPrivateMediaError("");
     setOwnerPrivateMediaPreviewUrl("");
+    setOwnerPrivateMediaPreviewExpiresAt("");
+
+    const youtubeEmbedUrl =
+      ownerPrivateYouTubeEmbedUrl(
+        selectedOwnerPrivateMedia
+      );
+
+    if (youtubeEmbedUrl) {
+      setOwnerPrivateMediaPreviewUrl(youtubeEmbedUrl);
+      setOwnerPrivateMediaPreviewExpiresAt(
+        "External YouTube source"
+      );
+      setNetworkMessage(
+        "Owner-private YouTube playback opened for " +
+          intakeId +
+          "."
+      );
+      setOwnerPrivateMediaAction("");
+      return true;
+    }
 
     try {
       const response = await fetch(
@@ -3038,6 +4531,16 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
       lastViewed: "",
       lastPublished: "",
       analyticsNotes: "",
+      sponsorEnabled: false,
+      sponsorName: "",
+      sponsorDisclosure: "",
+      campaignStart: "",
+      campaignEnd: "",
+      sponsorArtwork: "",
+      sponsorClickUrl: "",
+      sponsoredProgram: false,
+      impressions: 0,
+      sponsorWatchMinutes: 0,
     });
   }
 
@@ -3098,6 +4601,91 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
     return /^[A-Za-z0-9_-]{11}$/.test(
       String(value || "").trim()
     );
+  }
+
+  // PASS CCH-04B — CLIENT SPONSORSHIP CAMPAIGN STATUS
+  function getSponsorshipCampaignStatus(value) {
+    const item = value || {};
+
+    if (item.sponsorEnabled !== true) {
+      return {
+        code: "DRAFT",
+        label: "DRAFT",
+        color: "#94a3b8",
+        border: "1px solid rgba(148,163,184,0.35)",
+        background: "rgba(148,163,184,0.1)",
+      };
+    }
+
+    const sponsorName = String(
+      item.sponsorName || ""
+    ).trim();
+
+    const disclosure = String(
+      item.sponsorDisclosure || ""
+    ).trim();
+
+    const startRaw = String(
+      item.campaignStart || ""
+    ).trim();
+
+    const endRaw = String(
+      item.campaignEnd || ""
+    ).trim();
+
+    const startTime = startRaw
+      ? new Date(startRaw).getTime()
+      : NaN;
+
+    const endTime = endRaw
+      ? new Date(endRaw).getTime()
+      : NaN;
+
+    if (
+      !sponsorName ||
+      !disclosure ||
+      !Number.isFinite(startTime) ||
+      !Number.isFinite(endTime) ||
+      endTime <= startTime
+    ) {
+      return {
+        code: "INCOMPLETE",
+        label: "INCOMPLETE",
+        color: "#fca5a5",
+        border: "1px solid rgba(248,113,113,0.42)",
+        background: "rgba(127,29,29,0.16)",
+      };
+    }
+
+    const now = Date.now();
+
+    if (now < startTime) {
+      return {
+        code: "SCHEDULED",
+        label: "SCHEDULED",
+        color: "#93c5fd",
+        border: "1px solid rgba(96,165,250,0.42)",
+        background: "rgba(30,64,175,0.16)",
+      };
+    }
+
+    if (now > endTime) {
+      return {
+        code: "ENDED",
+        label: "ENDED",
+        color: "#cbd5e1",
+        border: "1px solid rgba(148,163,184,0.38)",
+        background: "rgba(71,85,105,0.14)",
+      };
+    }
+
+    return {
+      code: "ACTIVE",
+      label: "ACTIVE",
+      color: "#86efac",
+      border: "1px solid rgba(34,197,94,0.42)",
+      background: "rgba(20,83,45,0.17)",
+    };
   }
 
   // PASS CCH-03C3C — LIVE STATION VALIDATION SUMMARY
@@ -3883,6 +5471,99 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
       }
     }
 
+    if (networkForm.sponsorEnabled === true) {
+      const sponsorName = String(
+        networkForm.sponsorName || ""
+      ).trim();
+
+      const sponsorDisclosure = String(
+        networkForm.sponsorDisclosure || ""
+      ).trim();
+
+      const campaignStart = String(
+        networkForm.campaignStart || ""
+      ).trim();
+
+      const campaignEnd = String(
+        networkForm.campaignEnd || ""
+      ).trim();
+
+      const sponsorArtwork = String(
+        networkForm.sponsorArtwork || ""
+      ).trim();
+
+      const sponsorClickUrl = String(
+        networkForm.sponsorClickUrl || ""
+      ).trim();
+
+      if (!sponsorName) {
+        validationIssues.push(
+          "Sponsor name is required when sponsorship is enabled."
+        );
+      }
+
+      if (!sponsorDisclosure) {
+        validationIssues.push(
+          "Sponsor disclosure is required when sponsorship is enabled."
+        );
+      }
+
+      if (!campaignStart) {
+        validationIssues.push(
+          "Campaign start is required when sponsorship is enabled."
+        );
+      }
+
+      if (!campaignEnd) {
+        validationIssues.push(
+          "Campaign end is required when sponsorship is enabled."
+        );
+      }
+
+      if (campaignStart && campaignEnd) {
+        const sponsorStartTime =
+          new Date(campaignStart).getTime();
+
+        const sponsorEndTime =
+          new Date(campaignEnd).getTime();
+
+        if (
+          !Number.isFinite(sponsorStartTime) ||
+          !Number.isFinite(sponsorEndTime)
+        ) {
+          validationIssues.push(
+            "Campaign dates must be valid."
+          );
+        } else if (sponsorEndTime <= sponsorStartTime) {
+          validationIssues.push(
+            "Campaign end must be later than campaign start."
+          );
+        }
+      }
+
+      if (sponsorArtwork) {
+        const artworkValidation =
+          getValidatedHttpsUrl(sponsorArtwork);
+
+        if (!artworkValidation.valid) {
+          validationIssues.push(
+            "Sponsor artwork must use a valid HTTPS URL."
+          );
+        }
+      }
+
+      if (sponsorClickUrl) {
+        const clickValidation =
+          getValidatedHttpsUrl(sponsorClickUrl);
+
+        if (!clickValidation.valid) {
+          validationIssues.push(
+            "Sponsor click-through destination must use a valid HTTPS URL."
+          );
+        }
+      }
+    }
+
     if (validationIssues.length) {
       setNetworkMessage(
         "Station validation failed:\n\n• " +
@@ -3978,6 +5659,33 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
         String(networkForm.lastPublished || "").trim(),
       analyticsNotes:
         String(networkForm.analyticsNotes || "").trim(),
+      sponsorEnabled:
+        networkForm.sponsorEnabled === true,
+      sponsorName:
+        String(networkForm.sponsorName || "").trim(),
+      sponsorDisclosure:
+        String(networkForm.sponsorDisclosure || "").trim(),
+      campaignStart:
+        String(networkForm.campaignStart || "").trim(),
+      campaignEnd:
+        String(networkForm.campaignEnd || "").trim(),
+      sponsorArtwork:
+        String(networkForm.sponsorArtwork || "").trim(),
+      sponsorClickUrl:
+        String(networkForm.sponsorClickUrl || "").trim(),
+      sponsoredProgram:
+        networkForm.sponsoredProgram === true,
+      impressions: Math.max(
+        0,
+        Number.parseInt(networkForm.impressions, 10) || 0
+      ),
+      sponsorWatchMinutes: Math.max(
+        0,
+        Number.parseInt(
+          networkForm.sponsorWatchMinutes,
+          10
+        ) || 0
+      ),
     };
 
     if (editingNetworkStationId) {
@@ -4057,6 +5765,28 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
       lastViewed: station.lastViewed || "",
       lastPublished: station.lastPublished || "",
       analyticsNotes: station.analyticsNotes || "",
+      sponsorEnabled:
+        station.sponsorEnabled === true,
+      sponsorName: station.sponsorName || "",
+      sponsorDisclosure:
+        station.sponsorDisclosure || "",
+      campaignStart: station.campaignStart || "",
+      campaignEnd: station.campaignEnd || "",
+      sponsorArtwork: station.sponsorArtwork || "",
+      sponsorClickUrl: station.sponsorClickUrl || "",
+      sponsoredProgram:
+        station.sponsoredProgram === true,
+      impressions: Math.max(
+        0,
+        Number.parseInt(station.impressions, 10) || 0
+      ),
+      sponsorWatchMinutes: Math.max(
+        0,
+        Number.parseInt(
+          station.sponsorWatchMinutes,
+          10
+        ) || 0
+      ),
     });
 
     setNetworkMessage("Editing station: " + station.title);
@@ -5586,7 +7316,12 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
               >
                 Public Access: {selectedFounderMediaReview?.publicAccess
                   ? "ENABLED"
-                  : "DISABLED"}
+                  : selectedFounderMediaReview?.publicPublication
+                        ?.publicationMode === "SCHEDULED" ||
+                      selectedFounderMediaReview?.publicationControl
+                        ?.mode === "SCHEDULED"
+                    ? "SCHEDULED"
+                    : "DISABLED"}
               </div>
             </div>
           </div>
@@ -5607,6 +7342,14 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
               {controlledPublicPublicationError}
             </div>
           ) : null}
+
+          {controlledPublicPublicationError ===
+          "Separate rights clearance is required for Partner or outside content."
+            ? renderFounderAdminDecisionPanel(
+                selectedFounderMediaReview,
+                "controlled"
+              )
+            : null}
 
           {selectedFounderMediaReview ? (
             <div style={{ marginTop: 17 }}>
@@ -5670,6 +7413,107 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                 </label>
               </div>
 
+              {/* PASS FPA-02 - FOUNDER PUBLIC ACCESS DECISION */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+                  gap: 12,
+                  marginTop: 12,
+                }}
+              >
+                <label
+                  style={{
+                    display: "grid",
+                    gap: 6,
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  Public access decision
+                  <select
+                    value={controlledPublicAccessMode}
+                    onChange={(event) => {
+                      const nextMode = event.target.value;
+
+                      setControlledPublicAccessMode(nextMode);
+                      setControlledPublicPublicationError(
+                        ""
+                      );
+
+                      if (nextMode !== "SCHEDULED") {
+                        setControlledPublicPublishAt("");
+                      }
+                    }}
+                    style={{
+                      padding: 10,
+                      borderRadius: 8,
+                      border:
+                        "1px solid rgba(148, 163, 184, 0.3)",
+                      background: "rgba(2, 6, 23, 0.62)",
+                      color: "#f8fafc",
+                    }}
+                  >
+                    <option value="ENABLED">
+                      Enabled — publish after final Founder confirmation
+                    </option>
+                    <option value="DISABLED">
+                      Disabled — keep private
+                    </option>
+                    <option value="SCHEDULED">
+                      Scheduled — publish at a future date
+                    </option>
+                  </select>
+                </label>
+
+                {controlledPublicAccessMode === "SCHEDULED" ? (
+                  <label
+                    style={{
+                      display: "grid",
+                      gap: 6,
+                      color: "#cbd5e1",
+                      fontSize: 12,
+                    }}
+                  >
+                    Scheduled publication date and time
+                    <input
+                      type="datetime-local"
+                      value={controlledPublicPublishAt}
+                      onChange={(event) =>
+                        setControlledPublicPublishAt(
+                          event.target.value
+                        )
+                      }
+                      style={{
+                        padding: 10,
+                        borderRadius: 8,
+                        border:
+                          "1px solid rgba(250, 204, 21, 0.4)",
+                        background: "rgba(2, 6, 23, 0.62)",
+                        color: "#f8fafc",
+                      }}
+                    />
+                  </label>
+                ) : (
+                  <div
+                    style={{
+                      padding: 11,
+                      borderRadius: 8,
+                      border:
+                        "1px solid rgba(148, 163, 184, 0.22)",
+                      background: "rgba(2, 6, 23, 0.38)",
+                      color: "#94a3b8",
+                      fontSize: 12,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {controlledPublicAccessMode === "ENABLED"
+                      ? "Enabled continues to the existing final Founder confirmation before public playback begins."
+                      : "Disabled keeps the media private without changing its AGV ownership certification."}
+                  </div>
+                )}
+              </div>
+
               <label
                 style={{
                   display: "grid",
@@ -5706,17 +7550,31 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                   type="button"
                   onClick={stageFounderMediaForPublicPublication}
                   disabled={
-                    controlledPublicPublicationAction === "stage"
+                    controlledPublicPublicationAction === "stage" ||
+                    controlledPublicAccessMode === "DISABLED" ||
+                    (controlledPublicAccessMode ===
+                      "SCHEDULED" &&
+                      !controlledPublicPublishAt)
                   }
                   style={{
                     ...styles.primaryButton,
                     width: "100%",
                     marginTop: 14,
+                    opacity:
+                      controlledPublicAccessMode === "DISABLED"
+                        ? 0.58
+                        : 1,
                   }}
                 >
                   {controlledPublicPublicationAction === "stage"
-                    ? "Staging for Public Publication..."
-                    : "Stage for Public Publication"}
+                    ? "Saving Founder Public Access Decision..."
+                    : controlledPublicAccessMode ===
+                        "SCHEDULED"
+                      ? "Save Scheduled Publication"
+                      : controlledPublicAccessMode ===
+                          "ENABLED"
+                        ? "Stage for Public Activation"
+                        : "Public Access Remains Disabled"}
                 </button>
               ) : null}
 
@@ -7299,17 +9157,31 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
               technical review, editorial review,
               linked intake, and Founder decisions.
             </p>
-            <button
-              type="button"
-              style={styles.primaryButton}
-              onClick={() =>
-                setActiveAdminWorkspace(
-                  "media-review"
-                )
-              }
+            {/* PASS CP-10 SUPER ADMIN FOUNDER REVIEW ONLY */}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                flexWrap: "wrap",
+              }}
             >
-              Open Founder Media Review
-            </button>
+
+              <button
+                type="button"
+                style={{
+                  ...styles.primaryButton,
+                  background: "rgba(15, 23, 42, 0.9)",
+                  border: "1px solid rgba(250, 204, 21, 0.55)",
+                  color: "#fde68a",
+                }}
+                onClick={() => {
+                  selectAdminWorkspace("media-review");
+                  loadFounderMediaReviewItems();
+                }}
+              >
+                Open Founder Media Review
+              </button>
+            </div>
           </section>
         ) : null}
 
@@ -7665,7 +9537,18 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                       ],
                       [
                         "Public Access",
-                        "Disabled",
+                        selectedOwnerPrivateMedia?.publicAccess ===
+                        true
+                          ? "Enabled"
+                          : selectedOwnerPrivateMedia
+                                ?.publicPublication
+                                ?.publicationMode ===
+                              "SCHEDULED" ||
+                            selectedOwnerPrivateMedia
+                              ?.publicationControl?.mode ===
+                              "SCHEDULED"
+                            ? "Scheduled"
+                            : "Disabled",
                       ],
                     ].map(([label, value]) => (
                       <div
@@ -7701,6 +9584,499 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                       </div>
                     ))}
                   </div>
+
+                  {/* PASS FPA-03 - OWNER PRIVATE PUBLIC ACCESS DECISION */}
+                  <div
+                    style={{
+                      marginTop: 13,
+                      padding: 13,
+                      borderRadius: 11,
+                      border:
+                        "1px solid rgba(250, 204, 21, 0.3)",
+                      background:
+                        "rgba(15, 23, 42, 0.64)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        color: "#fde68a",
+                        fontSize: 12,
+                        fontWeight: 900,
+                        marginBottom: 9,
+                      }}
+                    >
+                      Founder Public Access Decision
+                    </div>
+
+                    <select
+                      value={ownerPrivatePublicAccessMode}
+                      onChange={(event) => {
+                        const nextMode = event.target.value;
+
+                        setOwnerPrivatePublicAccessMode(
+                          nextMode
+                        );
+                        setOwnerPrivatePublicError("");
+                        setOwnerPrivatePublicConfirmation("");
+
+                        if (nextMode !== "SCHEDULED") {
+                          setOwnerPrivatePublicPublishAt("");
+                        }
+                      }}
+                      style={{
+                        width: "100%",
+                        padding: 11,
+                        borderRadius: 9,
+                        border:
+                          "1px solid rgba(148, 163, 184, 0.3)",
+                        background:
+                          "rgba(2, 6, 23, 0.72)",
+                        color: "#f8fafc",
+                      }}
+                    >
+                      <option value="ENABLED">
+                        Enabled — publish publicly on AGV Network
+                      </option>
+                      <option value="DISABLED">
+                        Disabled — keep private
+                      </option>
+                      <option value="SCHEDULED">
+                        Scheduled — publish at a future date
+                      </option>
+                    </select>
+
+                    {ownerPrivatePublicAccessMode === "SCHEDULED" ? (
+                      <input
+                        type="datetime-local"
+                        value={ownerPrivatePublicPublishAt}
+                        onChange={(event) =>
+                          setOwnerPrivatePublicPublishAt(
+                            event.target.value
+                          )
+                        }
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          marginTop: 9,
+                          padding: 11,
+                          borderRadius: 9,
+                          border:
+                            "1px solid rgba(250, 204, 21, 0.42)",
+                          background:
+                            "rgba(2, 6, 23, 0.72)",
+                          color: "#f8fafc",
+                        }}
+                      />
+                    ) : null}
+
+                    {ownerPrivatePublicAccessMode === "ENABLED" ? (
+                      <input
+                        value={ownerPrivatePublicConfirmation}
+                        onChange={(event) =>
+                          setOwnerPrivatePublicConfirmation(
+                            event.target.value
+                          )
+                        }
+                        placeholder="Type PUBLISH PUBLICLY"
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          marginTop: 9,
+                          padding: 11,
+                          borderRadius: 9,
+                          border:
+                            "1px solid rgba(34, 197, 94, 0.42)",
+                          background:
+                            "rgba(2, 6, 23, 0.72)",
+                          color: "#f8fafc",
+                        }}
+                      />
+                    ) : null}
+
+                    <button
+                      type="button"
+                      onClick={
+                        applyOwnerPrivatePublicAccessDecision
+                      }
+                      disabled={
+                        Boolean(ownerPrivatePublicAction)
+                      }
+                      style={{
+                        ...styles.primaryButton,
+                        width: "100%",
+                        marginTop: 10,
+                      }}
+                    >
+                      {ownerPrivatePublicAction
+                        ? "Applying Founder Decision..."
+                        : ownerPrivatePublicAccessMode ===
+                            "ENABLED"
+                          ? "Enable Public Access"
+                          : ownerPrivatePublicAccessMode ===
+                              "SCHEDULED"
+                            ? "Save Scheduled Publication"
+                            : "Keep Public Access Disabled"}
+                    </button>
+
+                    {ownerPrivatePublicError ? (
+                      <div
+                        style={{
+                          marginTop: 9,
+                          padding: 9,
+                          borderRadius: 8,
+                          border:
+                            "1px solid rgba(248, 113, 113, 0.4)",
+                          background:
+                            "rgba(127, 29, 29, 0.18)",
+                          color: "#fecaca",
+                          fontSize: 12,
+                        }}
+                      >
+                        {ownerPrivatePublicError}
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {ownerPrivatePublicError ===
+                  "Separate rights clearance is required for Partner or outside content."
+                    ? renderFounderAdminDecisionPanel(
+                        selectedOwnerPrivateMedia,
+                        "owner-private"
+                      )
+                    : null}
+
+                  {/* PASS PTK-03 - CONDITIONAL MEDIA ENFORCEMENT */}
+                  {isOwnerPartnerMediaItem(
+                    selectedOwnerPrivateMedia
+                  ) ? (
+                    <div
+                      style={{
+                        marginTop: 13,
+                        padding: 13,
+                        borderRadius: 11,
+                        border:
+                          "1px solid rgba(251, 146, 60, 0.5)",
+                        background:
+                          "rgba(124, 45, 18, 0.22)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#fed7aa",
+                          fontSize: 13,
+                          fontWeight: 900,
+                        }}
+                      >
+                        Emergency Partner Takedown
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 6,
+                          color: "#cbd5e1",
+                          fontSize: 12,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        Immediately stops public playback,
+                        suspends the linked Partner submission,
+                        and preserves the media as compliance
+                        evidence.
+                      </div>
+
+                      {selectedOwnerPrivateMedia
+                        ?.moderationStatus ===
+                      "PARTNER_TAKEDOWN_HOLD" ? (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            padding: 10,
+                            borderRadius: 9,
+                            border:
+                              "1px solid rgba(248, 113, 113, 0.5)",
+                            background:
+                              "rgba(127, 29, 29, 0.3)",
+                            color: "#fecaca",
+                            fontSize: 12,
+                            fontWeight: 900,
+                          }}
+                        >
+                          TAKEDOWN HOLD ACTIVE
+                          {selectedOwnerPrivateMedia
+                            ?.moderation
+                            ?.reason ? (
+                            <div
+                              style={{
+                                marginTop: 5,
+                                fontWeight: 500,
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {
+                                selectedOwnerPrivateMedia
+                                  .moderation.reason
+                              }
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : (
+                        <>
+                          <select
+                            value={
+                              ownerPartnerViolationCategory
+                            }
+                            onChange={(event) => {
+                              setOwnerPartnerViolationCategory(
+                                event.target.value
+                              );
+                              setOwnerPrivateMediaError("");
+                            }}
+                            style={{
+                              width: "100%",
+                              marginTop: 10,
+                              padding: 11,
+                              borderRadius: 9,
+                              border:
+                                "1px solid rgba(251, 146, 60, 0.48)",
+                              background:
+                                "rgba(2, 6, 23, 0.72)",
+                              color: "#f8fafc",
+                            }}
+                          >
+                            <option value="PLATFORM_POLICY_VIOLATION">
+                              Platform policy violation
+                            </option>
+                            <option value="COPYRIGHT_VIOLATION">
+                              Copyright violation
+                            </option>
+                            <option value="SAFETY_VIOLATION">
+                              Safety violation
+                            </option>
+                            <option value="HARASSMENT_OR_ABUSE">
+                              Harassment or abuse
+                            </option>
+                            <option value="FRAUD_OR_DECEPTION">
+                              Fraud or deception
+                            </option>
+                            <option value="ILLEGAL_CONTENT">
+                              Illegal content
+                            </option>
+                            <option value="OTHER">
+                              Other violation
+                            </option>
+                          </select>
+
+                          <textarea
+                            value={
+                              ownerPartnerTakedownReason
+                            }
+                            onChange={(event) => {
+                              setOwnerPartnerTakedownReason(
+                                event.target.value
+                              );
+                              setOwnerPrivateMediaError("");
+                            }}
+                            placeholder="Describe the violation and reason for immediate takedown"
+                            rows={4}
+                            style={{
+                              width: "100%",
+                              boxSizing: "border-box",
+                              marginTop: 10,
+                              padding: 11,
+                              resize: "vertical",
+                              borderRadius: 9,
+                              border:
+                                "1px solid rgba(251, 146, 60, 0.48)",
+                              background:
+                                "rgba(2, 6, 23, 0.72)",
+                              color: "#f8fafc",
+                              fontFamily: "inherit",
+                            }}
+                          />
+
+                          <input
+                            value={
+                              ownerPartnerTakedownConfirmation
+                            }
+                            onChange={(event) => {
+                              setOwnerPartnerTakedownConfirmation(
+                                event.target.value
+                              );
+                              setOwnerPrivateMediaError("");
+                            }}
+                            placeholder="Type TAKE DOWN PARTNER MEDIA"
+                            style={{
+                              width: "100%",
+                              boxSizing: "border-box",
+                              marginTop: 10,
+                              padding: 11,
+                              borderRadius: 9,
+                              border:
+                                "1px solid rgba(248, 113, 113, 0.55)",
+                              background:
+                                "rgba(2, 6, 23, 0.72)",
+                              color: "#f8fafc",
+                            }}
+                          />
+
+                          <button
+                            type="button"
+                            onClick={
+                              takeDownOwnerPartnerMediaItem
+                            }
+                            disabled={
+                              Boolean(
+                                ownerPartnerTakedownAction
+                              ) ||
+                              ownerPartnerTakedownConfirmation !==
+                                "TAKE DOWN PARTNER MEDIA" ||
+                              String(
+                                ownerPartnerTakedownReason
+                              ).trim().length < 10
+                            }
+                            style={{
+                              width: "100%",
+                              marginTop: 10,
+                              padding: "11px 14px",
+                              borderRadius: 9,
+                              border:
+                                "1px solid rgba(248, 113, 113, 0.65)",
+                              background:
+                                ownerPartnerTakedownConfirmation ===
+                                  "TAKE DOWN PARTNER MEDIA" &&
+                                String(
+                                  ownerPartnerTakedownReason
+                                ).trim().length >= 10
+                                  ? "rgba(194, 65, 12, 0.9)"
+                                  : "rgba(124, 45, 18, 0.35)",
+                              color: "#fff",
+                              fontWeight: 900,
+                              cursor:
+                                ownerPartnerTakedownConfirmation ===
+                                  "TAKE DOWN PARTNER MEDIA" &&
+                                String(
+                                  ownerPartnerTakedownReason
+                                ).trim().length >= 10
+                                  ? "pointer"
+                                  : "not-allowed",
+                              opacity:
+                                ownerPartnerTakedownAction
+                                  ? 0.6
+                                  : 1,
+                            }}
+                          >
+                            {ownerPartnerTakedownAction
+                              ? "Taking Down Partner Media..."
+                              : "Emergency Partner Takedown"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        marginTop: 13,
+                        padding: 13,
+                        borderRadius: 11,
+                        border:
+                          "1px solid rgba(248, 113, 113, 0.42)",
+                        background:
+                          "rgba(69, 10, 10, 0.24)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "#fecaca",
+                          fontSize: 12,
+                          fontWeight: 900,
+                        }}
+                      >
+                        Remove from AGV
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: 6,
+                          color: "#cbd5e1",
+                          fontSize: 12,
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        Permanently removes this Founder or
+                        test intake from the Owner Media
+                        Library and AGV Network. An external
+                        YouTube source is not deleted from
+                        YouTube.
+                      </div>
+
+                      <input
+                        value={
+                          ownerPrivateMediaRemovalConfirmation
+                        }
+                        onChange={(event) => {
+                          setOwnerPrivateMediaRemovalConfirmation(
+                            event.target.value
+                          );
+                          setOwnerPrivateMediaError("");
+                        }}
+                        placeholder="Type REMOVE FROM AGV"
+                        style={{
+                          width: "100%",
+                          boxSizing: "border-box",
+                          marginTop: 10,
+                          padding: 11,
+                          borderRadius: 9,
+                          border:
+                            "1px solid rgba(248, 113, 113, 0.5)",
+                          background:
+                            "rgba(2, 6, 23, 0.72)",
+                          color: "#f8fafc",
+                        }}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={
+                          removeOwnerPrivateMediaItem
+                        }
+                        disabled={
+                          Boolean(
+                            ownerPrivateMediaRemovalAction
+                          ) ||
+                          ownerPrivateMediaRemovalConfirmation !==
+                            "REMOVE FROM AGV"
+                        }
+                        style={{
+                          width: "100%",
+                          marginTop: 10,
+                          padding: "11px 14px",
+                          borderRadius: 9,
+                          border:
+                            "1px solid rgba(248, 113, 113, 0.58)",
+                          background:
+                            ownerPrivateMediaRemovalConfirmation ===
+                            "REMOVE FROM AGV"
+                              ? "rgba(185, 28, 28, 0.82)"
+                              : "rgba(127, 29, 29, 0.28)",
+                          color: "#fff",
+                          fontWeight: 900,
+                          cursor:
+                            ownerPrivateMediaRemovalConfirmation ===
+                            "REMOVE FROM AGV"
+                              ? "pointer"
+                              : "not-allowed",
+                          opacity:
+                            ownerPrivateMediaRemovalAction
+                              ? 0.6
+                              : 1,
+                        }}
+                      >
+                        {ownerPrivateMediaRemovalAction
+                          ? "Removing from AGV..."
+                          : "Permanently Remove from AGV"}
+                      </button>
+                    </div>
+                  )}
 
                   {selectedOwnerPrivateMedia.description ? (
                     <div
@@ -7751,19 +10127,50 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                         background: "rgba(2, 6, 23, 0.52)",
                       }}
                     >
-                      <video
-                        key={ownerPrivateMediaPreviewUrl}
-                        src={ownerPrivateMediaPreviewUrl}
-                        controls
-                        playsInline
-                        preload="metadata"
-                        style={{
-                          width: "100%",
-                          maxHeight: 430,
-                          borderRadius: 8,
-                          background: "#000",
-                        }}
-                      />
+                      {ownerPrivateYouTubeEmbedUrl(
+                        selectedOwnerPrivateMedia
+                      ) ? (
+                        <div
+                          style={{
+                            width: "100%",
+                            aspectRatio: "16 / 9",
+                            borderRadius: 8,
+                            overflow: "hidden",
+                            background: "#000",
+                          }}
+                        >
+                          <iframe
+                            key={ownerPrivateMediaPreviewUrl}
+                            title={
+                              selectedOwnerPrivateMedia?.title ||
+                              "Owner-private YouTube media"
+                            }
+                            src={ownerPrivateMediaPreviewUrl}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              border: 0,
+                            }}
+                            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                            referrerPolicy="strict-origin-when-cross-origin"
+                            allowFullScreen
+                          />
+                        </div>
+                      ) : (
+                        <video
+                          key={ownerPrivateMediaPreviewUrl}
+                          src={ownerPrivateMediaPreviewUrl}
+                          controls
+                          playsInline
+                          preload="metadata"
+                          style={{
+                            width: "100%",
+                            maxHeight: 430,
+                            borderRadius: 8,
+                            background: "#000",
+                          }}
+                        />
+                      )}
 
                       <div
                         style={{
@@ -9469,6 +11876,568 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
             padding: 16,
             borderRadius: 14,
             border:
+              "1px solid rgba(250,204,21,0.34)",
+            background:
+              "rgba(113,63,18,0.12)",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 12,
+              flexWrap: "wrap",
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  color: "#fef3c7",
+                  fontSize: 16,
+                  fontWeight: 900,
+                }}
+              >
+                Sponsorship
+              </div>
+
+              <div
+                style={{
+                  marginTop: 4,
+                  color: "#cbd5e1",
+                  fontSize: 11,
+                  lineHeight: 1.5,
+                }}
+              >
+                Configure program sponsorship and preserve
+                campaign reporting fields with this station.
+              </div>
+            </div>
+
+            <label
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "8px 10px",
+                borderRadius: 10,
+                border:
+                  "1px solid rgba(250,204,21,0.32)",
+                background:
+                  "rgba(113,63,18,0.18)",
+                color: "#fde68a",
+                fontSize: 12,
+                fontWeight: 900,
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={
+                  networkForm.sponsorEnabled === true
+                }
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    sponsorEnabled:
+                      event.target.checked,
+                  }))
+                }
+              />
+              Sponsorship Enabled
+            </label>
+          </div>
+
+          <div
+            style={{
+              marginTop: 15,
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(240px, 1fr))",
+              gap: 12,
+              opacity:
+                networkForm.sponsorEnabled === true
+                  ? 1
+                  : 0.62,
+            }}
+          >
+            <label>
+              <span style={styles.label}>Sponsor Name</span>
+              <input
+                style={styles.input}
+                value={networkForm.sponsorName || ""}
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                placeholder="Organization or underwriting partner"
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    sponsorName: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              <span style={styles.label}>
+                Sponsored Program
+              </span>
+
+              <div
+                style={{
+                  minHeight: 42,
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "0 11px",
+                  borderRadius: 8,
+                  border:
+                    "1px solid rgba(148,163,184,0.28)",
+                  background:
+                    "rgba(2,6,23,0.48)",
+                }}
+              >
+                <label
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    color: "#e2e8f0",
+                    fontSize: 12,
+                    fontWeight: 800,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={
+                      networkForm.sponsoredProgram === true
+                    }
+                    disabled={
+                      networkForm.sponsorEnabled !== true
+                    }
+                    onChange={(event) =>
+                      setNetworkForm((current) => ({
+                        ...current,
+                        sponsoredProgram:
+                          event.target.checked,
+                      }))
+                    }
+                  />
+                  Display sponsored-program designation
+                </label>
+              </div>
+            </label>
+
+            <label>
+              <span style={styles.label}>
+                Campaign Start
+              </span>
+              <input
+                type="datetime-local"
+                style={styles.input}
+                value={networkForm.campaignStart || ""}
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    campaignStart: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              <span style={styles.label}>
+                Campaign End
+              </span>
+              <input
+                type="datetime-local"
+                style={styles.input}
+                value={networkForm.campaignEnd || ""}
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    campaignEnd: event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              <span style={styles.label}>
+                Sponsor Artwork URL
+              </span>
+              <input
+                type="url"
+                style={styles.input}
+                value={networkForm.sponsorArtwork || ""}
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                placeholder="https://.../sponsor-artwork.png"
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    sponsorArtwork:
+                      event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label>
+              <span style={styles.label}>
+                Click-Through Destination
+              </span>
+              <input
+                type="url"
+                style={styles.input}
+                value={networkForm.sponsorClickUrl || ""}
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                placeholder="https://sponsor.example"
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    sponsorClickUrl:
+                      event.target.value,
+                  }))
+                }
+              />
+            </label>
+
+            <label
+              style={{
+                gridColumn: "1 / -1",
+              }}
+            >
+              <span style={styles.label}>
+                Sponsor Disclosure
+              </span>
+              <textarea
+                rows={3}
+                style={{
+                  ...styles.input,
+                  minHeight: 86,
+                  resize: "vertical",
+                }}
+                value={
+                  networkForm.sponsorDisclosure || ""
+                }
+                disabled={
+                  networkForm.sponsorEnabled !== true
+                }
+                placeholder="This program is sponsored or underwritten by..."
+                onChange={(event) =>
+                  setNetworkForm((current) => ({
+                    ...current,
+                    sponsorDisclosure:
+                      event.target.value,
+                  }))
+                }
+              />
+            </label>
+          </div>
+
+          {(() => {
+            const campaignStatus =
+              getSponsorshipCampaignStatus(
+                networkForm
+              );
+
+            const artworkValue = String(
+              networkForm.sponsorArtwork || ""
+            ).trim();
+
+            const clickValue = String(
+              networkForm.sponsorClickUrl || ""
+            ).trim();
+
+            const artworkValidation = artworkValue
+              ? getValidatedHttpsUrl(artworkValue)
+              : {
+                  valid: false,
+                  reason: "No artwork URL entered.",
+                };
+
+            const clickValidation = clickValue
+              ? getValidatedHttpsUrl(clickValue)
+              : {
+                  valid: false,
+                  reason: "No destination entered.",
+                };
+
+            return (
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: 13,
+                  borderRadius: 12,
+                  border:
+                    "1px solid rgba(250,204,21,0.22)",
+                  background:
+                    "rgba(2,6,23,0.34)",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#fef3c7",
+                      fontSize: 12,
+                      fontWeight: 900,
+                    }}
+                  >
+                    Campaign Preview
+                  </div>
+
+                  <span
+                    style={{
+                      padding: "6px 9px",
+                      borderRadius: 999,
+                      color: campaignStatus.color,
+                      border: campaignStatus.border,
+                      background:
+                        campaignStatus.background,
+                      fontSize: 10,
+                      fontWeight: 900,
+                      letterSpacing: "0.08em",
+                    }}
+                  >
+                    {campaignStatus.label}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "grid",
+                    gridTemplateColumns:
+                      "minmax(180px, 280px) minmax(220px, 1fr)",
+                    gap: 14,
+                    alignItems: "start",
+                  }}
+                >
+                  <div
+                    style={{
+                      minHeight: 150,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      overflow: "hidden",
+                      borderRadius: 10,
+                      border:
+                        "1px solid rgba(148,163,184,0.22)",
+                      background:
+                        "rgba(15,23,42,0.72)",
+                    }}
+                  >
+                    {artworkValidation.valid ? (
+                      <img
+                        src={artworkValidation.url}
+                        alt={
+                          networkForm.sponsorName
+                            ? networkForm.sponsorName +
+                              " sponsor artwork"
+                            : "Sponsor artwork preview"
+                        }
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          maxHeight: 190,
+                          objectFit: "contain",
+                        }}
+                        onError={(event) => {
+                          event.currentTarget.style.display =
+                            "none";
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          padding: 16,
+                          color: "#94a3b8",
+                          fontSize: 11,
+                          lineHeight: 1.5,
+                          textAlign: "center",
+                        }}
+                      >
+                        Sponsor artwork preview will
+                        appear here after a valid HTTPS
+                        image URL is entered.
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <div
+                      style={{
+                        color:
+                          artworkValue &&
+                          !artworkValidation.valid
+                            ? "#fca5a5"
+                            : "#cbd5e1",
+                        fontSize: 11,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Artwork URL:{" "}
+                      {artworkValue
+                        ? artworkValidation.valid
+                          ? "Valid HTTPS URL"
+                          : artworkValidation.reason
+                        : "Not entered"}
+                    </div>
+
+                    <div
+                      style={{
+                        marginTop: 7,
+                        color:
+                          clickValue &&
+                          !clickValidation.valid
+                            ? "#fca5a5"
+                            : "#cbd5e1",
+                        fontSize: 11,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Destination URL:{" "}
+                      {clickValue
+                        ? clickValidation.valid
+                          ? "Valid HTTPS URL"
+                          : clickValidation.reason
+                        : "Not entered"}
+                    </div>
+
+                    {clickValidation.valid ? (
+                      <a
+                        href={clickValidation.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          display: "inline-flex",
+                          marginTop: 12,
+                          padding: "8px 11px",
+                          borderRadius: 8,
+                          border:
+                            "1px solid rgba(250,204,21,0.34)",
+                          background:
+                            "rgba(113,63,18,0.18)",
+                          color: "#fde68a",
+                          fontSize: 11,
+                          fontWeight: 900,
+                          textDecoration: "none",
+                        }}
+                      >
+                        Test Sponsor Destination
+                      </a>
+                    ) : null}
+
+                    <div
+                      style={{
+                        marginTop: 12,
+                        color: "#94a3b8",
+                        fontSize: 10,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Preview and destination testing do
+                      not record impressions or clicks.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          <div
+            style={{
+              marginTop: 14,
+              display: "grid",
+              gridTemplateColumns:
+                "repeat(auto-fit, minmax(190px, 1fr))",
+              gap: 10,
+            }}
+          >
+            {[
+              [
+                "Campaign Impressions",
+                Math.max(
+                  0,
+                  Number.parseInt(
+                    networkForm.impressions,
+                    10
+                  ) || 0
+                ),
+              ],
+              [
+                "Sponsor Watch Minutes",
+                Math.max(
+                  0,
+                  Number.parseInt(
+                    networkForm.sponsorWatchMinutes,
+                    10
+                  ) || 0
+                ),
+              ],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                style={{
+                  padding: 11,
+                  borderRadius: 10,
+                  border:
+                    "1px solid rgba(250,204,21,0.22)",
+                  background:
+                    "rgba(2,6,23,0.34)",
+                }}
+              >
+                <div
+                  style={{
+                    color: "#d6d3d1",
+                    fontSize: 10,
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  {label}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 6,
+                    color: "#fef3c7",
+                    fontSize: 16,
+                    fontWeight: 900,
+                  }}
+                >
+                  {value}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section
+          style={{
+            marginTop: 18,
+            marginBottom: 16,
+            padding: 16,
+            borderRadius: 14,
+            border:
               "1px solid rgba(96,165,250,0.3)",
             background:
               "rgba(30,58,138,0.12)",
@@ -10133,6 +13102,110 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
                     </div>
                   ) : null}
                 </div>
+
+                {station.sponsorEnabled === true ? (
+                  <div
+                    style={{
+                      marginTop: 9,
+                      padding: 11,
+                      borderRadius: 10,
+                      border:
+                        "1px solid rgba(250,204,21,0.3)",
+                      background:
+                        "rgba(113,63,18,0.13)",
+                    }}
+                  >
+                    {(() => {
+                      const campaignStatus =
+                        getSponsorshipCampaignStatus(
+                          station
+                        );
+
+                      return (
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent:
+                              "space-between",
+                            gap: 8,
+                            marginBottom: 6,
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <div
+                            style={{
+                              color: "#fde68a",
+                              fontSize: 11,
+                              fontWeight: 900,
+                            }}
+                          >
+                            Sponsored Program
+                          </div>
+
+                          <span
+                            style={{
+                              padding: "5px 8px",
+                              borderRadius: 999,
+                              color:
+                                campaignStatus.color,
+                              border:
+                                campaignStatus.border,
+                              background:
+                                campaignStatus.background,
+                              fontSize: 9,
+                              fontWeight: 900,
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {campaignStatus.label}
+                          </span>
+                        </div>
+                      );
+                    })()}
+
+                    <div style={styles.meta}>
+                      Sponsor:{" "}
+                      {station.sponsorName ||
+                        "Not entered"}
+                    </div>
+
+                    <div style={styles.meta}>
+                      Campaign:{" "}
+                      {station.campaignStart
+                        ? new Date(
+                            station.campaignStart
+                          ).toLocaleString()
+                        : "No start"}
+                      {" — "}
+                      {station.campaignEnd
+                        ? new Date(
+                            station.campaignEnd
+                          ).toLocaleString()
+                        : "No end"}
+                    </div>
+
+                    <div style={styles.meta}>
+                      Impressions:{" "}
+                      {Math.max(
+                        0,
+                        Number.parseInt(
+                          station.impressions,
+                          10
+                        ) || 0
+                      )}
+                      {" · "}
+                      Sponsor Watch Minutes:{" "}
+                      {Math.max(
+                        0,
+                        Number.parseInt(
+                          station.sponsorWatchMinutes,
+                          10
+                        ) || 0
+                      )}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div style={styles.meta}>
                   Status: {station.enabled === false ? "Disabled" : "Enabled"}
