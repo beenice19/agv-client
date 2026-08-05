@@ -3,6 +3,7 @@ import AgvOperationsWorker from "./components/AgvOperationsWorker.jsx";
 import AgvSupportWorker from "./components/AgvSupportWorker.jsx";
 import AgvTrustSafetyComplianceWorker from "./components/AgvTrustSafetyComplianceWorker.jsx";
 import AgvFinanceOperationsWorker from "./components/AgvFinanceOperationsWorker.jsx";
+import CommercialOperationsCenter from "./components/superadmin/CommercialOperationsCenter.jsx";
 
 const ROOM_STORAGE_KEY = "agv_super_admin_rooms";
 const NETWORK_STATION_STORAGE_KEY = "agv_network_stations";
@@ -5961,6 +5962,7 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
         {[
           ["dashboard", "Dashboard"],
           ["network", "AGV Network Control Center"],
+          ["commercial-operations", "Commercial Operations"],
           ["media-review", "Founder Media Review"],
           ["rooms", "Rooms"],
           ["financial", "Financial"],
@@ -6004,6 +6006,16 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
         })}
       </nav>
 
+      {/* PASS ANPE-03B2-R2 — ISOLATED READ-ONLY COMMERCIAL OPERATIONS CENTER */}
+      {activeAdminWorkspace === "commercial-operations" ? (
+        <CommercialOperationsCenter
+          getAdminHeaders={getNetworkAdminHeaders}
+        />
+      ) : null}
+
+      {/* PASS ANPE-03B2-R2 — PRESERVE EXISTING SHARED WORKSPACE RENDER PATH */}
+      {activeAdminWorkspace !== "commercial-operations" ? (
+        <>
       {/* PASS CU-10D2 VISIBLE FOUNDER MEDIA REVIEW PANEL */}
       {activeAdminWorkspace === "media-review" ? (
         <section
@@ -13310,6 +13322,8 @@ const [controlledRightsRevocationReason, setControlledRightsRevocationReason] =
           </div>
         ))}
       </section>
+        </>
+      ) : null}
     </div>
   );
 }
