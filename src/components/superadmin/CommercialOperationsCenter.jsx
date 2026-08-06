@@ -3,6 +3,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import CampaignContractAdministration from "./CampaignContractAdministration.jsx";
 
 const DEFAULT_ANPE_API_BASE =
   import.meta.env.VITE_AGV_ANPE_API_URL ||
@@ -892,6 +893,16 @@ export default function CommercialOperationsCenter({
           </div>
         </>
       ) : null}
+      <CampaignContractAdministration
+        apiBase={apiBase}
+        getAdminHeaders={getAdminHeaders}
+        campaigns={campaigns}
+        contracts={contracts}
+        offers={offers}
+        productionServices={productionServices}
+        onRefresh={loadSnapshot}
+      />
+
     </section>
   );
 }
