@@ -5,6 +5,7 @@ import SuperAdminPanel from "./SuperAdminPanel.jsx";
 import AgvNetworkViewerShell from "./components/AgvNetworkViewerShell.jsx";
 import AgvContentPartnerPortal from "./components/AgvContentPartnerPortal.jsx";
 import AgvContentPartnerSplash from "./components/AgvContentPartnerSplash.jsx";
+import SponsorConciergePortal from "./components/sponsor/SponsorConciergePortal.jsx";
 
 // PASS34D_CLIENT_CONFIG_CLEANUP
 const TICKET_API_BASE =
@@ -232,6 +233,25 @@ export default function App() {
     }
   } catch {}
   
+
+  // PASS ASC-03 PUBLIC SPONSOR CONCIERGE ROUTE
+  {
+    const params = new URLSearchParams(window.location.search);
+    const sponsorConciergeRequest =
+      window.location.pathname === "/sponsor" ||
+      window.location.pathname === "/sponsor/" ||
+      window.location.pathname === "/advertise" ||
+      window.location.pathname === "/advertise/" ||
+      params.get("sponsor") === "1";
+
+    const ownerRequest =
+      params.get("agvOwner") === "1" ||
+      params.get("owner") === "1";
+
+    if (sponsorConciergeRequest && !ownerRequest) {
+      return <SponsorConciergePortal />;
+    }
+  }
 
   // PASS CP-MARKETING-01 PUBLIC CONTENT PARTNER SPLASH ROUTE
   try {
