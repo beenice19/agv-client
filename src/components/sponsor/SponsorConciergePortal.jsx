@@ -1,6 +1,47 @@
 ﻿import React, { useMemo, useState } from "react";
 
 const DRAFT_KEY = "agv_sponsor_concierge_draft_v1";
+const RECEIPT_KEY = "agv_sponsor_concierge_receipt_v1";
+
+// PASS ASC-08B CLIENT SPONSOR INTAKE CONNECTION
+const SPONSOR_API_BASE = (
+  import.meta.env.VITE_AGV_ANPE_API_URL ||
+  "http://127.0.0.1:8802"
+).replace(/\/+$/, "");
+
+const PACKAGE_SERVER_MAP = {
+  COMMERCIAL: "run-commercial",
+  PROGRAM: "sponsor-program",
+  SERIES: "sponsor-series",
+  EVENT: "sponsor-live-event",
+  CHANNEL: "sponsor-channel",
+  CUSTOM: "custom-partnership",
+};
+
+const MEDIA_SERVER_MAP = {
+  VIDEO: "video",
+  IMAGE: "image",
+  AUDIO: "audio",
+  PRODUCTION: "other",
+};
+
+function loadReceipt() {
+  try {
+    const parsed =
+      JSON.parse(
+        window.localStorage.getItem(
+          RECEIPT_KEY
+        ) || "null"
+      );
+
+    return parsed &&
+      typeof parsed === "object"
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 const STEPS = [
   "Select Package",
@@ -92,12 +133,22 @@ export default function SponsorConciergePortal() {
   });
 
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+  const [submitError, setSubmitError] =
+    useState("");
+  const [submitErrorField, setSubmitErrorField] =
+    useState("");
+  const [submittedRequest, setSubmittedRequest] =
+    useState(() => loadReceipt());
   const selectedPackage =
     PACKAGES.find((item) => item.id === draft.packageId) || null;
 
   function update(name, value) {
     setDraft((current) => ({ ...current, [name]: value }));
     setMessage("");
+    setSubmitError("");
+    setSubmitErrorField("");
   }
 
   function save(nextStep = step) {
@@ -156,15 +207,276 @@ export default function SponsorConciergePortal() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function submitRequest() {
-    if (!draft.proofApproved) {
-      setMessage("Approve the proof request before submitting.");
+  async function submitRequest() {
+    if (isSubmitting) {
       return;
     }
-    save(step);
-    setMessage(
-      "Your sponsorship request is ready for AGV review. No campaign has been published, charged, or activated."
-    );
+
+    if (!draft.proofApproved) {
+      setMessage(
+        "Approve the proof request before submitting."
+      );
+      return;
+    }
+
+    const packageId =
+      PACKAGE_SERVER_MAP[draft.packageId];
+
+    const mediaType =
+      MEDIA_SERVER_MAP[draft.mediaType];
+
+    if (!packageId) {
+      setSubmitErrorField("packageId");
+      setSubmitError(
+        "Select a valid AGV sponsorship package."
+      );
+      return;
+    }
+
+    if (!mediaType) {
+      setSubmitErrorField("mediaType");
+      setSubmitError(
+        "Select a valid commercial or artwork type."
+      );
+      return;
+    }
+
+    const budgetText =
+      String(
+        draft.budget ?? ""
+      ).trim();
+
+    const payload = {
+      packageId,
+      companyName:
+        draft.companyName.trim(),
+      contactName:
+        draft.contactName.trim(),
+      email:
+        draft.email.trim(),
+      phone:
+        draft.phone.trim(),
+      website:
+        draft.website.trim(),
+      destinationUrl:
+        draft.destinationUrl.trim(),
+      mediaName:
+        draft.mediaName.trim(),
+      mediaType,
+      programming:
+        draft.programming.trim(),
+      startDate:
+        draft.startDate,
+      endDate:
+        draft.endDate,
+      budget:
+        budgetText === ""
+          ? null
+          : Number(budgetText),
+      notes:
+        draft.notes.trim(),
+      rightsConfirmed:
+        draft.rightsConfirmed === true,
+      termsAccepted:
+        draft.termsAccepted === true,
+      proofApproved:
+        draft.proofApproved === true,
+    };
+
+    setIsSubmitting(true);
+    setMessage("");
+    setSubmitError("");
+    setSubmitErrorField("");
+
+    try {
+      window.localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({
+          ...draft,
+          step,
+          savedAt:
+            new Date().toISOString(),
+        })
+      );
+
+      const response =
+        await fetch(
+          SPONSOR_API_BASE +
+            "/api/sponsor-intake/requests",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type":
+                "application/json",
+              Accept:
+                "application/json",
+            },
+            body:
+              JSON.stringify(payload),
+          }
+        );
+
+      const body =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        const requestError =
+          new Error(
+            body.error ||
+              "AGV could not receive the sponsorship request."
+          );
+
+        requestError.field =
+          body.field || "";
+
+        throw requestError;
+      }
+
+      if (
+        body.ok !== true ||
+        !body.request ||
+        !body.request.requestId
+      ) {
+        throw new Error(
+          "AGV returned an incomplete sponsorship receipt."
+        );
+      }
+
+      const receipt = {
+        request:
+          body.request,
+        duplicate:
+          body.duplicate === true,
+        message:
+          body.message || "",
+        receivedAt:
+          new Date().toISOString(),
+      };
+
+      window.localStorage.setItem(
+        RECEIPT_KEY,
+        JSON.stringify(receipt)
+      );
+
+      setSubmittedRequest(receipt);
+
+      setMessage(
+        body.message ||
+          "Your sponsorship request was received for AGV review."
+      );
+    } catch (error) {
+      setSubmitErrorField(
+        error &&
+        typeof error.field === "string"
+          ? error.field
+          : ""
+      );
+
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "AGV could not receive the sponsorship request."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function refreshRequestStatus() {
+    const requestId =
+      submittedRequest?.request?.requestId;
+
+    if (
+      !requestId ||
+      isSubmitting
+    ) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage("");
+    setSubmitError("");
+    setSubmitErrorField("");
+
+    try {
+      const response =
+        await fetch(
+          SPONSOR_API_BASE +
+            "/api/sponsor-intake/requests/" +
+            encodeURIComponent(requestId),
+          {
+            method: "GET",
+            headers: {
+              Accept:
+                "application/json",
+            },
+          }
+        );
+
+      const body =
+        await response
+          .json()
+          .catch(() => ({}));
+
+      if (!response.ok) {
+        const requestError =
+          new Error(
+            body.error ||
+              "AGV could not retrieve the sponsorship request."
+          );
+
+        requestError.field =
+          body.field || "";
+
+        throw requestError;
+      }
+
+      if (
+        body.ok !== true ||
+        !body.request ||
+        !body.request.requestId
+      ) {
+        throw new Error(
+          "AGV returned an incomplete request status."
+        );
+      }
+
+      const receipt = {
+        ...submittedRequest,
+        request:
+          body.request,
+        refreshedAt:
+          new Date().toISOString(),
+      };
+
+      window.localStorage.setItem(
+        RECEIPT_KEY,
+        JSON.stringify(receipt)
+      );
+
+      setSubmittedRequest(receipt);
+
+      setMessage(
+        "Your AGV sponsorship-request status was refreshed."
+      );
+    } catch (error) {
+      setSubmitErrorField(
+        error &&
+        typeof error.field === "string"
+          ? error.field
+          : ""
+      );
+
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "AGV could not retrieve the sponsorship request."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -407,12 +719,183 @@ export default function SponsorConciergePortal() {
                   I approve AGV preparing this request for internal review and a future sponsor proof. This does not approve publication, payment, or campaign activation.
                 </span>
               </label>
-              <button type="button" onClick={submitRequest} style={{ border: 0, borderRadius: 13, padding: "13px 16px", background: draft.proofApproved ? "linear-gradient(135deg, #facc15, #eab308)" : "rgba(71,85,105,0.55)", color: draft.proofApproved ? "#111827" : "#94a3b8", fontWeight: 950, cursor: draft.proofApproved ? "pointer" : "not-allowed" }}>
-                Submit Sponsorship Request for AGV Review
+              <button
+                type="button"
+                onClick={submitRequest}
+                disabled={
+                  !draft.proofApproved ||
+                  isSubmitting
+                }
+                style={{
+                  border: 0,
+                  borderRadius: 13,
+                  padding: "13px 16px",
+                  background:
+                    draft.proofApproved &&
+                    !isSubmitting
+                      ? "linear-gradient(135deg, #facc15, #eab308)"
+                      : "rgba(71,85,105,0.55)",
+                  color:
+                    draft.proofApproved &&
+                    !isSubmitting
+                      ? "#111827"
+                      : "#94a3b8",
+                  fontWeight: 950,
+                  cursor:
+                    draft.proofApproved &&
+                    !isSubmitting
+                      ? "pointer"
+                      : "not-allowed",
+                }}
+              >
+                {isSubmitting
+                  ? "Submitting Securely..."
+                  : "Submit Sponsorship Request for AGV Review"}
               </button>
               <div style={{ borderRadius: 14, border: "1px solid rgba(148,163,184,0.2)", padding: 15, color: "#cbd5e1", lineHeight: 1.55 }}>
                 Performance reporting will appear here after a future AGV-approved campaign is contracted, scheduled, activated, and measured.
               </div>
+            </div>
+          ) : null}
+
+          {submitError ? (
+            <div
+              role="alert"
+              style={{
+                marginTop: 18,
+                borderRadius: 12,
+                border:
+                  "1px solid rgba(248,113,113,0.42)",
+                background:
+                  "rgba(127,29,29,0.2)",
+                color: "#fecaca",
+                padding: 12,
+                fontWeight: 750,
+                lineHeight: 1.55,
+              }}
+            >
+              {submitErrorField ? (
+                <div
+                  style={{
+                    color: "#fca5a5",
+                    fontSize: 12,
+                    textTransform: "uppercase",
+                    letterSpacing: 0.8,
+                    marginBottom: 4,
+                  }}
+                >
+                  {"Field requiring attention: " + submitErrorField}
+                </div>
+              ) : null}
+
+              {submitError}
+            </div>
+          ) : null}
+
+          {submittedRequest?.request?.requestId ? (
+            <div
+              style={{
+                marginTop: 18,
+                borderRadius: 16,
+                border:
+                  "1px solid rgba(74,222,128,0.32)",
+                background:
+                  "rgba(20,83,45,0.16)",
+                color: "#dcfce7",
+                padding: 16,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  color: "#86efac",
+                  fontWeight: 950,
+                  fontSize: 18,
+                }}
+              >
+                AGV Sponsorship Request Received
+              </div>
+
+              <div>
+                Request ID:{" "}
+                <strong>
+                  {
+                    submittedRequest
+                      .request
+                      .requestId
+                  }
+                </strong>
+              </div>
+
+              <div>
+                Submission status:{" "}
+                <strong>
+                  {
+                    submittedRequest
+                      .request
+                      .submissionStatus
+                  }
+                </strong>
+              </div>
+
+              <div>
+                Review status:{" "}
+                <strong>
+                  {
+                    submittedRequest
+                      .request
+                      .reviewStatus
+                  }
+                </strong>
+              </div>
+
+              {submittedRequest.duplicate ? (
+                <div
+                  style={{
+                    color: "#fde68a",
+                  }}
+                >
+                  AGV recognized this as a recent duplicate request and preserved the original request ID.
+                </div>
+              ) : null}
+
+              <div
+                style={{
+                  color: "#bbf7d0",
+                  lineHeight: 1.55,
+                  fontSize: 13,
+                }}
+              >
+                No campaign, contract, schedule, invoice, payment, publication, or activation was created by this submission.
+              </div>
+
+              <button
+                type="button"
+                onClick={
+                  refreshRequestStatus
+                }
+                disabled={isSubmitting}
+                style={{
+                  justifySelf: "start",
+                  borderRadius: 11,
+                  border:
+                    "1px solid rgba(74,222,128,0.34)",
+                  background:
+                    "rgba(20,83,45,0.28)",
+                  color: "#dcfce7",
+                  padding: "10px 13px",
+                  fontWeight: 850,
+                  cursor:
+                    isSubmitting
+                      ? "not-allowed"
+                      : "pointer",
+                }}
+              >
+                {isSubmitting
+                  ? "Checking Status..."
+                  : "Refresh Request Status"}
+              </button>
             </div>
           ) : null}
 
