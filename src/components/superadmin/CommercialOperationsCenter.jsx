@@ -6,6 +6,7 @@ import React, {
 import SchedulingAdministration from "./SchedulingAdministration.jsx";
 import InvoiceAdministration from "./InvoiceAdministration.jsx";
 import PaymentEvidenceAdministration from "./PaymentEvidenceAdministration.jsx";
+import RefundEvidenceAdministration from "./RefundEvidenceAdministration.jsx";
 import CampaignContractAdministration from "./CampaignContractAdministration.jsx";
 
 const DEFAULT_ANPE_API_BASE =
@@ -925,6 +926,13 @@ export default function CommercialOperationsCenter({
       />
 
       <PaymentEvidenceAdministration
+        apiBase={apiBase}
+        getAdminHeaders={getAdminHeaders}
+        invoices={invoices}
+        onRefresh={loadSnapshot}
+      />
+
+      <RefundEvidenceAdministration
         apiBase={apiBase}
         getAdminHeaders={getAdminHeaders}
         invoices={invoices}
