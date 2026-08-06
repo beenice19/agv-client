@@ -4,6 +4,7 @@ import React, {
   useState,
 } from "react";
 import SchedulingAdministration from "./SchedulingAdministration.jsx";
+import InvoiceAdministration from "./InvoiceAdministration.jsx";
 import CampaignContractAdministration from "./CampaignContractAdministration.jsx";
 
 const DEFAULT_ANPE_API_BASE =
@@ -910,6 +911,15 @@ export default function CommercialOperationsCenter({
         campaigns={campaigns}
         contracts={contracts}
         placements={placements}
+        onRefresh={loadSnapshot}
+      />
+
+      <InvoiceAdministration
+        apiBase={apiBase}
+        getAdminHeaders={getAdminHeaders}
+        campaigns={campaigns}
+        contracts={contracts}
+        invoices={invoices}
         onRefresh={loadSnapshot}
       />
 
