@@ -1,0 +1,35 @@
+# AGV Vercel production deployment boundary
+
+# Vite local build output; Vercel builds from source.
+dist
+dist-ssr
+
+# Local dependencies and Vercel metadata.
+node_modules
+.vercel
+
+# Local AGV media exceeds Vercel's 100 MB file limit.
+# Preserve locally; host through approved external/object storage.
+public/media
+
+# Local pass packages, diagnostics, scripts, and rollback material.
+AGV-MOBILE-PWA-PASS-1
+AGV-MOBILE-PWA-PASS-1.zip
+BACKUP-RESTORE
+*.zip
+*.bak
+*.cjs
+*.csv
+*.txt
+
+# Local rejected and historical working copies.
+src/*BEFORE*
+src/*BACKUP*
+src/*BROKEN*
+src/*CORRUPTED*
+src/*GOLD-STABLE*
+src/*RESTORE*
+src/*WORKING*
+src/*ROLLED-BACK*
+public/**/*BEFORE*
+public/**/*REJECTED*
